@@ -1,59 +1,144 @@
 with Ada.Strings.Unbounded;
 
-package Gnatfmt.Documents is
-   type Document_Type is private;
-   
-   function Print (Document : Document_Type) return String;
-   
-   type Document_Type_Array is array (Positive range <>) of Document_Type;
-   
-   function New_Text
-     (Text : Ada.Strings.Unbounded.Unbounded_String)
-      return Document_Type;
-   --  Creates a new Text Document Command
+private with Ada.Containers;
 
-   function New_Group
-     (Documents    : Document_Type_Array;
-      Should_Break : Boolean := False;
-      Id           : Symbol := New_Symbol)
-      return Document_Type;
-   --  Creates a new Group Document Command
+package Gnatfmt.Documents is
+
+   type Document_Type is private;
+
+   function Print (Document : Document_Type) return String;
+   --  TODO: Description
+
+   --  function Serialize (Document : Document_Type) return String;
+   --  TODO: Description
+
+   --  function Deserialize (Document : String) return Document_Type;
+   --  TODO: Description
+
+   type Document_Type_Array is array (Positive range <>) of Document_Type;
+
+   type Symbol_Type is private;
+
+   function New_Symbol return Symbol_Type;
+   --  TODO: Description
+
+   type Align_Kind_Type is (Width, Text, Root);
 
 private
-   type Document_Type_Access is not null access all Document_Type;
-   type Document_Type_Array_Access is not null access all Document_Type_Array;
 
-   type Command_Kind is (Group, Fill);
+   function Hash (Document : Document_Type) return Ada.Containers.Hash_Type;
+   --  TODO: Description
 
-   type Command_Type (Kind : Command_Kind := Group) is record
+   type Document_Type_Array_Access is access all Document_Type_Array;
+
+   type Command_Kind_Type is
+     (Command_Align,
+      Command_Break_Parent,
+      Command_Cursor,
+      Command_Fill,
+      Command_Group,
+      Command_If_Break,
+      Command_Indent,
+      Command_Indent_If_Break,
+      Command_Label,
+      Command_Line,
+      Command_Soft_Line,
+      Command_Hard_Line,
+      Command_Literal_Line,
+      Command_Line_Suffix,
+      Command_Line_Suffix_Boundary,
+      Command_Trim);
+
+   type Command_Type (Kind : Command_Kind_Type) is record
       case Kind is
-         when Group | Fill =>
-            Documents    : Document_Type_Array_Access;
-            Should_Break : Boolean;
-            Id           : Symbol;
+         when Command_Align =>
+            --  TODO: Check if this is equivalent to
+            --  number | string | { type: "root" }
+            Align_Kind     : Align_Kind_Type;
+            Align_Contents : Document_Type;
+
+         when Command_Break_Parent =>
+            null;
+
+         when Command_Cursor =>
+            Place_Holder : Symbol_Type;
+
+         when Command_Fill =>
+            Parts : Document_Type;
+
+         when Command_Group =>
+            Id              : Symbol_Type;
+            Group_Contents  : Document_Type;
+            Break           : Boolean;
+            --  TODO: Can we make this optional?
+            Expanded_States : Document_Type;
+
+         when Command_If_Break =>
+            If_Break_Group_Id : Symbol_Type;
+            --  TODO: Should any of the following be optional?
+            Break_Contents    : Document_Type;
+            Flat_Contents     : Document_Type;
+
+         when Command_Indent =>
+            Indent_Contents : Document_Type;
+
+         when Command_Indent_If_Break =>
+            Indent_If_Break_Contents : Document_Type;
+            Indent_If_Break_Group_Id : Symbol_Type;
+            Negate                   : Boolean := False;
+
+         when Command_Label =>
+            Text           : Ada.Strings.Unbounded.Unbounded_String;
+            Label_Contents : Document_Type;
+
+         when Command_Line
+              | Command_Soft_Line
+              | Command_Hard_Line
+              | Command_Literal_Line =>
+            null;
+
+         when Command_Line_Suffix =>
+            Line_Suffix_Contents : Document_Type;
+
+         when Command_Line_Suffix_Boundary =>
+            null;
+
+         when Command_Trim =>
+            null;
       end case;
    end record;
-   
-   type Command_Type_Access is not null access all Command_Type;
 
-   type Document_Kind is (Doc_Text, Doc_List, Doc_Command);
-   
-   type Document_Type_Implementation (Kind : Document_Kind) is record
+   --  TODO: Try to make this this not null
+   type Command_Type_Access is access all Command_Type;
+
+   type Document_Kind_Type is (Document_Text, Document_List, Document_Command);
+
+   type Bare_Document_Type (Kind : Document_Kind_Type) is record
+      Id : Integer;
       case Kind is
-         when Doc_Text =>
+         when Document_Text =>
             Text : Ada.Strings.Unbounded.Unbounded_String;
-         when Doc_List =>
+         when Document_List =>
             List : Document_Type_Array_Access;
-         when Doc_Command =>
+         when Document_Command =>
+            --  TODO: We need an access here becuase Propagate_Breaks relies
+            --  on a vector of mutable Command_Type objects. Investigate if
+            --  there's a way of making these aliased and using a vector
+            --  of an access to a Command_Type object.
             Command : Command_Type_Access;
       end case;
    end record;
 
-   type Document_Type_Implementation_Access is
-     not null access all Document_Type_Implementation;
-   
+   type Bare_Document_Type_Access is access all Bare_Document_Type;
+
    type Document_Type is record
-      Implementation : Document_Type_Implementation_Access;
+      Bare_Document : Bare_Document_Type_Access := null;
    end record;
+
+   No_Document : constant Document_Type := (Bare_Document =>  null);
+
+   type Symbol_Type is new Integer;
+
+   No_Symbol : constant Symbol_Type := Symbol_Type (Integer'First);
 
 end Gnatfmt.Documents;

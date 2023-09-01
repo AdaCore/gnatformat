@@ -1,4 +1,4 @@
-abstract project Gnatfmt_Commmon is
+abstract project Gnatfmt_Common is
 
    type Target_Type is ("Windows_NT", "unix", "osx");
    Target : Target_Type := external ("OS", "unix");
@@ -26,9 +26,6 @@ abstract project Gnatfmt_Commmon is
                "-gnatyg",
                "-g",
                "-Ofast",
-               --  T915-005: deactivate -gnatp, as this seems to cause
-               --  linking errors when linking the Ada Language Server
-               --  "-gnatp"
                "-gnatn2");
       end case;
    end Compiler;

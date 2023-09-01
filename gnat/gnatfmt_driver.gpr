@@ -1,9 +1,12 @@
+with "gnatfmt_common";
 with "gnatfmt";
 
 project Gnatfmt_Driver is
-   for Source_Dirs use ("../src");
+   for Source_Dirs use ("../src/formatters/ada");
    for Object_Dir use "../obj";
    for Exec_dir use "../bin";
-   for Source_Files use ("gnatfmt-driver.adb");
-   for Main use ("gnatfmt-driver.adb");
+   for Source_Files use ("gnatfmt-ada_driver.adb");
+   for Main use ("gnatfmt-ada_driver.adb");
+
+   package Compiler renames Gnatfmt_Common.Compiler;
 end Gnatfmt_Driver;

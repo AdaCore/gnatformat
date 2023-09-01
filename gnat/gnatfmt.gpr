@@ -1,3 +1,5 @@
+with "gnatfmt_common";
+
 library project Gnatfmt is
    type Library_Type_Type is ("static", "static-pic", "relocatable");
    Library_Type : Library_Type_Type := external ("LIBRARY_TYPE_GNATFMT", external ("LIBRARY_TYPE", "static"));
@@ -8,5 +10,7 @@ library project Gnatfmt is
    for Source_Dirs use ("../src");
    for Object_Dir use "../obj/lib" & Library_Type;
 
-   for Excluded_Source_Files use ("gnatfmt-driver.adb");
+   -- for Excluded_Source_Files use ("gnatfmt-driver.adb");
+
+   package Compiler renames Gnatfmt_Common.Compiler;
 end Gnatfmt;
