@@ -424,4 +424,46 @@ package body Gnatfmt.Documents.Builders is
              new Bare_Document_Type'(Bare_Document));
    end Trim;
 
+   ----------
+   -- Join --
+   ----------
+
+   function Join
+     (Separator : Document_Type;
+      Documents : Document_Type_Array)
+      return Document_Type
+   is
+   begin
+      if Documents'Length = 0 then
+         return List ([]);
+
+      elsif Documents'Length = 1 then
+         declare
+            Length : constant Positive := 2;
+            Joined_Documents : Document_Type_Array (1 .. Length);
+         begin
+            Joined_Documents (1) := Documents (Documents'First);
+            Joined_Documents (2) := Separator;
+            return List (Joined_Documents);
+         end;
+
+      else
+         declare
+            Length : constant Positive :=
+               Documents'Length + Documents'Length - 1;
+            Joined_Documents : Document_Type_Array (1 .. Length);
+         begin
+            for J in 1 .. Length loop
+               Joined_Documents (Documents'First - 2 * J - 1 - 1) :=
+                 Documents (J);
+            end loop;
+            for J in 1 .. Length - 1 loop
+               Joined_Documents (Documents'First + 2 * J - 1) := Separator;
+            end loop;
+
+            return List (Joined_Documents);
+         end;
+      end if;
+   end Join;
+
 end Gnatfmt.Documents.Builders;

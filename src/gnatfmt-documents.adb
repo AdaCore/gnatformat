@@ -1,5 +1,6 @@
 with Ada.Containers.Vectors;
 with Ada.Containers.Hashed_Sets;
+with Ada.Containers.Hashed_Maps;
 
 with Gnatfmt.Documents.Builders;
 with Gnatfmt.Optionals;
@@ -45,11 +46,57 @@ package body Gnatfmt.Documents is
    subtype Document_Type_Hashed_Set is
      Document_Type_Hashed_Sets.Set;
 
+   type Mode_Kind is (Mode_Break, Mode_Flat);
+
+   type Indentation_Type is record
+      Value  : Ada.Strings.Unbounded.Unbounded_String;
+      Length : Natural;
+      Queue  : Document_Type_Vector;
+   end record;
+
+   type Print_Command_Type is record
+      Indentation : Indentation_Type;
+      Mode        : Mode_Kind;
+      Document    : Document_Type;
+   end record;
+
+   package Print_Command_Type_Vectors is new
+     Ada.Containers.Vectors (Positive, Print_Command_Type);
+
+   subtype Print_Command_Type_Vector is Print_Command_Type_Vectors.Vector;
+
+   package Symbol_To_Mode_Maps is new
+     Ada.Containers.Hashed_Maps (Symbol_Type, Mode_Kind, Hash, "=");
+
+   subtype Symbol_To_Mode_Map is Symbol_To_Mode_Maps.Map;
+
    procedure Break_Parent_Group
      (Group_Stack : in out Group_Command_Type_Vector);
    --  TODO: Description
 
+   function Fits
+     (Next            : Print_Command_Type;
+      Rest_Commands   : Print_Command_Type_Vector;
+      Width           : Natural;
+      Has_Line_Suffix : Boolean;
+      Group_Mode_Map  : Symbol_To_Mode_Map)
+      return Boolean;
+   --  TODO: Description
+
    procedure Propagate_Breaks (Document : Document_Type);
+   --  TODO: Description
+
+   function Make_Align
+     (From       : Indentation_Type;
+      Align_Kind : Align_Kind_Type;
+      Options    : Format_Options_Type)
+      return Indentation_Type;
+   --  TODO: Description
+
+   function Make_Indentation
+     (From : Indentation_Type;
+      Options : Indentation_Options_Type)
+      return Indentation_Type;
    --  TODO: Description
 
    procedure Traverse_Document
@@ -65,6 +112,11 @@ package body Gnatfmt.Documents is
       Should_Traverse_Conditional_Groups : Boolean := False);
    --  TODO: Description
    --  TODO: Refactor so that Optional_Boolean is not needed
+
+   function Trim
+     (Text : Ada.Strings.Unbounded.Unbounded_String)
+      return Natural;
+   --  TODO: Description
 
    ------------------------
    -- Break_Parent_Group --
@@ -97,6 +149,25 @@ package body Gnatfmt.Documents is
    end Break_Parent_Group;
 
    ----------
+   -- Fits --
+   ----------
+
+   function Fits
+     (Next            : Print_Command_Type;
+      Rest_Commands   : Print_Command_Type_Vector;
+      Width           : Natural;
+      Has_Line_Suffix : Boolean;
+      Group_Mode_Map  : Symbol_To_Mode_Map)
+      return Boolean
+   is
+      pragma Unreferenced (Next, Rest_Commands, Width, Has_Line_Suffix, Group_Mode_Map);
+
+   begin
+      raise Program_Error;
+      return False;
+   end Fits;
+
+   ----------
    -- Hash --
    ----------
 
@@ -111,16 +182,246 @@ package body Gnatfmt.Documents is
       return Bare_Document_Access_Type_Hash (Document.Bare_Document);
    end Hash;
 
-   -----------
-   -- Print --
-   -----------
+   ----------
+   -- Hash --
+   ----------
 
-   function Print (Document : Document_Type) return String
+   function Hash (Symbol : Symbol_Type) return Ada.Containers.Hash_Type is
+     (Ada.Containers.Hash_Type (Symbol));
+
+   ------------
+   -- Format --
+   ------------
+
+   function Format
+     (Document : Document_Type;
+      Options : Format_Options_Type)
+      return String
    is
+      use type Ada.Containers.Count_Type;
+
+      Group_Mode_Map : Symbol_To_Mode_Map;
+
+      Pos : Natural := 0;
+
+      Should_Remeasure : Boolean := False;
+
+      Line_Suffix : constant Print_Command_Type_Vector := [];
+
+      Print_Commands : Print_Command_Type_Vector :=
+         [Print_Command_Type'
+            (Indentation_Type'
+               (Ada.Strings.Unbounded.Null_Unbounded_String, 0, []),
+             Mode_Break,
+             Document)];
+
       Result : Ada.Strings.Unbounded.Unbounded_String;
 
    begin
       Propagate_Breaks (Document);
+
+      while Print_Commands.Length > 0 loop
+         declare
+            Print_Command : constant Print_Command_Type :=
+              Print_Commands.Last_Element;
+            Indentation   : Indentation_Type renames Print_Command.Indentation;
+            Mode          : Mode_Kind renames Print_Command.Mode;
+            Document      : Document_Type renames Print_Command.Document;
+
+         begin
+            Print_Commands.Delete_Last;
+
+            case Document.Bare_Document.Kind is
+               when Document_Text =>
+                  declare
+                     --  TODO: Do '\n' convertions to '\r\n\' if necessary
+                     Formatted :
+                       constant Ada.Strings.Unbounded.Unbounded_String :=
+                         Document.Bare_Document.Text;
+
+                  begin
+                     Ada.Strings.Unbounded.Append (Result, Formatted);
+                     if Print_Commands.Length > 0 then
+                        Pos := @ + Ada.Strings.Unbounded.Length (Formatted);
+                     end if;
+                  end;
+
+               when Document_List =>
+                  for Command of
+                     reverse Document.Bare_Document.List.all
+                  loop
+                     Print_Commands.Append
+                       (Print_Command_Type'(Indentation, Mode, Command));
+                  end loop;
+
+               when Document_Command =>
+                  case Document.Bare_Document.Command.Kind is
+                     when Command_Cursor =>
+                        raise Program_Error;
+
+                     when Command_Indent =>
+                        Print_Commands.Append
+                          (Print_Command_Type'
+                             (Make_Indentation
+                                (Indentation, Options.Indentation),
+                              Mode,
+                              Document.Bare_Document.Command.Indent_Contents));
+
+                     when Command_Align =>
+                        Print_Commands.Append
+                          (Print_Command_Type'
+                             (Make_Align
+                                (Indentation,
+                                 Document.Bare_Document.Command.Align_Kind,
+                                 Options),
+                              Mode,
+                              Document.Bare_Document.Command.Align_Contents));
+
+                     when Command_Trim =>
+                        Pos := @ - Trim (Result);
+
+                     when Command_Group =>
+                        declare
+                           procedure Process_Mode_Break;
+                           --  TODO
+
+                           procedure Process_Mode_Flat;
+                           --  TODO
+
+                           ------------------------
+                           -- Process_Mode_Break --
+                           ------------------------
+
+                           procedure Process_Mode_Break is
+                              Next : constant Print_Command_Type :=
+                                (Indentation => Indentation,
+                                 Mode        => Mode_Flat,
+                                 Document    =>
+                                   Document
+                                     .Bare_Document
+                                     .Command
+                                     .Group_Contents);
+                              Remainder : constant Natural := Options.Width - Pos;
+                              Has_Line_Suffix : constant Boolean := Line_Suffix.Length > 0;
+
+                           begin
+                              Should_Remeasure := False;
+
+                              if not Document.Bare_Document.Command.Break
+                                 and then
+                                   Fits
+                                     (Next,
+                                      Print_Commands,
+                                      Remainder,
+                                      Has_Line_Suffix,
+                                      Group_Mode_Map)
+                              then
+                                 Print_Commands.Append (Next);
+
+                              else
+                                 if Document.Bare_Document.Command.Expanded_States.Bare_Document /= null then
+                                    declare
+                                       Group_Contents : Document_Type renames
+                                         Document.Bare_Document.Command.Group_Contents;
+                                       Expanded_States : Document_Type_Array_Access renames
+                                         Document.Bare_Document.Command.Expanded_States.Bare_Document.List;
+                                       Most_Expanded : constant Document_Type := Expanded_States (Expanded_States'Last);
+
+                                    begin
+                                       if Document.Bare_Document.Command.Break then
+                                          Print_Commands.Append
+                                            (Print_Command_Type'
+                                               (Indentation,
+                                                Mode_Break,
+                                                Most_Expanded));
+
+                                       else
+                                          for J in Expanded_States'First .. Expanded_States'Last - 1 loop
+                                             declare
+                                                State         : constant Document_Type := Expanded_States (J);
+                                                Print_Command : constant Print_Command_Type :=
+                                                  (Indentation, Mode_Flat, State);
+                                             begin
+                                                if Fits
+                                                     (Print_Command,
+                                                      Print_Commands,
+                                                      Remainder,
+                                                      Has_Line_Suffix,
+                                                      Group_Mode_Map)
+                                                then
+                                                   Print_Commands.Append
+                                                     (Print_Command_Type'
+                                                        (Indentation, Mode_Break, Group_Contents));
+                                                end if;
+                                             end;
+                                          end loop;
+
+                                          Print_Commands.Append
+                                            (Print_Command_Type'
+                                               (Indentation,
+                                                Mode_Break,
+                                                Most_Expanded));
+                                       end if;
+                                    end;
+
+                                 else
+                                    Print_Commands.Append
+                                      (Print_Command_Type'
+                                         (Indentation,
+                                          Mode_Break,
+                                          Document.Bare_Document.Command.Group_Contents));
+                                 end if;
+                              end if;
+                           end Process_Mode_Break;
+
+                           -----------------------
+                           -- Process_Mode_Flat --
+                           -----------------------
+
+                           procedure Process_Mode_Flat is
+                           begin
+                              if not Should_Remeasure then
+                                 Print_Commands.Append
+                                    (Print_Command_Type'
+                                       (Indentation,
+                                       (if Document
+                                             .Bare_Document
+                                             .Command
+                                             .Break
+                                          then
+                                          Mode_Break
+                                          else
+                                          Mode_Flat),
+                                       Document
+                                          .Bare_Document
+                                          .Command
+                                          .Group_Contents));
+                              else
+                                 Process_Mode_Break;
+                              end if;
+                           end Process_Mode_Flat;
+
+                        begin
+                           case Mode is
+                              when Mode_Flat =>
+                                 Process_Mode_Flat;
+
+                              when Mode_Break =>
+                                 Process_Mode_Break;
+
+                           end case;
+                        end;
+
+                     when Command_Fill =>
+                        raise Program_Error;
+
+                     when others =>
+                        raise Program_Error;
+                  end case;
+
+            end case;
+         end;
+      end loop;
 
       Gnatfmt.Documents.Builders.Reset_Document_Id;
 
@@ -130,7 +431,40 @@ package body Gnatfmt.Documents is
       when others =>
          Gnatfmt.Documents.Builders.Reset_Document_Id;
          return "";
-   end Print;
+   end Format;
+
+   ----------------------
+   -- Make_Indentation --
+   ----------------------
+
+   function Make_Indentation
+     (From : Indentation_Type;
+      Options : Indentation_Options_Type)
+      return Indentation_Type
+   is
+      pragma Unreferenced (Options);
+      R : constant Indentation_Type := From;
+   begin
+      raise Program_Error;
+      return R;
+   end Make_Indentation;
+
+   ----------------
+   -- Make_Align --
+   ----------------
+
+   function Make_Align
+     (From       : Indentation_Type;
+      Align_Kind : Align_Kind_Type;
+      Options    : Format_Options_Type)
+      return Indentation_Type
+   is
+      pragma Unreferenced (Options, Align_Kind);
+      R : constant Indentation_Type := From;
+   begin
+      raise Program_Error;
+      return R;
+   end Make_Align;
 
    ----------------------
    -- Propagate_Breaks --
@@ -380,5 +714,19 @@ package body Gnatfmt.Documents is
          end;
       end loop;
    end Traverse_Document;
+
+   ----------
+   -- Trim --
+   ----------
+
+   function Trim
+     (Text : Ada.Strings.Unbounded.Unbounded_String)
+      return Natural
+   is
+      pragma Unreferenced (Text);
+   begin
+      raise Program_Error;
+      return 0;
+   end Trim;
 
 end Gnatfmt.Documents;

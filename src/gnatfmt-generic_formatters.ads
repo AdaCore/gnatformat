@@ -6,5 +6,8 @@ generic
      (Node : Node_Type)
       return Gnatfmt.Documents.Document_Type;
 package Gnatfmt.Generic_Formatters is
-   function Print (Node : Node_Type) return String;
+   function Print
+     (Node    : Node_Type;
+      Options : Gnatfmt.Documents.Format_Options_Type)
+      return String;
 end Gnatfmt.Generic_Formatters;

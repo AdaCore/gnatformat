@@ -4,9 +4,24 @@ private with Ada.Containers;
 
 package Gnatfmt.Documents is
 
+   type Indentation_Kind is (Spaces, Tabs);
+
+   type Indentation_Options_Type is record
+      Kind  : Indentation_Kind := Spaces;
+      Width : Natural := 3;
+   end record;
+
+   type Format_Options_Type is record
+      Width       : Natural := 79;
+      Indentation : Indentation_Options_Type := (Spaces, 3);
+   end record;
+
    type Document_Type is private;
 
-   function Print (Document : Document_Type) return String;
+   function Format
+     (Document : Document_Type;
+      Options : Format_Options_Type)
+      return String;
    --  TODO: Description
 
    --  function Serialize (Document : Document_Type) return String;
@@ -25,6 +40,9 @@ package Gnatfmt.Documents is
    type Align_Kind_Type is (Width, Text, Root);
 
 private
+
+   function Hash (Symbol : Symbol_Type) return Ada.Containers.Hash_Type;
+   --  TODO: Description
 
    function Hash (Document : Document_Type) return Ada.Containers.Hash_Type;
    --  TODO: Description

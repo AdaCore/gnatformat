@@ -117,6 +117,12 @@ package Gnatfmt.Documents.Builders is
    function Trim return Document_Type;
    --  Creates a new Trim Document Command
 
+   function Join
+     (Separator : Document_Type;
+      Documents : Document_Type_Array)
+      return Document_Type;
+   --  Join an array of Documents with a Separator
+
 private
 
    No_Document : constant Document_Type := Gnatfmt.Documents.No_Document;

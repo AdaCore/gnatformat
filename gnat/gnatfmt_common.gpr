@@ -18,7 +18,8 @@ abstract project Gnatfmt_Common is
                "-g",
                "-O0",
                "-gnata",
-               "-gnatVa");
+               "-gnatVa",
+               "-gnatyM120");
          when "prod" =>
             for Default_Switches ("Ada") use
               ("-fPIC",
@@ -26,7 +27,8 @@ abstract project Gnatfmt_Common is
                "-gnatyg",
                "-g",
                "-Ofast",
-               "-gnatn2");
+               "-gnatn2",
+               "-gnatyM120");
       end case;
    end Compiler;
 
