@@ -1,12 +1,20 @@
-with "gnatfmt_common";
-with "gnatfmt";
+with "gnatfmt_common.gpr";
+with "gnatfmt.gpr";
 
 project Gnatfmt_Driver is
-   for Source_Dirs use ("../src/formatters/ada");
+   for Source_Dirs use ("../src");
    for Object_Dir use "../obj";
    for Exec_dir use "../bin";
-   for Source_Files use ("gnatfmt-ada_driver.adb");
-   for Main use ("gnatfmt-ada_driver.adb");
+   for Source_Files use ("gnatfmt-main.adb");
+   for Main use ("gnatfmt-main.adb");
 
    package Compiler renames Gnatfmt_Common.Compiler;
+
+   package Builder is
+      for Executable ("gnatfmt-main.adb") use "gnatfmt";
+   end Builder;
+
+   package Binder is
+      for Default_Switches ("Ada") use ("-Es");
+   end Binder;
 end Gnatfmt_Driver;
