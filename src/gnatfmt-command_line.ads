@@ -21,12 +21,56 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-with GNATCOLL.Traces;
+with Ada.Strings.Unbounded;
 
-package Gnatfmt is
+with GNATCOLL.Opt_Parse; use GNATCOLL.Opt_Parse;
+with GNATCOLL.VFS;
 
-   Gnatfmt_Trace : GNATCOLL.Traces.Trace_Handle :=
-     GNATCOLL.Traces.Create ("LAL_REFACTOR", GNATCOLL.Traces.Off);
-   Version : constant String := "debug";
+--  Gnatfmt command line utilities
 
-end Gnatfmt;
+package Gnatfmt.Command_Line is
+
+   Parser : Argument_Parser :=
+     Create_Argument_Parser (Help => "Gnatfmt tool");
+
+   package Help is new Parse_Flag
+     (Parser   => Parser,
+      Short    => "-h",
+      Long     => "--help",
+      Help     => "Help");
+
+   package Verbose is new Parse_Flag
+     (Parser   => Parser,
+      Short    => "-v",
+      Long     => "--verbose",
+      Help     => "Print traces");
+
+   package Pipe is new Parse_Flag
+     (Parser   => Parser,
+      Short    => "-p",
+      Long     => "--pipe",
+      Help     =>
+         "Print the result to stdout instead of editing the files on disk");
+
+   package Project is new Parse_Option
+     (Parser      => Parser,
+      Short       => "-P",
+      Long        => "--project",
+      Help        => "Project",
+      Arg_Type    => Ada.Strings.Unbounded.Unbounded_String,
+      Convert     => Ada.Strings.Unbounded.To_Unbounded_String,
+      Default_Val => Ada.Strings.Unbounded.Null_Unbounded_String);
+
+   package Sources is new Parse_Option_List
+     (Parser      => Parser,
+      Short       => "-S",
+      Long        => "--sources",
+      Help        => "Source files to format",
+      Arg_Type    => Ada.Strings.Unbounded.Unbounded_String,
+      Convert     => Ada.Strings.Unbounded.To_Unbounded_String);
+
+   function To_Virtual_File
+     (File_Name : String) return GNATCOLL.VFS.Virtual_File
+   is (GNATCOLL.VFS.Create (GNATCOLL.VFS."+" (File_Name)));
+
+end Gnatfmt.Command_Line;
