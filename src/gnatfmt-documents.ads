@@ -37,7 +37,18 @@ package Gnatfmt.Documents is
    function New_Symbol return Symbol_Type;
    --  TODO: Description
 
-   type Align_Kind_Type is (Width, Text, Root);
+   type Align_Kind_Type is (Width, Text, Root, None);
+
+   type Align_Data_Type (Kind : Align_Kind_Type := Width) is record
+      case Kind is
+         when Width =>
+            N : Integer; -- Number of spaces or tabs
+         when Text =>
+            T : Ada.Strings.Unbounded.Unbounded_String;
+         when None | Root =>
+            null;
+      end case;
+   end record;
 
 private
 
@@ -60,9 +71,9 @@ private
       Command_Indent_If_Break,
       Command_Label,
       Command_Line,
-      Command_Soft_Line,
-      Command_Hard_Line,
-      Command_Literal_Line,
+      --  Command_Soft_Line,
+      --  Command_Hard_Line,
+      --  Command_Literal_Line,
       Command_Line_Suffix,
       Command_Line_Suffix_Boundary,
       Command_Trim);
@@ -70,9 +81,7 @@ private
    type Command_Type (Kind : Command_Kind_Type) is record
       case Kind is
          when Command_Align =>
-            --  TODO: Check if this is equivalent to
-            --  number | string | { type: "root" }
-            Align_Kind     : Align_Kind_Type;
+            Align_Data     : Align_Data_Type;
             Align_Contents : Document_Type;
 
          when Command_Break_Parent =>
@@ -82,6 +91,9 @@ private
             Place_Holder : Symbol_Type;
 
          when Command_Fill =>
+            --  TODO: Should this be a array of Document_Type?
+            --  If not, should it have a dynamic predicate to enforce that
+            --  Parts.Bare_Document.Kind = Document_List
             Parts : Document_Type;
 
          when Command_Group =>
@@ -109,11 +121,15 @@ private
             Text           : Ada.Strings.Unbounded.Unbounded_String;
             Label_Contents : Document_Type;
 
-         when Command_Line
-              | Command_Soft_Line
-              | Command_Hard_Line
-              | Command_Literal_Line =>
-            null;
+         when Command_Line =>
+            Literal : Boolean;
+            Soft    : Boolean;
+            Hard    : Boolean;
+
+         --  when Command_Soft_Line
+         --       | Command_Hard_Line
+         --       | Command_Literal_Line =>
+         --     null;
 
          when Command_Line_Suffix =>
             Line_Suffix_Contents : Document_Type;

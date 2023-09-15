@@ -21,7 +21,7 @@ package Gnatfmt.Documents.Builders is
    --  Convert an array of Document_Type objects into a Document_Type object
 
    function Align
-     (Kind     : Align_Kind_Type;
+     (Data     : Align_Data_Type;
       Contents : Document_Type_Array)
       return Document_Type;
    --  Creates a new Align Document Command

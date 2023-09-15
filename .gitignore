@@ -13,3 +13,6 @@ testsuite/out
 
 # Clang artifacts
 .clang-format
+
+# Node modules
+prettier-plugin-ada/node_modules/

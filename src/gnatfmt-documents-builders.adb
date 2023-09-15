@@ -63,13 +63,13 @@ package body Gnatfmt.Documents.Builders is
    -----------
 
    function Align
-     (Kind     : Align_Kind_Type;
+     (Data     : Align_Data_Type;
       Contents : Document_Type_Array)
       return Document_Type
    is
       Command       : constant Command_Type :=
         (Kind            => Command_Align,
-         Align_Kind      => Kind,
+         Align_Data      => Data,
          Align_Contents  => List (Contents));
       Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
@@ -260,7 +260,7 @@ package body Gnatfmt.Documents.Builders is
    function Line return Document_Type
    is
       Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Line);
+        new Command_Type'(Kind => Command_Line, others => False);
       Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
          (Kind    => Document_Command,
@@ -278,7 +278,7 @@ package body Gnatfmt.Documents.Builders is
    function Soft_Line return Document_Type
    is
       Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Soft_Line);
+        new Command_Type'(Kind => Command_Line, Literal => False, Hard => False, Soft => True);
       Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
           (Kind    => Document_Command,
@@ -296,7 +296,7 @@ package body Gnatfmt.Documents.Builders is
    function Hard_Line return Document_Type
    is
       Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Hard_Line);
+        new Command_Type'(Kind => Command_Line, Literal => False, Hard => True, Soft => False);
       Hard_Line_Bare_Document      : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
           (Kind    => Document_Command,
@@ -316,7 +316,7 @@ package body Gnatfmt.Documents.Builders is
    function Literal_Line return Document_Type
    is
       Hard_Line_Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Literal_Line);
+        new Command_Type'(Kind => Command_Line, Literal => True, Hard => False, Soft => False);
       Hard_Line_Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
           (Kind    => Document_Command,
@@ -336,7 +336,7 @@ package body Gnatfmt.Documents.Builders is
    function Hard_Line_Without_Break_Parent return Document_Type
    is
       Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Hard_Line);
+        new Command_Type'(Kind => Command_Line, Literal => False, Hard => True, Soft => False);
       Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
           (Kind    => Document_Command,
@@ -354,7 +354,7 @@ package body Gnatfmt.Documents.Builders is
    function Literal_Line_Without_Break_Parent return Document_Type
    is
       Command       : constant Command_Type_Access :=
-        new Command_Type'(Kind => Command_Literal_Line);
+        new Command_Type'(Kind => Command_Line, Literal => True, Hard => False, Soft => False);
       Bare_Document : constant Bare_Document_Type_Access :=
         new Bare_Document_Type'
           (Kind    => Document_Command,
