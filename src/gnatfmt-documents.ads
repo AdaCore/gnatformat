@@ -37,15 +37,18 @@ package Gnatfmt.Documents is
    function New_Symbol return Symbol_Type;
    --  TODO: Description
 
-   type Align_Kind_Type is (Width, Text, Root, None);
+   --  TODO: Align_Data_Type is necesary for the the Document_Type and its
+   --  builders but it does not belong to this package. Make this private and
+   --  private another type in the builders
+   type Align_Kind_Type is (Width, Text, Dedent, Root, To_Root, None);
 
-   type Align_Data_Type (Kind : Align_Kind_Type := Width) is record
+   type Align_Data_Type (Kind : Align_Kind_Type := None) is record
       case Kind is
          when Width =>
             N : Integer; -- Number of spaces or tabs
          when Text =>
             T : Ada.Strings.Unbounded.Unbounded_String;
-         when None | Root =>
+         when Dedent | Root | To_Root | None =>
             null;
       end case;
    end record;

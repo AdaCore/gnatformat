@@ -52,14 +52,17 @@ package body Gnatfmt.Documents is
 
    type Indentation_Data_Kind is (Indent, String_Align, Number_Align, Dedent);
 
-   type Indentation_Data_Type (Kind : Indentation_Data_Kind := Indent) is record
-      case Kind is
-         when Indent | Dedent =>
-            null;
-         when String_Align | Number_Align =>
-            Data : Align_Data_Type;
-      end case;
-   end record;
+   type Indentation_Data_Type (Kind : Indentation_Data_Kind := Indent) is
+      record
+         case Kind is
+            when Indent | Dedent =>
+               null;
+            when String_Align =>
+               T : Ada.Strings.Unbounded.Unbounded_String;
+            when Number_Align =>
+               N : Integer;
+         end case;
+      end record;
 
    package Indentation_Data_Vectors is new
      Ada.Containers.Vectors (Natural, Indentation_Data_Type);
@@ -1137,12 +1140,12 @@ package body Gnatfmt.Documents is
 
             when String_Align =>
                Flush;
-               Ada.Strings.Unbounded.Append (Value, Data.Data.T);
-               Length := @ + Ada.Strings.Unbounded.Length (Data.Data.T);
+               Ada.Strings.Unbounded.Append (Value, Data.T);
+               Length := @ + Ada.Strings.Unbounded.Length (Data.T);
 
             when Number_Align =>
                Last_Tabs := @ + 1;
-               Last_Spaces := @ + Data.Data.N;
+               Last_Spaces := @ + Data.N;
 
             when Dedent =>
                raise Program_Error; -- TODO: Make this a logic error
@@ -1194,51 +1197,49 @@ package body Gnatfmt.Documents is
    is
 
    begin
-      if Align_Data.Kind = Width
-         and then Align_Data.N = Integer'First
-      then
-         if From.Root /= null then
-            return From.Root.all;
+      case Align_Data.Kind is
+         when None =>
+            return From;
 
-         else
-            return Root_Indent;
-         end if;
-      end if;
+         when Width =>
+            return
+              Generate_Indentation
+                (From,
+                 Indentation_Data_Type'(String_Align, Align_Data.T),
+                 Options.Indentation);
 
-      if Align_Data.Kind = Width
-         and then Align_Data.N < 0
-      then
-         return
-           Generate_Indentation
-             (From,
-              Indentation_Data_Type'(Kind => Dedent),
-              Options.Indentation);
-      end if;
+         when Text =>
+            return
+              Generate_Indentation
+                (From,
+                 Indentation_Data_Type'(Number_Align, Align_Data.N),
+                 Options.Indentation);
 
-      if Align_Data.Kind = None then
-         return From;
-      end if;
+         when To_Root =>
+            if From.Root /= null then
+               return From.Root.all;
 
-      if Align_Data.Kind = Root then
-         declare
-            Result : Indentation_Type := From;
+            else
+               return Root_Indent;
+            end if;
 
-         begin
-            Result.Root := new Indentation_Type'(From);
-            return Result;
-         end;
-      end if;
+         when Dedent =>
+            return
+              Generate_Indentation
+                (From,
+                 Indentation_Data_Type'(Kind => Dedent),
+                 Options.Indentation);
 
-      --  TODO: Assert (Align_Data.Kind in Text | Width)
-      if Align_Data.Kind = Width then
-         return
-           Generate_Indentation
-             (From, Indentation_Data_Type'(String_Align, Align_Data), Options.Indentation);
-      else
-         return
-           Generate_Indentation
-             (From, Indentation_Data_Type'(Number_Align, Align_Data), Options.Indentation);
-      end if;
+         when Root =>
+            declare
+               Result : Indentation_Type := From;
+
+            begin
+               Result.Root := new Indentation_Type'(From);
+               return Result;
+            end;
+      end case;
+
    end Make_Align;
 
    function Last
