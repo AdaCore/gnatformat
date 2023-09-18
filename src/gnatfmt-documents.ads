@@ -24,12 +24,6 @@ package Gnatfmt.Documents is
       return String;
    --  TODO: Description
 
-   --  function Serialize (Document : Document_Type) return String;
-   --  TODO: Description
-
-   --  function Deserialize (Document : String) return Document_Type;
-   --  TODO: Description
-
    type Document_Type_Array is array (Positive range <>) of Document_Type;
 
    type Symbol_Type is private;
@@ -40,7 +34,7 @@ package Gnatfmt.Documents is
    --  TODO: Align_Data_Type is necesary for the the Document_Type and its
    --  builders but it does not belong to this package. Make this private and
    --  private another type in the builders
-   type Align_Kind_Type is (Width, Text, Dedent, Root, To_Root, None);
+   type Align_Kind_Type is (Width, Text, Dedent, Dedent_To_Root, Root, None);
 
    type Align_Data_Type (Kind : Align_Kind_Type := None) is record
       case Kind is
@@ -48,7 +42,7 @@ package Gnatfmt.Documents is
             N : Integer; -- Number of spaces or tabs
          when Text =>
             T : Ada.Strings.Unbounded.Unbounded_String;
-         when Dedent | Root | To_Root | None =>
+         when Dedent | Dedent_To_Root | Root | None =>
             null;
       end case;
    end record;

@@ -1215,7 +1215,7 @@ package body Gnatfmt.Documents is
                  Indentation_Data_Type'(Number_Align, Align_Data.N),
                  Options.Indentation);
 
-         when To_Root =>
+         when Dedent_To_Root =>
             if From.Root /= null then
                return From.Root.all;
 
