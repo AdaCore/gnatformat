@@ -10,7 +10,7 @@
             "name": "Launch Program",
             "skipFiles": ["<node_internals>/**"],
             "program": "./node_modules/.bin/prettier",
-            "args": ["--plugin", ".", "src/ada_ast.adb"]
+            "args": ["--plugin", ".", "test.ads"]
         }
     ]
 }

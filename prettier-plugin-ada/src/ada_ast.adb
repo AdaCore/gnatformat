@@ -36,7 +36,7 @@ procedure Ada_Ast is
          Append (Input, Item);
       end loop;
 
-      Ada.Text_IO.Put_Line (Ada.Strings.Unbounded.To_String (Input));
+      --  Ada.Text_IO.Put_Line (Ada.Strings.Unbounded.To_String (Input));
 
       return Input;
    end Read_From_Stdin;
@@ -108,9 +108,11 @@ procedure Ada_Ast is
             for Child_Or_Trivia of Node.Children_And_Trivia loop
                case Child_Or_Trivia.Kind is
                when Child =>
-                  Ada.Text_IO.Put_Line (Child_Or_Trivia.Node.Image);
+                  null;
+                  --  Ada.Text_IO.Put_Line (Child_Or_Trivia.Node.Image);
                when Trivia =>
-                  Ada.Text_IO.Put_Line (Image (Child_Or_Trivia.Trivia));
+                  null;
+                  --  Ada.Text_IO.Put_Line (Image (Child_Or_Trivia.Trivia));
                end case;
             end loop;
             declare
