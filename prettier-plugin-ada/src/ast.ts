@@ -10,6 +10,12 @@ export type Identifier = {
     name: string;
 };
 
+export type DottedName = {
+    kind: "DottedName";
+    suffix: Identifier;
+    prefix: Identifier;
+};
+
 export type SubpDecl = AdaNode & {
     kind: "SubpDecl";
     overriding?: "overriding" | "not overriding";

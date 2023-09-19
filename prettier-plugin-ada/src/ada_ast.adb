@@ -64,6 +64,13 @@ procedure Ada_Ast is
       end if;
       GNATCOLL.JSON.Set_Field (Result, "kind", Node.Kind_Name);
       case Node.Kind is
+         when Ada_Dotted_Name =>
+            GNATCOLL.JSON.Set_Field
+              (Result, "suffix",
+               Process_Node (Node.As_Dotted_Name.F_Suffix.As_Ada_Node));
+            GNATCOLL.JSON.Set_Field
+              (Result, "prefix",
+               Process_Node (Node.As_Dotted_Name.F_Prefix.As_Ada_Node));
          when Ada_Subp_Decl =>
             case Node.As_Subp_Decl.F_Overriding is
                when Ada_Overriding_Overriding =>
@@ -82,7 +89,7 @@ procedure Ada_Ast is
             case Node.As_Subp_Spec.F_Subp_Kind is
                when Ada_Subp_Kind_Function =>
                   GNATCOLL.JSON.Set_Field
-                    (Result, "subp_kind", "function");
+                    (Result, "subpKind", "function");
                   GNATCOLL.JSON.Set_Field
                     (Result,
                      "returns",
@@ -91,7 +98,7 @@ procedure Ada_Ast is
 
                when Ada_Subp_Kind_Procedure =>
                   GNATCOLL.JSON.Set_Field
-                    (Result, "subp_kind", "procedure");
+                    (Result, "subpKind", "procedure");
             end case;
             GNATCOLL.JSON.Set_Field
               (Result,

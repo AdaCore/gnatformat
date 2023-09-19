@@ -1,5 +1,12 @@
 import { Doc } from "prettier";
-import { Identifier, PackageDecl, ParamSpec, SubpDecl, SubpSpec } from "./ast";
+import {
+    DottedName,
+    Identifier,
+    PackageDecl,
+    ParamSpec,
+    SubpDecl,
+    SubpSpec,
+} from "./ast";
 import {
     align,
     fill,
@@ -17,6 +24,14 @@ export const printIdentifier: (Identifier: Identifier) => Doc = (
 ) => {
     return idenfier.name;
 };
+
+export function printDottedName(dottedName: DottedName): Doc {
+    return group([
+        printIdentifier(dottedName.prefix),
+        ".",
+        indent([hardline, printIdentifier(dottedName.suffix)]),
+    ]);
+}
 
 export const printPublicPart = (publicPart: string[]): Doc => {
     return join(hardline, publicPart);
@@ -106,20 +121,17 @@ export function printSubpDecl(
     subpDeclOptions: SubpDeclOptions
 ): Doc {
     function printSubpDeclTall(subpDecl: SubpDecl): Doc {
-        console.log("tall");
         return subpDecl.overriding
             ? [subpDecl.overriding, hardline, printSubpSpec(subpDecl.spec)]
             : printSubpSpec(subpDecl.spec);
     }
 
     function printSubpDeclCompact(subpDecl: SubpDecl): Doc {
-        console.log("compact");
         return subpDecl.overriding
             ? fill([subpDecl.overriding, line, printSubpSpec(subpDecl.spec)])
             : printSubpSpec(subpDecl.spec);
     }
 
-    console.debug(subpDeclOptions.layout);
     switch (subpDeclOptions.layout) {
         case "tall":
             return printSubpDeclTall(subpDecl);
@@ -129,7 +141,6 @@ export function printSubpDecl(
 }
 
 export function printSubpSpec(subpSpec: SubpSpec): Doc {
-    console.debug("printSubpSpec");
     let return_part: Doc[] = [];
     if (subpSpec.returns) {
         return_part = [line, "return ", subpSpec.returns];

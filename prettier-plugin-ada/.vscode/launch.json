@@ -9,8 +9,10 @@
             "request": "launch",
             "name": "Launch Program",
             "skipFiles": ["<node_internals>/**"],
-            "program": "./node_modules/.bin/prettier",
-            "args": ["--plugin", ".", "test.ads"]
+            "program": "./node_modules/prettier/bin-prettier.js",
+            "preLaunchTask": "npm: build",
+            "args": ["--plugin", "./dist", "test.ads"],
+            "outputCapture": "std"
         }
     ]
 }

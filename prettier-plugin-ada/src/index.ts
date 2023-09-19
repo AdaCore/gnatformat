@@ -1,8 +1,13 @@
 import { spawnSync } from "child_process";
 
 import { type Doc, type AstPath } from "prettier";
-import { printIdentifier, printSubpDecl, printSubpSpec } from "./printers";
-import { AdaNode, Identifier, SubpDecl, SubpSpec } from "./ast";
+import {
+    printIdentifier,
+    printSubpDecl,
+    printSubpSpec,
+    printDottedName,
+} from "./printers";
+import { AdaNode, DottedName, Identifier, SubpDecl, SubpSpec } from "./ast";
 
 type parseOptions = {
     rule: string;
@@ -48,6 +53,9 @@ function printAda(
     switch (node.kind) {
         case "Identifier": {
             return printIdentifier(node as Identifier);
+        }
+        case "DottedName": {
+            return printDottedName(node as DottedName);
         }
         case "SubpDecl": {
             return printSubpDecl(node as SubpDecl, { layout: "tall" });
