@@ -26,7 +26,7 @@ with GNATCOLL.Traces;
 package Gnatfmt is
 
    Gnatfmt_Trace : GNATCOLL.Traces.Trace_Handle :=
-     GNATCOLL.Traces.Create ("LAL_REFACTOR", GNATCOLL.Traces.Off);
+     GNATCOLL.Traces.Create ("GNATfmt", GNATCOLL.Traces.Off);
    Version : constant String := "debug";
 
 end Gnatfmt;
