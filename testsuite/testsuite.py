@@ -77,7 +77,7 @@ class GenDocDriver(DiffTestDriver):
         if "grammar_rule" in self.test_env:
             argv += ["-r", self.test_env["grammar_rule"]]
 
-        # ... writing reformatted ADa source code
+        # ... writing reformatted Ada source code
         argv += ["-o", self.output_file]
 
         self.shell(valgrind_wrap(self.env, argv))
