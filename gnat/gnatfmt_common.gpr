@@ -4,31 +4,19 @@ abstract project Gnatfmt_Common is
    Target : Target_Type := external ("OS", "unix");
 
    type Build_Mode_Type is ("dev", "prod");
-   Build_Mode : Build_Mode_Type := external ("GNATFMT_BUILD_MODE", external ("BUILD_MODE", "dev"));
+   Build_Mode : Build_Mode_Type :=
+     external ("GNATFMT_BUILD_MODE", external ("BUILD_MODE", "dev"));
+
+   Common_Switches := ("-fPIC", "-gnatX", "-gnatyg", "-gnatwa", "-g");
 
    package Compiler is
       case Build_Mode is
          when "dev" =>
             for Default_Switches ("Ada") use
-              ("-fPIC",
-               "-gnatX",
-               "-gnatyg",
-               "-gnatwae",
-               "-gnatw.u",
-               "-g",
-               "-O0",
-               "-gnata",
-               "-gnatVa",
-               "-gnatyM120");
+              Common_Switches & ("-O0", "-gnata", "-gnatVa");
          when "prod" =>
             for Default_Switches ("Ada") use
-              ("-fPIC",
-               "-gnatX",
-               "-gnatyg",
-               "-g",
-               "-Ofast",
-               "-gnatn2",
-               "-gnatyM120");
+              Common_Switches & ("-Ofast", "-gnatn2");
       end case;
    end Compiler;
 

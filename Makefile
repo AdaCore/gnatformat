@@ -9,6 +9,8 @@ LIB_PROJECT = gnat/gnatfmt.gpr
 
 BIN_PROJECT = gnat/gnatfmt_driver.gpr
 
+TEST_PROGRAMS = gnat/test_programs.gpr
+
 .PHONY: all
 all: lib bin
 
@@ -18,9 +20,9 @@ lib:
 		gprbuild \
 			-v \
 			-k \
-			-XLAL_REFACTOR_LIBRARY_TYPE=$$library_type \
+			-XGNATFMT_LIBRARY_TYPE=$$library_type \
 			-XLIBRARY_TYPE=$$library_type \
-			-XLAL_REFACTOR_BUILD_MODE=$(BUILD_MODE) \
+			-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
 			-P $(LIB_PROJECT) \
 			-p \
 			-j$(PROCESSORS) ; \
@@ -31,9 +33,9 @@ bin:
 	gprbuild \
 		-v \
 		-k \
-		-XLAL_REFACTOR_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLAL_REFACTOR_BUILD_MODE=$(BUILD_MODE) \
+		-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
 		-P$(BIN_PROJECT) \
 		-p \
 		-j$(PROCESSORS);
@@ -51,9 +53,10 @@ install: install-lib install-bin
 install-lib:
 	for library_type in $(ALL_LIBRARY_TYPES) ; do \
 		gprinstall \
-			-XLAL_REFACTOR_LIBRARY_TYPE=$$library_type \
+			-XGNATFMT_LIBRARY_TYPE=$$library_type \
 			-XLIBRARY_TYPE=$$library_type \
-			-XLAL_REFACTOR_BUILD_MODE=$(BUILD_MODE) \
+			-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
+			--install-name=gnatfmt \
 			--prefix="$(PREFIX)" \
 			--sources-subdir=include/lal-refactor \
 			--build-name=$$library_type \
@@ -64,10 +67,35 @@ install-lib:
 .PHONY: install-bin
 install-bin:
 	gprinstall \
-		-XLAL_REFACTOR_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
+		--install-name=gnatfmt_driver \
 		--prefix="$(PREFIX)" \
 		-P $(BIN_PROJECT) \
+		-p \
+		-f ;
+
+.PHONY: test-programs
+test-programs:
+	gprbuild \
+		-v \
+		-k \
+		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
+		-P$(TEST_PROGRAMS) \
+		-p \
+		-j$(PROCESSORS);
+
+.PHONY: install-test-programs
+install-test-programs:
+	gprinstall \
+		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XBUILD_MODE=$(BUILD_MODE) \
+		--install-name=test_programs \
+		--prefix="$(PREFIX)" \
+		-P $(TEST_PROGRAMS) \
 		-p \
 		-f ;
