@@ -27,6 +27,7 @@ package Gnatfmt is
 
    Gnatfmt_Trace : GNATCOLL.Traces.Trace_Handle :=
      GNATCOLL.Traces.Create ("GNATfmt", GNATCOLL.Traces.Off);
-   Version : constant String := "debug";
+   Version    : constant String := "debug";
+   Build_Date : constant String := "debug";
 
 end Gnatfmt;
