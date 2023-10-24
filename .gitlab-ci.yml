@@ -1,0 +1,26 @@
+workflow:
+  rules:
+    # Run the generic CI on merge requests only
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+stages:
+  - single
+
+build_and_test:
+  stage: single
+  interruptible: true
+  services:
+    - image:sandbox
+    - cpu:8
+    - mem:16
+  script:
+    - require_issue
+    - generic_anod_ci
+    - . /tmp/ci_env.sh
+    # As long as the imported testsuite is not clean, we should not exercise it
+    # in the CI in order to avoid false positives.
+    - anod test gnatfmt
+    - testsuite_reports
+  artifacts:
+    reports:
+      junit: xunit-*.xml
