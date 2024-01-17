@@ -19,7 +19,7 @@ build_and_test:
     - . /tmp/ci_env.sh
     # As long as the imported testsuite is not clean, we should not exercise it
     # in the CI in order to avoid false positives.
-    - anod test gnatfmt
+    - anod test gnatformat
     - testsuite_reports
   artifacts:
     reports:

@@ -1,11 +1,12 @@
-abstract project Gnatfmt_Common is
+
+abstract project Gnatformat_Common is
 
    type Target_Type is ("Windows_NT", "unix", "osx");
    Target : Target_Type := external ("OS", "unix");
 
    type Build_Mode_Type is ("dev", "prod");
    Build_Mode : Build_Mode_Type :=
-     external ("GNATFMT_BUILD_MODE", external ("BUILD_MODE", "dev"));
+     external ("GNATFORMAT_BUILD_MODE", external ("BUILD_MODE", "dev"));
 
    Common_Switches := ("-fPIC", "-gnatX", "-gnatyg", "-gnatwa", "-g");
 
@@ -20,4 +21,4 @@ abstract project Gnatfmt_Common is
       end case;
    end Compiler;
 
-end Gnatfmt_Common;
+end Gnatformat_Common;

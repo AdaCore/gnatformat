@@ -1,8 +1,8 @@
---  Programs used to test gnatfmt
+--  Programs used to test gnatformat
 
 with "libadalang";
-with "gnatfmt";
-with "gnatfmt_common";
+with "gnatformat";
+with "gnatformat_common";
 
 project Test_Programs is
    for Source_Dirs use ("../src/gendoc");
@@ -10,7 +10,7 @@ project Test_Programs is
    for Exec_dir use "../bin";
    for Main use ("gendoc.adb");
 
-   package Compiler renames Gnatfmt_Common.Compiler;
+   package Compiler renames Gnatformat_Common.Compiler;
 
    package Binder is
       for Default_Switches ("Ada") use ("-Es");

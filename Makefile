@@ -5,9 +5,9 @@ PROCESSORS ?= 0
 ALL_LIBRARY_TYPES = static static-pic relocatable
 ALL_BUILD_MODES = dev prod
 
-LIB_PROJECT = gnat/gnatfmt.gpr
+LIB_PROJECT = gnat/gnatformat.gpr
 
-BIN_PROJECT = gnat/gnatfmt_driver.gpr
+BIN_PROJECT = gnat/gnatformat_driver.gpr
 
 TEST_PROGRAMS = gnat/test_programs.gpr
 
@@ -20,9 +20,9 @@ lib:
 		gprbuild \
 			-v \
 			-k \
-			-XGNATFMT_LIBRARY_TYPE=$$library_type \
+			-XGNATFORMAT_LIBRARY_TYPE=$$library_type \
 			-XLIBRARY_TYPE=$$library_type \
-			-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 			-P $(LIB_PROJECT) \
 			-p \
 			-j$(PROCESSORS) ; \
@@ -33,9 +33,9 @@ bin:
 	gprbuild \
 		-v \
 		-k \
-		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 		-P$(BIN_PROJECT) \
 		-p \
 		-j$(PROCESSORS);
@@ -53,10 +53,10 @@ install: install-lib install-bin
 install-lib:
 	for library_type in $(ALL_LIBRARY_TYPES) ; do \
 		gprinstall \
-			-XGNATFMT_LIBRARY_TYPE=$$library_type \
+			-XGNATFORMAT_LIBRARY_TYPE=$$library_type \
 			-XLIBRARY_TYPE=$$library_type \
-			-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
-			--install-name=gnatfmt \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+			--install-name=gnatformat \
 			--prefix="$(PREFIX)" \
 			--sources-subdir=include/lal-refactor \
 			--build-name=$$library_type \
@@ -67,10 +67,10 @@ install-lib:
 .PHONY: install-bin
 install-bin:
 	gprinstall \
-		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
-		--install-name=gnatfmt_driver \
+		--install-name=gnatformat_driver \
 		--prefix="$(PREFIX)" \
 		-P $(BIN_PROJECT) \
 		-p \
@@ -81,9 +81,9 @@ test-programs:
 	gprbuild \
 		-v \
 		-k \
-		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFMT_BUILD_MODE=$(BUILD_MODE) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 		-P$(TEST_PROGRAMS) \
 		-p \
 		-j$(PROCESSORS);
@@ -91,7 +91,7 @@ test-programs:
 .PHONY: install-test-programs
 install-test-programs:
 	gprinstall \
-		-XGNATFMT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
 		--install-name=test_programs \
