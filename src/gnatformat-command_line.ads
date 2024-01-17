@@ -26,9 +26,9 @@ with Ada.Strings.Unbounded;
 with GNATCOLL.Opt_Parse; use GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS;
 
---  Gnatfmt command line utilities
+--  Gnatformat command line utilities
 
-package Gnatfmt.Command_Line is
+package Gnatformat.Command_Line is
 
    Parser : Argument_Parser :=
      Create_Argument_Parser (Help => "Gnatfmt tool");
@@ -73,4 +73,4 @@ package Gnatfmt.Command_Line is
      (File_Name : String) return GNATCOLL.VFS.Virtual_File
    is (GNATCOLL.VFS.Create (GNATCOLL.VFS."+" (File_Name)));
 
-end Gnatfmt.Command_Line;
+end Gnatformat.Command_Line;

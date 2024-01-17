@@ -1,0 +1,21 @@
+with "libadalang";
+with "gnatformat_common";
+with "prettier_ada";
+
+library project Gnatformat is
+   type Library_Type_Type is ("static", "static-pic", "relocatable");
+   Library_Type : Library_Type_Type :=
+     external ("GNATFORMAT_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+
+   Build_Slug := Library_Type & "." & Gnatformat_Common.Build_Mode;
+
+   for Library_Name use "gnatformat";
+   for Library_Dir use "../lib/" & Build_Slug;
+   for Library_Kind use Library_Type;
+   for Source_Dirs use ("../src", "../src/formatters/ada");
+   for Object_Dir use "../obj/" & Build_Slug;
+
+   for Excluded_Source_Files use ("gnatformat-ada_driver.adb");
+
+   package Compiler renames Gnatformat_Common.Compiler;
+end Gnatformat;

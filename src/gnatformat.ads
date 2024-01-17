@@ -23,11 +23,11 @@
 
 with GNATCOLL.Traces;
 
-package Gnatfmt is
+package Gnatformat is
 
-   Gnatfmt_Trace : GNATCOLL.Traces.Trace_Handle :=
-     GNATCOLL.Traces.Create ("GNATfmt", GNATCOLL.Traces.Off);
+   Gnatformat_Trace : GNATCOLL.Traces.Trace_Handle :=
+     GNATCOLL.Traces.Create ("GNATformat", GNATCOLL.Traces.Off);
    Version    : constant String := "debug";
    Build_Date : constant String := "debug";
 
-end Gnatfmt;
+end Gnatformat;
