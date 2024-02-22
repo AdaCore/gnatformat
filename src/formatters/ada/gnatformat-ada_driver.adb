@@ -13,8 +13,9 @@ with Gnatformat.Analysis_Unit_Vectors;
 with Prettier_Ada.Documents;
 with Prettier_Ada.Documents.Json;
 
+with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
-with Langkit_Support.Errors; use Langkit_Support.Errors;
+with Langkit_Support.Errors;      use Langkit_Support.Errors;
 
 with GNATCOLL.Opt_Parse;
 
@@ -48,6 +49,8 @@ procedure Gnatformat.Ada_Driver is
         (Config : out Unparsing_Configuration)
       is null;
 
+      Diagnostics : Diagnostics_Vectors.Vector;
+
    begin
       --  Loading config file
       if Length (Config_Filename.Get) = 0 then
@@ -59,17 +62,14 @@ procedure Gnatformat.Ada_Driver is
           "Please specify a config file !");
 
       else
-         begin
-            Config :=
-              Load_Unparsing_Config
-                (Gnatformat.Utils.Language,
-                 To_String (Gnatformat.Command_Line.Config_Filename.Get));
-         exception
-            when Exc : Invalid_Input =>
-               Put_Line ("Error when loading the unparsing configuration:");
-               Put_Line (Exception_Message (Exc));
-               return;
-         end;
+         Config :=
+           Load_Unparsing_Config
+             (Gnatformat.Utils.Language,
+              To_String (Gnatformat.Command_Line.Config_Filename.Get),
+              Diagnostics);
+         if Config = No_Unparsing_Configuration then
+            Print (Diagnostics);
+         end if;
       end if;
    end Load_Unparsing_Config;
 
