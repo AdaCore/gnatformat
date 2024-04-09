@@ -3,112 +3,104 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
-with Ada.Strings.Unbounded;          use Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with GNATCOLL.Opt_Parse;             use GNATCOLL.Opt_Parse;
+with GNATCOLL.Opt_Parse; use GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS;
-
-with Prettier_Ada.Documents;
 
 --  Gnatformat command line utilities
 
 package Gnatformat.Command_Line is
-   Parser : Argument_Parser :=
-     Create_Argument_Parser (Help => "GNATformat tool");
 
-   package Config_Filename is new Parse_Positional_Arg
-     (Parser   => Parser,
-      Name     => "config-file",
-      Help     => "Name of the JSON pretty-printer configuration file",
-      Arg_Type => Unbounded_String);
+   Parser : Argument_Parser :=
+     Create_Argument_Parser
+       (Help => "GNATformat " & Gnatformat.Version & " - Format Ada code");
+
+   function To_Virtual_File
+     (File_Name : String) return GNATCOLL.VFS.Virtual_File
+   is (GNATCOLL.VFS.Create (GNATCOLL.VFS."+" (File_Name)));
 
    package Project is new Parse_Option
      (Parser      => Parser,
       Short       => "-P",
       Long        => "--project",
-      Help        => "Project",
-      Arg_Type    => Unbounded_String,
-      Convert     => To_Unbounded_String,
-      Default_Val => Null_Unbounded_String);
+      Help        =>
+        "Specify the project file to load; the .gpr extension can be omitted "
+        & " if the file is in the current directory",
+      Arg_Type    => GNATCOLL.VFS.Virtual_File,
+      Convert     => To_Virtual_File,
+      Default_Val => GNATCOLL.VFS.No_File);
 
-   package Sources is new Parse_Option_List
-     (Parser      => Parser,
-      Short       => "-S",
-      Long        => "--sources",
-      Help        => "Source files to format",
-      Arg_Type    => Unbounded_String,
-      Convert     => To_Unbounded_String);
+   package Scenario is new Parse_Option_List
+     (Parser   => Parser,
+      Long     => "-X",
+      Name     => "KEY=VALUE",
+      Help     =>
+        "Specify an external reference to a scenario variable",
+      Arg_Type => Unbounded_String,
+      Convert  => To_Unbounded_String);
 
-   package Output_Folder is new Parse_Option
-        (Parser      => Parser,
-         Short       => "-o",
-         Long        => "--output",
-         Arg_Type    => Unbounded_String,
-         Help        => "Folder to write formatted files",
-         Default_Val => Null_Unbounded_String);
+   package No_Subprojects is new Parse_Flag
+      (Parser => Parser,
+       Long   => "--no-subprojects",
+       Help   => "Only process the root project, not the subprojects");
 
-   package Width is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-w",
-      Long        => "--width",
-      Arg_Type    => Natural,
-      Help        => "Maximum line width",
-      Default_Val => 79);
-
-   package Indentation_Kind is new Parse_Enum_Option
-     (Parser      => Parser,
-      Short       => "-k",
-      Long        => "--indentation-kind",
-      Arg_Type    => Prettier_Ada.Documents.Indentation_Kind,
-      Help        => "Indentation kind: spaces or tabs",
-      Default_Val => Prettier_Ada.Documents.Spaces);
-
-   package Indentation_Width is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-i",
-      Long        => "--indentation-width",
-      Arg_Type    => Natural,
-      Help        => "Indentation width",
-      Default_Val => 3);
-
-   package Continuation_Indentation_Width is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-i",
-      Long        => "--continuation-indentation-width",
-      Arg_Type    => Natural,
-      Help        => "Line continuation indentation width",
-      Default_Val => 2);
-
-   package End_Of_Line is new Parse_Enum_Option
-     (Parser      => Parser,
-      Short       => "-e",
-      Long        => "--end-of-line",
-      Arg_Type    => Prettier_Ada.Documents.End_Of_Line_Kind,
-      Help        => "End of line: LF, CR, CRLF",
-      Default_Val => Prettier_Ada.Documents.LF);
+   package Process_All_files is new Parse_Flag
+     (Parser => Parser,
+      Short  => "-U",
+      Name   => "Process All Files",
+      Help   =>
+        "Process all files, not only those that are in the closure of mains");
 
    package Verbose is new Parse_Flag
-     (Parser   => Parser,
-      Short    => "-v",
-      Long     => "--verbose",
-      Help     => "Print traces");
+     (Parser => Parser,
+      Long   => "--verbose",
+      Help   => "Print debug logs");
+
+   package Version is new Parse_Flag
+     (Parser => Parser,
+      Short  => "-v",
+      Long   => "--version",
+      Help   => "Show the version");
+
+   package Check is new Parse_Flag
+     (Parser => Parser,
+      Long   => "--check",
+      Help   =>
+        "Exit with error code 1 if the input is not formatted correctly; "
+        & "print the name of files that would be formatted");
 
    package Pipe is new Parse_Flag
-     (Parser   => Parser,
-      Short    => "-p",
-      Long     => "--pipe",
-      Help     =>
-         "Print the result to stdout instead of editing the files on disk");
+     (Parser => Parser,
+      Short  => "-p",
+      Long   => "--pipe",
+      Help   =>
+        "Print the result to stdout instead of editing the files on disk");
 
-   package Dump_Document is new Parse_Flag
+   package Config is new Parse_Option_List
+     (Parser => Parser,
+      Long   => "--config",
+      Help   =>
+        "Formatting settings; "
+        & "these take priority over settings defined in the project file",
+      Arg_Type => Unbounded_String,
+      Convert  => To_Unbounded_String);
+
+   package Rules is new Parse_Option
      (Parser      => Parser,
-      Short       => "-d",
-      Long        => "--dump-document",
-      Help        =>
-         "Dump the Prettier document in the corresponding "".json"" file");
+      Long        => "--rules",
+      Name        => "RULES_FILE",
+      Help        => "Formatting rules file",
+      Arg_Type    => GNATCOLL.VFS.Virtual_File,
+      Convert     => To_Virtual_File,
+      Default_Val => GNATCOLL.VFS.No_File);
 
-   function To_Virtual_File
-     (File_Name : String) return GNATCOLL.VFS.Virtual_File
-   is (GNATCOLL.VFS.Create (GNATCOLL.VFS."+" (File_Name)));
+   package Sources is new Parse_Positional_Arg_List
+     (Parser      => Parser,
+      Name        => "SOURCE",
+      Allow_Empty => True,
+      Arg_Type    => Unbounded_String,
+      Convert     => To_Unbounded_String,
+      Help        => "Source files to format");
 
 end Gnatformat.Command_Line;
