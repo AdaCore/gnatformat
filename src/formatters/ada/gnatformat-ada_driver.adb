@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2024, AdaCore
+--  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+--
+
 with Ada.Directories;
 with Ada.Strings.Unbounded;    use Ada.Strings.Unbounded;
 
