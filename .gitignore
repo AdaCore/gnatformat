@@ -17,3 +17,6 @@ testsuite/out
 
 # Node modules
 prettier-plugin-ada/node_modules/
+
+# VSCode settings, possible modified by ancr
+.vscode/settings.json

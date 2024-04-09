@@ -1,3 +1,10 @@
 {
-    "ada.projectFile": "gnat/gnatfmt_driver.gpr"
+    "ada.projectFile": "gnat/gnatformat_driver.gpr",
+    "terminal.integrated.env.linux": {
+        "C_INCLUDE_PATH": "${workspaceFolder}/../../wave/x86_64-linux/libadalang-internal/install/include/libadalang",
+        "GPR_PROJECT_PATH": "${workspaceFolder}/gnat:${workspaceFolder}/../../wave/x86_64-linux/libadalang-internal/install/lib/gnat:${workspaceFolder}/../../wave/x86_64-linux/libadalang-internal/install/share/gpr:${workspaceFolder}/../../wave/x86_64-linux/langkit_support/install/share/gpr:${workspaceFolder}/../../wave/x86_64-linux/libgpr2-bare/install/share/gpr:${env:GPR_PROJECT_PATH}",
+        "LD_LIBRARY_PATH": "${workspaceFolder}/lib/relocatable.dev:${workspaceFolder}/../../wave/x86_64-linux/nodejs_16.19.1/install/lib:${workspaceFolder}/../../wave/x86_64-linux/libadalang-internal/install/lib:${workspaceFolder}/../../wave/x86_64-linux/langkit_support/install/lib64:${workspaceFolder}/../../wave/x86_64-linux/langkit_support/install/lib:${workspaceFolder}/../../wave/x86_64-linux/libgpr2-bare/install/lib:${workspaceFolder}/../../wave/x86_64-linux/gnat/install/lib/gcc/x86_64-pc-linux-gnu/13.2.1/rts-native/adalib:${workspaceFolder}/../../wave/x86_64-linux/gnat/install/lib64:${workspaceFolder}/../../wave/x86_64-linux/gnat/install/lib:${workspaceFolder}/../../wave/x86_64-linux/gps/install/lib:${env:LD_LIBRARY_PATH}",
+        "LIBRARY_PATH": "${workspaceFolder}/../../wave/x86_64-linux/libadalang-internal/install/lib:${workspaceFolder}/../../wave/x86_64-linux/langkit_support/install/lib:${workspaceFolder}/../../wave/x86_64-linux/libgpr2-bare/install/lib64:${workspaceFolder}/../../wave/x86_64-linux/libgpr2-bare/install/lib:${env:LIBRARY_PATH}",
+        "PATH": "${workspaceFolder}/bin:${workspaceFolder}/../../wave/x86_64-linux/nodejs_16.19.1/install/bin:${workspaceFolder}/../../wave/x86_64-linux/gnat/install/bin:${workspaceFolder}/../../wave/x86_64-linux/gps/install/bin:${workspaceFolder}/../../venv/bin:${env:PATH}"
+    }
 }
