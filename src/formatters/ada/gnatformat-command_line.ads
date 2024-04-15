@@ -45,7 +45,7 @@ package Gnatformat.Command_Line is
        Long   => "--no-subprojects",
        Help   => "Only process the root project, not the subprojects");
 
-   package Process_All_files is new Parse_Flag
+   package Process_All_Files is new Parse_Flag
      (Parser => Parser,
       Short  => "-U",
       Name   => "Process All Files",
