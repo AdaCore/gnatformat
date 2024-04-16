@@ -3,8 +3,11 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
-with Ada.Text_IO;
+with Ada.Directories;
 with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded.Text_IO;
+with Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO;
 
 with GNAT.OS_Lib;
 
@@ -12,8 +15,12 @@ with GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS;
 
 with Gnatformat.Command_Line;
+with Gnatformat.Command_Line.Configuration;
+with Gnatformat.Configuration;
+with Gnatformat.Formatting;
 
 with GPR2;
+with GPR2.Message;
 with GPR2.Options;
 with GPR2.Project.Tree;
 with GPR2.Project.View;
@@ -24,13 +31,10 @@ with GPR2.View_Ids;
 with GPR2.View_Ids.Set;
 
 with Langkit_Support.Diagnostics;
-with Langkit_Support.Generic_API.Analysis;
 with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
 with Libadalang.Generic_API;
-
-with Prettier_Ada.Documents;
 
 procedure Gnatformat.Ada_Driver
 is
@@ -43,20 +47,30 @@ is
       Root_Project_Only : Boolean := False;
       All_Files         : Boolean := False)
       return GPR2.Project.Source.Set.Object;
-   --  TODO
+   --  Returns the sources for the Project_Tree
+   --  If Root_Project_Only is True, then only the Project_Tree.Root_Project
+   --  sources are returned. Otherwise, sources from all views are returned.
+   --  If All_Files is True, then all sources of each view are retrieved.
+   --  Otherwise, only sources on mains (or library interfaces) closure are
+   --  returned.
 
-   function Load_Formatting_Rules
+   function Load_Unparsing_Configuration
      (Diagnostics :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support_Unparsing.Unparsing_Configuration;
    --  Loads the formatting rules
 
-   procedure Load_Project (Project_Tree : in out GPR2.Project.Tree.Object);
-   --  TODO
+   procedure Load_Project
+     (Project_Tree : in out GPR2.Project.Tree.Object;
+      Project_File : GNATCOLL.VFS.Virtual_File);
+   --  Elabores the GPR2 registry and loads the project given by Project_File
 
-   function Parse_Formatting_Config
-      return Prettier_Ada.Documents.Format_Options_Type;
-   --  Loads the formatting rules
+   function Resolve_Project_File return GNATCOLL.VFS.Virtual_File;
+   --  Finds the correct project file.
+   --  First tries to retrieve it from the -P command line options.
+   --  If not provided, tries to find an implicit project in the current
+   --  working directory. If more than one project found, then none are
+   --  returned.
 
    -----------------
    -- Get_Sources --
@@ -91,8 +105,12 @@ is
 
             for Main of Project_View.Mains loop
                declare
-                  Main_Source : constant GPR2.Project.Source.Object :=
-                    Project_View.Source (Main.Source);
+                  Main_Source              :
+                    constant GPR2.Project.Source.Object          :=
+                      Project_View.Source (Main.Source);
+                  Main_Source_Dependencies :
+                    constant GPR2.Project.Source.Part_Set.Object :=
+                      Main_Source.Dependencies;
 
                begin
                   Gnatformat_Trace.Trace
@@ -102,8 +120,7 @@ is
 
                   Sources.Include (Main_Source);
 
-                  for Source_Dependency
-                    of Main_Source.Dependencies
+                  for Source_Dependency of Main_Source_Dependencies
                     when Valid_Views.Contains
                            (Source_Dependency.Source.View.Id)
                   loop
@@ -238,25 +255,27 @@ is
    --  Load_Unparsing_Config  --
    -----------------------------
 
-   function Load_Formatting_Rules
+   function Load_Unparsing_Configuration
      (Diagnostics :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support_Unparsing.Unparsing_Configuration
    is
       use type GNATCOLL.VFS.Virtual_File;
 
-      Rules_File : constant GNATCOLL.VFS.Virtual_File :=
-        Gnatformat.Command_Line.Rules.Get;
+      Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
+        Gnatformat.Command_Line.Unparsing_Configuration.Get;
 
    begin
-      if Rules_File = GNATCOLL.VFS.No_File then
-         raise Program_Error
-           with "Formatting rules (unparsing configuration) must be provided";
+      if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Unparsing configuration file must be provided");
+         GNAT.OS_Lib.OS_Exit (1);
       end if;
 
       declare
          Rules_File_Name : constant String :=
-           GNATCOLL.VFS."+" (Rules_File.Full_Name);
+           GNATCOLL.VFS."+" (Unparsing_Configuration_File.Full_Name);
 
       begin
          Gnatformat.Gnatformat_Trace.Trace
@@ -268,56 +287,24 @@ is
               Rules_File_Name,
               Diagnostics);
       end;
-   end Load_Formatting_Rules;
+   end Load_Unparsing_Configuration;
 
    ------------------
    -- Load_Project --
    ------------------
 
-   procedure Load_Project (Project_Tree : in out GPR2.Project.Tree.Object)
+   procedure Load_Project
+     (Project_Tree : in out GPR2.Project.Tree.Object;
+      Project_File : GNATCOLL.VFS.Virtual_File)
    is
+      use type GPR2.Message.Level_Value;
       use type GNATCOLL.VFS.Virtual_File;
-
-      function Resolve_Project_File return GNATCOLL.VFS.Virtual_File;
-      --  TODO
-
-      --------------------------
-      -- Resolve_Project_File --
-      --------------------------
-
-      function Resolve_Project_File return GNATCOLL.VFS.Virtual_File is
-         function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File;
-         --  Searches in the current directory for an unique .gpr file.
-         --  If multiple exist, returns No_File.
-
-         ---------------------------
-         -- Find_Implicit_Project --
-         ---------------------------
-
-         function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File
-         is
-         begin
-            raise Program_Error with "TODO";
-            return GNATCOLL.VFS.No_File;
-         end Find_Implicit_Project_File;
-
-      begin
-         return
-           (declare
-              Explicit_Project : constant GNATCOLL.VFS.Virtual_File :=
-                Gnatformat.Command_Line.Project.Get;
-            begin
-              (if Explicit_Project = GNATCOLL.VFS.No_File
-               then Find_Implicit_Project_File
-               else Explicit_Project));
-      end Resolve_Project_File;
-
-      Project_File : constant GNATCOLL.VFS.Virtual_File :=
-        Resolve_Project_File;
 
       Options : GPR2.Options.Object;
 
    begin
+      Gnatformat.Configuration.Elaborate_GPR2;
+
       if Project_File /= GNATCOLL.VFS.No_File then
          Project_File.Normalize_Path;
 
@@ -340,6 +327,12 @@ is
                "Failed to load project """
                & Project_File.Display_Full_Name (Normalize => True)
                & """");
+            for Log_Message of Project_Tree.Log_Messages.all
+               when Log_Message.Level = GPR2.Message.Error
+            loop
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error, Log_Message.Message);
+            end loop;
             GNAT.OS_Lib.OS_Exit (1);
 
          else
@@ -351,17 +344,105 @@ is
       end if;
    end Load_Project;
 
-   -----------------------------
-   -- Parse_Formatting_Config --
-   -----------------------------
+   --------------------------
+   -- Resolve_Project_File --
+   --------------------------
 
-   function Parse_Formatting_Config
-      return Prettier_Ada.Documents.Format_Options_Type
-   is
+   function Resolve_Project_File return GNATCOLL.VFS.Virtual_File is
+      use type GNATCOLL.VFS.Virtual_File;
+
+      function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File;
+      --  Searches in the current directory for an unique .gpr file.
+      --  If multiple exist, returns No_File.
+
+      ---------------------------
+      -- Find_Implicit_Project --
+      ---------------------------
+
+      function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File
+      is
+         Search        : Ada.Directories.Search_Type;
+         Current_Entry : Ada.Directories.Directory_Entry_Type;
+
+         Result : GNATCOLL.VFS.Virtual_File := GNATCOLL.VFS.No_File;
+
+      begin
+         Gnatformat_Trace.Trace
+           ("Trying to find implicit projects in """
+            & Ada.Directories.Current_Directory
+            & """");
+
+         Ada.Directories.Start_Search
+           (Search    => Search,
+            Directory => Ada.Directories.Current_Directory,
+            Pattern   => "",
+            Filter    =>
+              [Ada.Directories.Ordinary_File => True, others => False]);
+
+         while Ada.Directories.More_Entries (Search) loop
+            Ada.Directories.Get_Next_Entry (Search, Current_Entry);
+
+            if Ada.Directories.Extension (Current_Entry.Simple_Name) = "gpr"
+            then
+               if Result = GNATCOLL.VFS.No_File then
+                  Gnatformat_Trace.Trace
+                    ("Found implicit project """
+                     & Current_Entry.Full_Name
+                     & """");
+
+                  Result :=
+                    GNATCOLL.VFS.Create
+                      (GNATCOLL.VFS."+" (Current_Entry.Full_Name));
+
+               else
+                  Gnatformat_Trace.Trace
+                    ("Found another implicit project """
+                     & Current_Entry.Full_Name
+                     & """ - only one is allowed");
+
+                  return GNATCOLL.VFS.No_File;
+               end if;
+            end if;
+         end loop;
+
+         Ada.Directories.End_Search (Search);
+
+         if Result = GNATCOLL.VFS.No_File then
+            Gnatformat_Trace.Trace
+              ("No implicit project was found in """
+               & Ada.Directories.Current_Directory
+               & """");
+         end if;
+
+         return Result;
+      end Find_Implicit_Project_File;
+
+      Explicit_Project : constant GNATCOLL.VFS.Virtual_File :=
+        Gnatformat.Command_Line.Project.Get;
+
    begin
-      --  TODO
-      return Prettier_Ada.Documents.Default_Format_Options;
-   end Parse_Formatting_Config;
+      Gnatformat_Trace.Trace ("Resolving project file");
+
+      if Explicit_Project = GNATCOLL.VFS.No_File then
+         Gnatformat_Trace.Trace ("No explicit project was provided");
+
+         return Find_Implicit_Project_File;
+
+      else
+         if GNATCOLL.VFS."+" (Explicit_Project.File_Extension) /= ".gpr" then
+            Gnatformat_Trace.Trace
+              ("Explicitly provided project does not have a .gpr extension "
+               & "- implicitly adding it");
+
+            return
+              GNATCOLL.VFS.Create_From_UTF8
+                (Explicit_Project.Display_Full_Name & ".gpr");
+
+         else
+            return Explicit_Project;
+         end if;
+      end if;
+   end Resolve_Project_File;
 
 begin
    GNATCOLL.Traces.Parse_Config_File;
@@ -388,22 +469,41 @@ begin
       use type Gnatformat.Command_Line.Sources.Result_Array;
       use type Langkit_Support_Unparsing.Unparsing_Configuration;
 
-      Formatting_Config :
-        constant Prettier_Ada.Documents.Format_Options_Type :=
-          Parse_Formatting_Config;
+      Project_File : constant GNATCOLL.VFS.Virtual_File :=
+        Resolve_Project_File;
+      Project_Tree : GPR2.Project.Tree.Object;
 
-      Diagnostics      :
+      CLI_Formatting_Config :
+        constant Gnatformat.Configuration.Format_Options_Type :=
+          Gnatformat.Command_Line.Configuration.Get;
+
+      Diagnostics             :
         Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-      Formatting_Rules :
+      Unparsing_Configuration :
         constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-          Load_Formatting_Rules (Diagnostics);
+          Load_Unparsing_Configuration (Diagnostics);
 
    begin
-      if Formatting_Rules
+      if Project_File = GNATCOLL.VFS.No_File
+        and Gnatformat.Command_Line.Sources.Get
+            = Gnatformat.Command_Line.Sources.No_Results
+      then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Either a project or sources must be provided.");
+         Ada.Text_IO.New_Line;
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            GNATCOLL.Opt_Parse.Help (Gnatformat.Command_Line.Parser));
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+
+      if Unparsing_Configuration
          = Langkit_Support_Unparsing.No_Unparsing_Configuration
       then
          Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error, "Failed to load formatting rules");
+           (Ada.Text_IO.Standard_Error,
+            "Failed to load unparsing configuration");
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
@@ -417,53 +517,85 @@ begin
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
-      if Gnatformat.Command_Line.Project.Get = GNATCOLL.VFS.No_File
-        and Gnatformat.Command_Line.Sources.Get
-            = Gnatformat.Command_Line.Sources.No_Results
-      then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Either a project or sources must be provided.");
-         Ada.Text_IO.New_Line;
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            GNATCOLL.Opt_Parse.Help (Gnatformat.Command_Line.Parser));
-         GNAT.OS_Lib.OS_Exit (1);
+      Load_Project (Project_Tree, Project_File);
 
-      else
-         declare
-            Project_Tree : GPR2.Project.Tree.Object;
+      declare
+         LAL_Context :
+           constant Libadalang.Analysis.Analysis_Context :=
+             Libadalang.Analysis.Create_Context_From_Project
+               (Project_Tree);
+
+         Sources : constant GPR2.Project.Source.Set.Object :=
+           Get_Sources
+             (Project_Tree,
+              Gnatformat.Command_Line.No_Subprojects.Get,
+              Gnatformat.Command_Line.Process_All_Files.Get);
+
+         Project_Format_Options_Cache :
+           Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
+             Gnatformat
+               .Configuration
+               .Create_Project_Format_Options_Cache;
+
+         function Format_Source
+           (Source : GPR2.Project.Source.Object)
+            return Ada.Strings.Unbounded.Unbounded_String;
+         --  Resolves the right format options for Source and formats it
+
+         -------------------
+         -- Format_Source --
+         -------------------
+
+         function Format_Source
+           (Source : GPR2.Project.Source.Object)
+            return Ada.Strings.Unbounded.Unbounded_String
+         is
+            Unit : constant Libadalang.Analysis.Analysis_Unit :=
+              LAL_Context.Get_From_File (Source.Path_Name.Value);
+            Project_Formatting_Config :
+              Gnatformat.Configuration.Format_Options_Type :=
+                Project_Format_Options_Cache.Get (Source.View);
 
          begin
-            Load_Project (Project_Tree);
+            --  TODO: Cache the override
+            Project_Formatting_Config.Overwrite
+              (CLI_Formatting_Config);
 
-            declare
-               LAL_Context :
-                 constant Libadalang.Analysis.Analysis_Context :=
-                   Libadalang.Analysis.Create_Context_From_Project
-                     (Project_Tree);
+            return
+              Gnatformat.Formatting.Format
+                (Unit           => Unit,
+                 Format_Options => Project_Formatting_Config,
+                 Configuration  => Unparsing_Configuration);
+         end Format_Source;
 
-               Sources : constant GPR2.Project.Source.Set.Object :=
-                 Get_Sources
-                   (Project_Tree,
-                    Gnatformat.Command_Line.No_Subprojects.Get,
-                    Gnatformat.Command_Line.Process_All_Files.Get);
+      begin
+         if Gnatformat.Command_Line.Pipe.Get then
+            for Source of Sources loop
+               Ada.Text_IO.Put_Line (Source.Path_Name.Value);
+               Ada.Strings.Unbounded.Text_IO.Put_Line (Format_Source (Source));
+               Ada.Text_IO.New_Line;
+            end loop;
 
-            begin
-               for Source of Sources loop
-                  declare
-                     Unit_Ignore :
-                       constant Langkit_Support.Generic_API.Analysis.Lk_Unit :=
-                         Libadalang.Generic_API.To_Generic_Unit
-                           (LAL_Context.Get_From_File
-                              (Source.Path_Name.Value));
-                  begin
-                     --  TODO: Handle unit
-                     null;
-                  end;
-               end loop;
-            end;
-         end;
-      end if;
+         else
+            for Source of Sources loop
+               declare
+                  Formatted_Source :
+                    constant Ada.Strings.Unbounded.Unbounded_String :=
+                      Format_Source (Source);
+                  Source_File      : Ada.Text_IO.File_Type;
+
+               begin
+                  Ada.Text_IO.Create
+                    (File => Source_File,
+                     Mode => Ada.Text_IO.Out_File,
+                     Name => Source.Path_Name.Value);
+
+                  Ada.Text_IO.Unbounded_IO.Put (Source_File, Formatted_Source);
+
+                  Ada.Text_IO.Close (Source_File);
+               end;
+            end loop;
+         end if;
+      end;
    end;
 end Gnatformat.Ada_Driver;

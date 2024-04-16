@@ -1,5 +1,10 @@
 #! /usr/bin/env python
 
+#
+# Copyright (C) 2024, AdaCore
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+#
+
 from __future__ import annotations
 
 import sys
