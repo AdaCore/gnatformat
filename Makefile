@@ -78,24 +78,10 @@ install-bin:
 
 .PHONY: test-programs
 test-programs:
-	gprbuild \
-		-v \
-		-k \
-		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		-P$(TEST_PROGRAMS) \
-		-p \
-		-j$(PROCESSORS);
 
 .PHONY: install-test-programs
 install-test-programs:
-	gprinstall \
-		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XBUILD_MODE=$(BUILD_MODE) \
-		--install-name=test_programs \
-		--prefix="$(PREFIX)" \
-		-P $(TEST_PROGRAMS) \
-		-p \
-		-f ;
+
+.PHONY: bin
+test:
+	python testsuite/testsuite.py
