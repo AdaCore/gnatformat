@@ -80,6 +80,12 @@ package Gnatformat.Command_Line is
       Help   =>
         "Print the result to stdout instead of editing the files on disk");
 
+   package Keep_Going is new Parse_Flag
+     (Parser => Parser,
+      Short  => "-k",
+      Long   => "--keep-going",
+      Help   => "Keep going after errors formatting a source file");
+
    package Unparsing_Configuration is new Parse_Option
      (Parser      => Parser,
       Long        => "--unparsing-configuration",

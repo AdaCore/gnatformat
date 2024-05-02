@@ -4,6 +4,7 @@
 --
 
 with Ada.Directories;
+with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO;
 with Ada.Text_IO;
@@ -20,13 +21,14 @@ with Gnatformat.Configuration;
 with Gnatformat.Formatting;
 
 with GPR2;
+
 with GPR2.Message;
 with GPR2.Options;
+with GPR2.Project.Source;
+with GPR2.Project.Source.Part_Set;
+with GPR2.Project.Source.Set;
 with GPR2.Project.Tree;
 with GPR2.Project.View;
-with GPR2.Project.Source;
-with GPR2.Project.Source.Set;
-with GPR2.Project.Source.Part_Set;
 with GPR2.View_Ids;
 with GPR2.View_Ids.Set;
 
@@ -568,12 +570,32 @@ begin
                  Configuration  => Unparsing_Configuration);
          end Format_Source;
 
+         Failed : Boolean := False;
+
       begin
          if Gnatformat.Command_Line.Pipe.Get then
             for Source of Sources loop
-               Ada.Text_IO.Put_Line (Source.Path_Name.Value);
-               Ada.Strings.Unbounded.Text_IO.Put_Line (Format_Source (Source));
-               Ada.Text_IO.New_Line;
+               begin
+                  Ada.Text_IO.Put_Line (Source.Path_Name.Value);
+                  Ada.Strings.Unbounded.Text_IO.Put_Line (Format_Source (Source));
+                  Ada.Text_IO.New_Line;
+
+               exception
+                  when E : others =>
+                     Failed := True;
+
+                     Ada.Text_IO.Put_Line
+                       (Ada.Text_IO.Standard_Error,
+                        "Failed to format " & Source.Path_Name.Value);
+
+                     if Gnatformat.Command_Line.Keep_Going.Get then
+                        Gnatformat_Trace.Trace
+                          (Ada.Exceptions.Exception_Information (E));
+
+                     else
+                        Ada.Exceptions.Reraise_Occurrence (E);
+                     end if;
+               end;
             end loop;
 
          else
@@ -593,8 +615,28 @@ begin
                   Ada.Text_IO.Unbounded_IO.Put (Source_File, Formatted_Source);
 
                   Ada.Text_IO.Close (Source_File);
+
+               exception
+                  when E : others =>
+                     Failed := True;
+
+                     Ada.Text_IO.Put_Line
+                       (Ada.Text_IO.Standard_Error,
+                        "Failed to format " & Source.Path_Name.Value);
+
+                     if Gnatformat.Command_Line.Keep_Going.Get then
+                        Gnatformat_Trace.Trace
+                          (Ada.Exceptions.Exception_Information (E));
+
+                     else
+                        Ada.Exceptions.Reraise_Occurrence (E);
+                     end if;
                end;
             end loop;
+         end if;
+
+         if Failed then
+            GNAT.OS_Lib.OS_Exit (1);
          end if;
       end;
    end;
