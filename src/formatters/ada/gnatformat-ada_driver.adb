@@ -37,13 +37,12 @@ with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
-with Libadalang.Generic_API;
 
 procedure Gnatformat.Ada_Driver
 is
 
    package Langkit_Support_Unparsing
-     renames Langkit_Support.Generic_API.Unparsing;
+   renames Langkit_Support.Generic_API.Unparsing;
 
    function Get_Command_Line_Sources
      (Project_Tree : GPR2.Project.Tree.Object; Failed : out Boolean)
@@ -72,13 +71,7 @@ is
    --  If Gnatformat.Command_Line.Sources contains any sources, meaning that
    --  the user provided a list of sources to be formatted, dispatches to
    --  Get_Command_Line_Sources. Otherwise dispatches to Get_Project_Sources.
-
-   function Load_Unparsing_Configuration
-     (Diagnostics :
-        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
-      return Langkit_Support_Unparsing.Unparsing_Configuration;
-   --  Loads the formatting rules
-
+   
    procedure Load_Project
      (Project_Tree : in out GPR2.Project.Tree.Object;
       Project_File : GNATCOLL.VFS.Virtual_File);
@@ -358,46 +351,7 @@ is
          return Get_Command_Line_Sources (Project_Tree, Failed);
       end if;
    end Get_Sources;
-
-   -----------------------------
-   --  Load_Unparsing_Config  --
-   -----------------------------
-
-   function Load_Unparsing_Configuration
-     (Diagnostics :
-        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
-      return Langkit_Support_Unparsing.Unparsing_Configuration
-   is
-      use type GNATCOLL.VFS.Virtual_File;
-
-      Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
-        Gnatformat.Command_Line.Unparsing_Configuration.Get;
-
-   begin
-      if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
-         Gnatformat.Gnatformat_Trace.Trace
-           ("Using the default unparsing configuration");
-         return
-           Langkit_Support_Unparsing.Default_Unparsing_Configuration
-             (Language => Libadalang.Generic_API.Ada_Lang_Id);
-      end if;
-
-      declare
-         Rules_File_Name : constant String :=
-           GNATCOLL.VFS."+" (Unparsing_Configuration_File.Full_Name);
-
-      begin
-         Gnatformat.Gnatformat_Trace.Trace
-           ("Loading formatting rules from """ & Rules_File_Name & """");
-
-         return
-           Langkit_Support_Unparsing.Load_Unparsing_Config
-             (Libadalang.Generic_API.Ada_Lang_Id,
-              Rules_File_Name,
-              Diagnostics);
-      end;
-   end Load_Unparsing_Configuration;
-
+   
    ------------------
    -- Load_Project --
    ------------------
@@ -591,9 +545,14 @@ begin
 
       Diagnostics             :
         Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+
+      Unparsing_Conf_File : constant GNATCOLL.VFS.Virtual_File :=
+        Gnatformat.Command_Line.Unparsing_Configuration.Get;
+
       Unparsing_Configuration :
         constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-          Load_Unparsing_Configuration (Diagnostics);
+        Gnatformat.Configuration.Load_Unparsing_Configuration
+          (Unparsing_Conf_File, Diagnostics);
 
    begin
       if Project_File = GNATCOLL.VFS.No_File

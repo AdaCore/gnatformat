@@ -5,6 +5,8 @@
 
 with Gnatformat.Utils;
 
+with GNATCOLL.VFS;
+
 with GPR2.Project.View;
 with GPR2.Project.Attribute;
 
@@ -18,6 +20,9 @@ private with Ada.Strings.Hash;
 private with GPR2.View_Ids;
 
 private with Libadalang.Generic_API;
+
+with Langkit_Support.Generic_API.Unparsing;
+with Langkit_Support.Diagnostics;
 
 package Gnatformat.Configuration is
 
@@ -170,6 +175,17 @@ package Gnatformat.Configuration is
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   
+   -----------------------------------------------
+   --  Helper function for formatting purposes  --
+   -----------------------------------------------
+
+   function Load_Unparsing_Configuration
+     (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Diagnostics :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Loads the formatting rules
 
 private
 

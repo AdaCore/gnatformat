@@ -3,10 +3,15 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Text_IO;
+with GNAT.OS_Lib;
+
 with GPR2;
 with GPR2.Project.Attribute_Index;
 with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
+
+with Libadalang.Generic_API;
 
 package body Gnatformat.Configuration is
 
@@ -665,5 +670,41 @@ package body Gnatformat.Configuration is
       Self.Format_Options.Language (Language).Width :=
         (Is_Set => True, Value => Width);
    end With_Width;
+
+   -----------------------------
+   --  Load_Unparsing_Config  --
+   -----------------------------
+
+   function Load_Unparsing_Configuration
+     (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Diagnostics :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      use type GNATCOLL.VFS.Virtual_File;
+
+   begin
+      if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Unparsing configuration file must be provided");
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+
+      declare
+         Rules_File_Name : constant String :=
+           GNATCOLL.VFS."+" (Unparsing_Configuration_File.Full_Name);
+
+      begin
+         Gnatformat.Gnatformat_Trace.Trace
+           ("Loading formatting rules from """ & Rules_File_Name & """");
+
+         return
+           Langkit_Support.Generic_API.Unparsing.Load_Unparsing_Config
+             (Libadalang.Generic_API.Ada_Lang_Id,
+              Rules_File_Name,
+              Diagnostics);
+      end;
+   end Load_Unparsing_Configuration;
 
 end Gnatformat.Configuration;
