@@ -62,17 +62,13 @@ package Gnatformat.Formatting is
          Diagnostics : Diagnostics_Vectors.Vector;
       end record;
 
-   function Format
-     (Unit                  : Libadalang.Analysis.Analysis_Unit;
-      Options               : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
-      return Formatted_Edits;
-   --  Gnatformat library entry point for whole Unit formatting
+   function Image (Edit : Formatted_Edits) return String;
 
    function Format_Selection
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Input_Selection_Range : Langkit_Support.Slocs.Source_Location_Range;
-      Options               : Gnatformat.Configuration.Format_Options_Type)
+      Options               : Gnatformat.Configuration.Format_Options_Type;
+      Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
       return Formatted_Edits;
    --  Gnatformat library entry point for partial formatting of a given Unit
    
