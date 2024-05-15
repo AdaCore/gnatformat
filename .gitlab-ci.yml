@@ -4,21 +4,30 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 stages:
-  - single
+  - check
+  - build
+
+issue-check:
+  stage: check
+  interruptible: true
+  needs: []
+  variables:
+    GIT_STRATEGY: none
+  services:
+    - image:pe-base
+  script:
+    - require_issue
 
 build_and_test:
-  stage: single
+  stage: build
   interruptible: true
   services:
-    - image:sandbox
+    - image:pe-base
     - cpu:8
     - mem:16
   script:
-    - require_issue
     - generic_anod_ci
     - . /tmp/ci_env.sh
-    # As long as the imported testsuite is not clean, we should not exercise it
-    # in the CI in order to avoid false positives.
     - anod test gnatformat
     - testsuite_reports
   artifacts:
