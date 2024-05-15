@@ -8,6 +8,7 @@ with Gnatformat.Utils;
 with GPR2.Project.View;
 with GPR2.Project.Attribute;
 
+with Langkit_Support.Generic_API.Unparsing;
 with Prettier_Ada.Documents;
 
 private with Ada.Containers.Hashed_Maps;
@@ -15,6 +16,8 @@ private with Ada.Containers.Indefinite_Hashed_Maps;
 private with Ada.Strings.Hash;
 
 private with GPR2.View_Ids;
+
+private with Libadalang.Generic_API;
 
 package Gnatformat.Configuration is
 
@@ -165,6 +168,9 @@ package Gnatformat.Configuration is
       Source_Filename : String);
    --  Sets the format option Width for the provided Source_Filename
 
+   Default_Unparsing_Configuration :
+     constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+
 private
 
    Package_Id : constant GPR2.Package_Id := GPR2."+" ("format");
@@ -276,5 +282,10 @@ private
      record
        Format_Options : Format_Options_Type;
      end record;
+
+   Default_Unparsing_Configuration :
+     constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+       Langkit_Support.Generic_API.Unparsing.Default_Unparsing_Configuration
+          (Language => Libadalang.Generic_API.Ada_Lang_Id);
 
 end Gnatformat.Configuration;
