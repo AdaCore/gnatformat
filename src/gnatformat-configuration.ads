@@ -176,6 +176,39 @@ package Gnatformat.Configuration is
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
    
+   ----------------------------------------------
+   --  Getters for Format_Options_Type fields  --
+   ----------------------------------------------
+   function Get_Width
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_Indentation
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_Indentation_Kind
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Indentation_Kind;
+
+   function Get_Continuation_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_End_Of_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return End_Of_Line_Kind;
+
    -----------------------------------------------
    --  Helper function for formatting purposes  --
    -----------------------------------------------

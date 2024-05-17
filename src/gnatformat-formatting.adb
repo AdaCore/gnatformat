@@ -776,16 +776,40 @@ package body Gnatformat.Formatting is
          Enclosing_Node => Enclosing_Node);
       pragma Assert (Enclosing_Node /= No_Ada_Node);
 
-      --  2. Determine the offset for the indentation of the enclosing node
-      --     based on the previous or next sibling starting column position
+      --  2. Compute the offset for the indentation of the enclosing node
+      --     based on the previous or next sibling starting column position and
+      --     also the estimated indentation. If these are different use the
+      --     estimated value instead of the initial indetation since if the
+      --     indentations of siblings are wrong we get a wrong value for it.
       --     and set this value for further usage by prettier.
 
-      Initial_Indent := Get_Initial_Indentation (Enclosing_Node);
-      Estimated_Indent := Estimate_Indentation (Enclosing_Node);
+      declare
+         use Ada.Directories;
+         Opt_Indentation         : constant Natural :=
+           Gnatformat.Configuration.Get_Indentation
+             (Options         => Options,
+              Source_Filename => Simple_Name (Unit.Get_Filename),
+              Language        => Ada_Language);
 
-      if Initial_Indent /= Estimated_Indent then
-         Initial_Indent := Estimated_Indent;
-      end if;
+         Opt_Continuation_Indent : constant Natural :=
+           Gnatformat.Configuration.Get_Continuation_Line
+             (Options         => Options,
+              Source_Filename => Simple_Name (Unit.Get_Filename),
+              Language        => Ada_Language);
+      begin
+         Initial_Indent := Get_Initial_Indentation
+           (Node        => Enclosing_Node,
+            Indentation => Opt_Indentation);
+
+         Estimated_Indent := Estimate_Indentation
+           (Node               => Enclosing_Node,
+            Indentation        => Opt_Indentation,
+            Inline_Indentation => Opt_Continuation_Indent);
+
+         if Initial_Indent /= Estimated_Indent then
+            Initial_Indent := Estimated_Indent;
+         end if;
+      end;
 
       --  TO DO:
       --     Pass the Initial_Indent value to prettier when calling

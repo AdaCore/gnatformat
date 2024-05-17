@@ -671,6 +671,190 @@ package body Gnatformat.Configuration is
         (Is_Set => True, Value => Width);
    end With_Width;
 
+   ----------------------------------------------
+   --  Getters for Format_Options_Type fields  --
+   ----------------------------------------------
+
+   -----------------
+   --  Get_Width  --
+   -----------------
+
+   function Get_Width
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural
+   is
+      Res                : Natural;
+      Present_In_Sources : Boolean := False;
+   begin
+      if Options.Sources.Contains (Key => Source_Filename) then
+         declare
+            Basic_Opt : constant Basic_Format_Options_Type :=
+              Options.Sources.Element (Key => Source_Filename);
+         begin
+            if Basic_Opt /= Undefined_Basic_Format_Options
+              and then Basic_Opt.Width.Is_Set
+            then
+               Present_In_Sources := True;
+               Res := Basic_Opt.Width.Value;
+            end if;
+         end;
+      end if;
+
+      if not Present_In_Sources then
+         Res := (if Options.Language (Language).Width.Is_Set then
+                    Options.Language (Language).Width.Value
+                 else 0);
+      end if;
+
+      return Res;
+   end Get_Width;
+
+   -----------------------
+   --  Get_Indentation  --
+   -----------------------
+
+   function Get_Indentation
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural
+   is
+      Res                : Natural;
+      Present_In_Sources : Boolean := False;
+   begin
+      if Options.Sources.Contains (Key => Source_Filename) then
+         declare
+            Basic_Opt : constant Basic_Format_Options_Type :=
+              Options.Sources.Element (Key => Source_Filename);
+         begin
+            if Basic_Opt /= Undefined_Basic_Format_Options
+              and then Basic_Opt.Indentation.Is_Set
+            then
+               Present_In_Sources := True;
+               Res := Basic_Opt.Indentation.Value;
+            end if;
+         end;
+      end if;
+
+      if not Present_In_Sources then
+         Res := (if Options.Language (Language).Indentation.Is_Set then
+                    Options.Language (Language).Indentation.Value
+                 else 0);
+      end if;
+
+      return Res;
+   end Get_Indentation;
+
+   ----------------------------
+   --  Get_Indentation_Kind  --
+   ----------------------------
+
+   function Get_Indentation_Kind
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Indentation_Kind
+   is
+      Res                : Indentation_Kind;
+      Present_In_Sources : Boolean := False;
+   begin
+      if Options.Sources.Contains (Key => Source_Filename) then
+         declare
+            Basic_Opt : constant Basic_Format_Options_Type :=
+              Options.Sources.Element (Key => Source_Filename);
+         begin
+            if Basic_Opt /= Undefined_Basic_Format_Options
+              and then Basic_Opt.Indentation_Kind.Is_Set
+            then
+               Present_In_Sources := True;
+               Res := Basic_Opt.Indentation_Kind.Value;
+            end if;
+         end;
+      end if;
+
+      if not Present_In_Sources then
+         Res := (if Options.Language (Language).Indentation_Kind.Is_Set then
+                    Options.Language (Language).Indentation_Kind.Value
+                 else Spaces);
+      end if;
+
+      return Res;
+   end Get_Indentation_Kind;
+
+   -----------------------------
+   --  Get_Continuation_Line  --
+   -----------------------------
+
+   function Get_Continuation_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural
+   is
+      Res                : Natural;
+      Present_In_Sources : Boolean := False;
+   begin
+      if Options.Sources.Contains (Key => Source_Filename) then
+         declare
+            Basic_Opt : constant Basic_Format_Options_Type :=
+              Options.Sources.Element (Key => Source_Filename);
+         begin
+            if Basic_Opt /= Undefined_Basic_Format_Options
+              and then Basic_Opt.Continuation_Line.Is_Set
+            then
+               Present_In_Sources := True;
+               Res := Basic_Opt.Continuation_Line.Value;
+            end if;
+         end;
+      end if;
+
+      if not Present_In_Sources then
+         Res := (if Options.Language (Language).Continuation_Line.Is_Set
+                 then Options.Language (Language).Continuation_Line.Value
+                 else 0);
+      end if;
+
+      return Res;
+   end Get_Continuation_Line;
+
+   -----------------------
+   --  Get_End_Of_Line  --
+   -----------------------
+
+   function Get_End_Of_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return End_Of_Line_Kind
+   is
+      Res                : End_Of_Line_Kind;
+      Present_In_Sources : Boolean := False;
+   begin
+      if Options.Sources.Contains (Key => Source_Filename) then
+         declare
+            Basic_Opt : constant Basic_Format_Options_Type :=
+              Options.Sources.Element (Key => Source_Filename);
+         begin
+            if Basic_Opt /= Undefined_Basic_Format_Options
+              and then Basic_Opt.End_Of_Line.Is_Set
+            then
+               Present_In_Sources := True;
+               Res := Basic_Opt.End_Of_Line.Value;
+            end if;
+         end;
+      end if;
+
+      if not Present_In_Sources then
+         Res := (if Options.Language (Language).End_Of_Line.Is_Set
+                 then Options.Language (Language).End_Of_Line.Value
+                 else LF);
+      end if;
+
+      return Res;
+   end Get_End_Of_Line;
+
    -----------------------------
    --  Load_Unparsing_Config  --
    -----------------------------
