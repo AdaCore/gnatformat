@@ -211,7 +211,8 @@ package body Gnatformat.Configuration is
         Prettier_Ada.Documents.Format_Options_Type'
           (Width       => Width,
            Indentation => (Indentation_Kind, Indentation),
-           End_Of_Line => End_Of_Line);
+           End_Of_Line => End_Of_Line,
+           others      => <>);
    end Into;
 
    ----------
