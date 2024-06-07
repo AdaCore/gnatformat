@@ -14,6 +14,8 @@ with GNATCOLL.VFS;
 
 with Libadalang.Analysis; use Libadalang.Analysis;
 with Langkit_Support.Slocs;
+with Langkit_Support.Diagnostics;
+with Langkit_Support.Generic_API.Unparsing;
 
 with Gnatformat;
 with Gnatformat.Formatting;
@@ -25,6 +27,8 @@ with Gnatformat.Configuration;
 procedure Partial_Gnatformat is
 
    use type GNATCOLL.VFS.Virtual_File;
+   use Langkit_Support.Generic_API.Unparsing;
+   use Langkit_Support.Diagnostics;
 
    -------------------------
    -- Command line parser --
@@ -106,7 +110,6 @@ procedure Partial_Gnatformat is
    end Args;
 
    Edits : Gnatformat.Formatting.Formatted_Edits;
-
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
@@ -124,26 +127,6 @@ begin
         (Ada.Text_IO.Standard_Error,
          GNATCOLL.Opt_Parse.Help (Args.Parser));
       GNAT.OS_Lib.OS_Exit (1);
-   end if;
-
-   --  The unparsing configuration is mandatory.
-   --  !!!! For now this should be provided as command line argument but when a
-   --  getter of a default one will be available in the libadalang library side
-   --  let's add the commented part and use it when not provided as command
-   --  line argument.!!!!
-   if Args.Unparsing_Config_File.Get = GNATCOLL.VFS.No_File then
-      Ada.Text_IO.Put_Line
-        (Ada.Text_IO.Standard_Error,
-         "An unparsing configuration file must be provided.");
-      Ada.Text_IO.New_Line;
-      Ada.Text_IO.Put_Line
-        (Ada.Text_IO.Standard_Error,
-         GNATCOLL.Opt_Parse.Help (Args.Parser));
-      GNAT.OS_Lib.OS_Exit (1);
-      --  TO DO :
-      --     change this and uncomment the code below when this it will be
-      --  available on the LAL library side
-      --      else get_default_unparsing_config;
    end if;
 
    --  Format the given source file or selection and dump the output of
@@ -168,11 +151,26 @@ begin
 
       --  Compute the edits for the source file selection. If no selection
       --  range is provided then the whole file will be reformatted.
-      Edits := Gnatformat.Formatting.Format_Selection
-        (Unit                  => Unit,
-         Input_Selection_Range => Selection_Range,
-         Options               => Default_Format_Options,
-         Unparsing_Config_File => Args.Unparsing_Config_File.Get);
+      if Args.Unparsing_Config_File.Get /= GNATCOLL.VFS.No_File then
+         declare
+            Unparse_Diag    : Diagnostics_Vectors.Vector;
+            Unparsing_Conf  : constant Unparsing_Configuration :=
+              Gnatformat.Configuration.Load_Unparsing_Configuration
+                (Args.Unparsing_Config_File.Get, Unparse_Diag);
+         begin
+            Edits := Gnatformat.Formatting.Format_Selection
+              (Unit                  => Unit,
+               Input_Selection_Range => Selection_Range,
+               Options               => Default_Format_Options,
+               Unparsing_Config      => Unparsing_Conf);
+         end;
+      else
+         Edits := Gnatformat.Formatting.Format_Selection
+           (Unit                  => Unit,
+            Input_Selection_Range => Selection_Range,
+            Options               => Default_Format_Options);
+
+      end if;
 
       --  If requested, also dump the reformatted Ada source code to the output
       if Args.Pipe.Get then

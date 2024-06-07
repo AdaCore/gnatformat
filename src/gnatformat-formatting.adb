@@ -48,54 +48,15 @@ package body Gnatformat.Formatting is
       return Prettier_Ada.Documents.Format (Document, Format_Options);
    end Format;
 
-   ------------------
-   -- Range_Format --
-   ------------------
-
-   function Range_Format
-     (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
-      Span           : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options : Gnatformat.Configuration.Format_Options_Type;
-      Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
-      return Range_Format_Result
-   is
-   begin
-      raise Program_Error with "Not implemented yet";
-
-      return
-        (Langkit_Support.Slocs.No_Source_Location_Range,
-         Langkit_Support.Generic_API.Analysis.No_Lk_Node,
-         Ada.Strings.Unbounded.Null_Unbounded_String);
-   end Range_Format;
-
-   ------------------
-   -- Range_Format --
-   ------------------
-
-   function Range_Format
-     (Unit           : Libadalang.Analysis.Analysis_Unit;
-      Span           : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options : Gnatformat.Configuration.Format_Options_Type;
-      Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
-      return Range_Format_Result
-   is
-   begin
-      raise Program_Error with "Not implemented yet";
-
-      return
-        (Langkit_Support.Slocs.No_Source_Location_Range,
-         Langkit_Support.Generic_API.Analysis.No_Lk_Node,
-         Ada.Strings.Unbounded.Null_Unbounded_String);
-   end Range_Format;
    ------------------------------------------------------------------------
-   function Format
+
+   function Format_Unit
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Options               : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
+      --  Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
+      Unparsing_Config      :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+        Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Formatted_Edits;
    --  Gnatformat library entry point for the whole Unit formatting
 
@@ -153,32 +114,28 @@ package body Gnatformat.Formatting is
       return V;
    end Diagnostics_Array_To_Vector;
 
-   --------------
-   --  Format  --
-   --------------
+   -------------------
+   --  Format_Unit  --
+   -------------------
 
-   function Format
+   function Format_Unit
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Options               : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
+      Unparsing_Config      :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+        Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Formatted_Edits
    is
       use Libadalang.Analysis;
       use Langkit_Support.Slocs;
       use Ada.Strings.Unbounded;
-      use Langkit_Support.Generic_API;
 
       SL_Root        : constant Source_Location_Range := Unit.Root.Sloc_Range;
-
-      Unparse_Diag   : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-      Unparsing_Conf : constant Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Load_Unparsing_Configuration
-          (Unparsing_Config_File, Unparse_Diag);
 
       Formatted_Str  : constant Unbounded_String :=
         Format (Unit => Unit,
                 Format_Options => Options,
-                Configuration  => Unparsing_Conf);
+                Configuration  => Unparsing_Config);
 
       Diagnostics_V  : constant Diagnostics_Vectors.Vector :=
         Diagnostics_Array_To_Vector (Unit.Diagnostics);
@@ -190,7 +147,7 @@ package body Gnatformat.Formatting is
                       Text     => Formatted_Str),
          Formatted   => Unit.Root,
          Diagnostics => Diagnostics_V);
-   end Format;
+   end Format_Unit;
 
    ---------------------------
    -- Find_Matching_Parents --
@@ -745,22 +702,27 @@ package body Gnatformat.Formatting is
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Input_Selection_Range : Langkit_Support.Slocs.Source_Location_Range;
       Options               : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
+      Unparsing_Config      :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+        Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Formatted_Edits
    is
       use Libadalang.Analysis;
       use Langkit_Support.Slocs;
-      use Ada.Strings.Unbounded;
+      --  use Ada.Strings.Unbounded;
 
       Enclosing_Node   : Ada_Node := No_Ada_Node;
       Initial_Indent   : Natural := 0;
       Estimated_Indent : Natural := 0;
+
+      Format_Opt       : Prettier_Ada.Documents.Format_Options_Type :=
+        Options.Into (Ada_Language);
    begin
       if Input_Selection_Range = No_Source_Location_Range then
       --  If no selection range is provided dispatch to format the whole unit
-         return Format (Unit                  => Unit,
-                        Options               => Options,
-                        Unparsing_Config_File => Unparsing_Config_File);
+         return Format_Unit (Unit             => Unit,
+                             Options          => Options,
+                             Unparsing_Config => Unparsing_Config);
       end if;
 
       --  If an input selection is provided then follow the steps to get a
@@ -809,29 +771,27 @@ package body Gnatformat.Formatting is
          if Initial_Indent /= Estimated_Indent then
             Initial_Indent := Estimated_Indent;
          end if;
-      end;
 
-      --  TO DO:
-      --     Pass the Initial_Indent value to prettier when calling
-      --     Prettier_Ada.Documents.Format once this is implemented in prettier
+         --  Update the Indentation_Offset value of Format_Opt using the
+         --  computed offset; this updated value is passed to prettier as
+         --  format options when calling Prettier_Ada.Documents.Format at the
+         --  next step with the document resulting from the unparsing of the
+         --  Enclosing_Node.
+
+         if Format_Opt.Indentation_Offset /= Initial_Indent then
+            Format_Opt.Indentation_Offset := Initial_Indent;
+         end if;
+      end;
 
       --  3. Rewrite the enclosing node relative to the input selection and
       --     return the formatted edits.
       declare
          use Langkit_Support.Generic_API;
 
-         Unparse_Diag    : Diagnostics_Vectors.Vector;
-         Unparsing_Conf  : constant Unparsing.Unparsing_Configuration :=
-           Gnatformat.Configuration.Load_Unparsing_Configuration
-             (Unparsing_Config_File, Unparse_Diag);
-
          Document : constant Prettier_Ada.Documents.Document_Type :=
            Unparsing.Unparse_To_Prettier
              (Libadalang.Generic_API.To_Generic_Node (Enclosing_Node),
-              Unparsing_Conf);
-         Formatted_Str : constant Unbounded_String :=
-           Prettier_Ada.Documents.Format
-             (Document, Options.Into (Ada_Language));
+              Unparsing_Config);
 
          Diagnostics_V   : constant Diagnostics_Vectors.Vector :=
            Diagnostics_Array_To_Vector (Unit.Diagnostics);
@@ -839,8 +799,10 @@ package body Gnatformat.Formatting is
          return Formatted_Edits'
            (Unit => Unit,
             Edit =>
-              Text_Edit'(Location => Enclosing_Node.Sloc_Range,
-                         Text     => Formatted_Str),
+              Text_Edit'
+                (Location => Enclosing_Node.Sloc_Range,
+                 Text     =>
+                   Prettier_Ada.Documents.Format (Document, Format_Opt)),
             Formatted   => Enclosing_Node,
             Diagnostics => Diagnostics_V);
       end;
@@ -868,6 +830,81 @@ package body Gnatformat.Formatting is
         & '^'
         & LF
         & To_String (Edit.Edit.Text)
+        & '$'
+        & LF
+        & "*************************************";
+   end Image;
+
+   --------------------------------------------------------------------------
+
+   ------------------
+   -- Range_Format --
+   ------------------
+
+   function Range_Format
+     (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
+      Span           : Langkit_Support.Slocs.Source_Location_Range;
+      Format_Options : Gnatformat.Configuration.Format_Options_Type;
+      Configuration  :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
+      return Range_Format_Result
+   is
+      use Libadalang.Generic_API;
+      Edits : constant Gnatformat.Formatting.Formatted_Edits :=
+        Format_Selection
+          (Unit                  => From_Generic_Unit (Unit),
+           Input_Selection_Range => Span,
+           Options               => Format_Options,
+           Unparsing_Config      => Configuration);
+   begin
+      return
+        Range_Format_Result'
+          (Span           => Edits.Edit.Location,
+           Formatted_Span => Edits.Edit.Text);
+   end Range_Format;
+
+   ------------------
+   -- Range_Format --
+   ------------------
+
+   function Range_Format
+     (Unit           : Libadalang.Analysis.Analysis_Unit;
+      Span           : Langkit_Support.Slocs.Source_Location_Range;
+      Format_Options : Gnatformat.Configuration.Format_Options_Type;
+      Configuration  :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
+      return Range_Format_Result
+   is
+      Edits : constant Gnatformat.Formatting.Formatted_Edits :=
+        Format_Selection (Unit                  => Unit,
+                          Input_Selection_Range => Span,
+                          Options               => Format_Options,
+                          Unparsing_Config      => Configuration);
+   begin
+      return
+        Range_Format_Result'
+          (Span           => Edits.Edit.Location,
+           Formatted_Span => Edits.Edit.Text);
+   end Range_Format;
+
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Edit : Range_Format_Result) return String is
+      use Ada.Characters.Latin_1;
+      use Ada.Strings.Unbounded;
+      use Langkit_Support.Slocs;
+   begin
+      return
+        "*************************************"
+        & Image (Edit.Span)
+        & LF
+        & '^'
+        & LF
+        & To_String (Edit.Formatted_Span)
         & '$'
         & LF
         & "*************************************";
