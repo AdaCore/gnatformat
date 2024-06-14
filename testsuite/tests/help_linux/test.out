@@ -7,7 +7,7 @@ usage: gnatformat [--help|-h] [--project|-P PROJECT] [-X KEY=VALUE
                  CONTINUATION-LINE-INDENTATION] [--end-of-line END-OF-LINE] 
                  SOURCE [SOURCE ...] 
 
-GNATformat debug - Format Ada code
+GNATformat debug (test) - Format Ada code
 
 positional arguments:
    SOURCE  Source files to format

@@ -14,7 +14,24 @@ import e3.testsuite
 import e3.testsuite.driver
 from e3.testsuite import Testsuite
 from e3.testsuite.driver.classic import TestAbortWithFailure
-from e3.testsuite.driver.diff import DiffTestDriver, ReplacePath
+from e3.testsuite.driver.diff import (
+    DiffTestDriver,
+    PatternSubstitute,
+    RefiningChain,
+    ReplacePath,
+)
+
+
+class ReplaceBuildVersionAndDate(RefiningChain[str]):
+    """
+    Return an output refiner to replace the pattern
+    'GNATformat <version> (<build-date>)' by 'GNATformat test (test)'
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            [PatternSubstitute(r"GNATformat .* \(.*\)", "GNATformat test (test)")]
+        )
 
 
 def valgrind_wrap(env: e3.env.Env, argv: list[str]) -> list[str]:
@@ -67,7 +84,10 @@ class GNATformatDriver(DiffTestDriver):
 
     @property
     def output_refiners(self):
-        return super().output_refiners + [ReplacePath(self.working_dir())]
+        return super().output_refiners + [
+            ReplacePath(self.working_dir()),
+            ReplaceBuildVersionAndDate(),
+        ]
 
 
 class GNATformatTestsuite(Testsuite):
