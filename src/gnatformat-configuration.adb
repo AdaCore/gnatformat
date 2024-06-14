@@ -58,6 +58,8 @@ package body Gnatformat.Configuration is
 
    procedure Elaborate_GPR2 is
    begin
+      Gnatformat_Trace.Trace ("Elaborating GPR2");
+
       GPR2.Project.Registry.Pack.Add
         (Package_Id, GPR2.Project.Registry.Pack.Everywhere);
 

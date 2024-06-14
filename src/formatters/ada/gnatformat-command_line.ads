@@ -130,7 +130,6 @@ package Gnatformat.Command_Line is
       Convert     => Gnatformat.Configuration.Optional_Positives.To_Value,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
-
    package End_Of_Line is new Parse_Option
      (Parser      => Parser,
       Long        => "--end-of-line",
@@ -145,8 +144,8 @@ package Gnatformat.Command_Line is
      (Parser      => Parser,
       Name        => "SOURCE",
       Allow_Empty => True,
-      Arg_Type    => Unbounded_String,
-      Convert     => To_Unbounded_String,
+      Arg_Type    => GNATCOLL.VFS.Virtual_File,
+      Convert     => To_Virtual_File,
       Help        => "Source files to format");
 
 end Gnatformat.Command_Line;
