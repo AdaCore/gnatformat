@@ -375,10 +375,11 @@ is
 
    begin
       if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Unparsing configuration file must be provided");
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Gnatformat_Trace.Trace
+           ("Using the default unparsing configuration");
+         return
+           Langkit_Support_Unparsing.Default_Unparsing_Configuration
+             (Language => Libadalang.Generic_API.Ada_Lang_Id);
       end if;
 
       declare
