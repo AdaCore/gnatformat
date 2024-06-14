@@ -1,0 +1,14 @@
+description: With an explicitly loaded project, test the --keep-going switch
+  when a source could not be resolved. This included testing the correct status
+  code.
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "test/test.adb",
+    "test/test_dep.adb",
+    "--pipe",
+    "--keep-going",
+  ]
+status_code: 1

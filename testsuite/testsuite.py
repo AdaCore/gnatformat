@@ -10,8 +10,11 @@ from __future__ import annotations
 import sys
 
 import e3.env
+import e3.testsuite
+import e3.testsuite.driver
 from e3.testsuite import Testsuite
-from e3.testsuite.driver.diff import DiffTestDriver
+from e3.testsuite.driver.classic import TestAbortWithFailure
+from e3.testsuite.driver.diff import DiffTestDriver, ReplacePath
 
 
 def valgrind_wrap(env: e3.env.Env, argv: list[str]) -> list[str]:
@@ -31,8 +34,10 @@ class GNATformatDriver(DiffTestDriver):
     Usage Instructions:
 
     1. Place a "test.yaml" file in the test directory with the following keys:
+       - driver: "gnatformat"
        - description: A description of the test's purpose
        - args: An array with the arguments to be passed to gnatformat
+       - status_code: optional key to change the expected status code (default: 0)
 
     2. Include a "test.out" text file in the test directory with the expected
        results. If a "test.out" file is missing, it will be treated as empty.
@@ -47,7 +52,22 @@ class GNATformatDriver(DiffTestDriver):
         argv = ["gnatformat"] + self.test_env.get("args", ["--pipe"])
 
         # ... on the input Ada source code file
-        self.shell(valgrind_wrap(self.env, argv))
+        self.validate_status_code(
+            self.shell(valgrind_wrap(self.env, argv), catch_error=False)
+        )
+
+    def validate_status_code(self, result):
+        expected_status_code = self.test_env.get("status_code", 0)
+        if expected_status_code != result.status:
+            raise TestAbortWithFailure(
+                "unexpected exit code {}, expected {}".format(
+                    result.status, expected_status_code
+                )
+            )
+
+    @property
+    def output_refiners(self):
+        return super().output_refiners + [ReplacePath(self.working_dir())]
 
 
 class GNATformatTestsuite(Testsuite):
