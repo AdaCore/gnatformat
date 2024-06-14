@@ -192,7 +192,7 @@ private
 
    Continuation_Line_Indentation_Attribute_Id   :
      constant GPR2.Attribute_Id   :=
-       GPR2."+" ("indentation_kind");
+       GPR2."+" ("continuation_line_indentation");
    Q_Continuation_Line_Indentation_Attribute_Id :
      constant GPR2.Q_Attribute_Id :=
        (Package_Id, Continuation_Line_Indentation_Attribute_Id);

@@ -1,0 +1,43 @@
+usage: gnatformat [--help|-h] [--project|-P PROJECT] [-X KEY=VALUE 
+                 [KEY=VALUE...]] [--no-subprojects] [-U] [--verbose] 
+                 [--version|-v] [--check] [--pipe|-p] [--keep-going|-k] 
+                 [--unparsing-configuration UNPARSING_CONFIGURATION_FILE] 
+                 [--width WIDTH] [--indentation INDENTATION] [--indentation-kind
+                  INDENTATION-KIND] [--continuation-line-indentation 
+                 CONTINUATION-LINE-INDENTATION] [--end-of-line END-OF-LINE] 
+                 SOURCE [SOURCE ...] 
+
+GNATformat debug (test) - Format Ada code
+
+positional arguments:
+   SOURCE  Source files to format
+   
+optional arguments:
+   --help, -h                       Show this help message
+   --project, -P                    Specify the project file to load; the .gpr 
+                                    extension can be omitted  if the file is in 
+                                    the current directory
+   -X                               Specify an external reference to a scenario 
+                                    variable
+   --no-subprojects                 Only process the root project, not the 
+                                    subprojects
+   -U                               Process all files, not only those that are 
+                                    in the closure of mains
+   --verbose                        Print debug logs
+   --version, -v                    Show the version
+   --check                          Exit with error code 1 if the input is not 
+                                    formatted correctly; print the name of files
+                                     that would be formatted
+   --pipe, -p                       Print the result to stdout instead of 
+                                    editing the files on disk
+   --keep-going, -k                 Keep going after errors formatting a source 
+                                    file
+   --unparsing-configuration        Unparsing configuration file
+   --width                          Max line width
+   --indentation                    Indentation size
+   --indentation-kind               Indentation kind: tabs | spaces
+   --continuation-line-indentation  Continuation Line Indentation size (defaults
+                                     to indentation-1)
+   --end-of-line                    End of line sequence: lf | crlf
+   
+

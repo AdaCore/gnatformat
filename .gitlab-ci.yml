@@ -28,7 +28,7 @@ build_and_test:
   script:
     - generic_anod_ci
     - . /tmp/ci_env.sh
-    - anod test gnatformat
+    - anod test gnatformat $ACI_TRACK_QUALIFIER
     - testsuite_reports
   artifacts:
     reports:
