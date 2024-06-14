@@ -16,7 +16,13 @@ package Gnatformat.Command_Line is
 
    Parser : Argument_Parser :=
      Create_Argument_Parser
-       (Help => "GNATformat " & Gnatformat.Version & " - Format Ada code");
+       (Help =>
+          "GNATformat "
+          & Gnatformat.Version
+          & " ("
+          & Gnatformat.Build_Date
+          & ")"
+          & " - Format Ada code");
 
    function To_Virtual_File
      (File_Name : String) return GNATCOLL.VFS.Virtual_File
