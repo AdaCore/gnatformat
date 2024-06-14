@@ -1,0 +1,4 @@
+description: With an explicitly loaded project, test that sources are resolved
+  correctly.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "test/test_dep.ads", "--pipe"]
