@@ -36,7 +36,7 @@ package Gnatformat.Command_Line is
 
    package Scenario is new Parse_Option_List
      (Parser   => Parser,
-      Long     => "-X",
+      Short    => "-X",
       Name     => "KEY=VALUE",
       Help     =>
         "Specify an external reference to a scenario variable",
