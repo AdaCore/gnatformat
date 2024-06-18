@@ -11,6 +11,8 @@ with Libadalang.Generic_API;
 with Langkit_Support.Text;
 with Libadalang.Common;
 
+with Prettier_Ada.Documents; use Prettier_Ada.Documents;
+
 package body Gnatformat.Formatting is
 
    ------------
@@ -712,11 +714,13 @@ package body Gnatformat.Formatting is
       --  use Ada.Strings.Unbounded;
 
       Enclosing_Node   : Ada_Node := No_Ada_Node;
-      Initial_Indent   : Natural := 0;
+      Initial_Indent   : Natural  := 0;
+      Indent_Offset    : Indentation_Offset_Type := (0, 0);
       Estimated_Indent : Natural := 0;
 
       Format_Opt       : Prettier_Ada.Documents.Format_Options_Type :=
         Options.Into (Ada_Language);
+      Offset_Set       : Boolean := False;
    begin
       if Input_Selection_Range = No_Source_Location_Range then
       --  If no selection range is provided dispatch to format the whole unit
@@ -778,13 +782,24 @@ package body Gnatformat.Formatting is
          --  next step with the document resulting from the unparsing of the
          --  Enclosing_Node.
 
-         if Format_Opt.Indentation_Offset /= Initial_Indent then
-            Format_Opt.Indentation_Offset := Initial_Indent;
+         if Format_Opt.Indentation.Kind = Spaces then
+            Indent_Offset := (Tabs => 0, Spaces => Initial_Indent);
+         else
+            --  Convert the offset into tabs usage compatible value
+            Indent_Offset :=
+              (Tabs => Initial_Indent / Format_Opt.Indentation.Width,
+               Spaces => Initial_Indent mod Format_Opt.Indentation.Width);
+         end if;
+
+         if Format_Opt.Indentation.Offset /= Indent_Offset then
+            Format_Opt.Indentation.Offset := Indent_Offset;
+            Offset_Set := True;
          end if;
       end;
 
       --  3. Rewrite the enclosing node relative to the input selection and
-      --     return the formatted edits.
+      --     return the formatted edits with the new SLOC related to the text
+      --     edit to be used by the IDE's for the range formatting.
       declare
          use Langkit_Support.Generic_API;
 
@@ -795,12 +810,22 @@ package body Gnatformat.Formatting is
 
          Diagnostics_V   : constant Diagnostics_Vectors.Vector :=
            Diagnostics_Array_To_Vector (Unit.Diagnostics);
+         Text_Edit_Sloc  : Langkit_Support.Slocs.Source_Location_Range :=
+           Enclosing_Node.Sloc_Range;
       begin
+         if Offset_Set and then Enclosing_Node.Sloc_Range.Start_Column /= 1
+         then
+            --  Reset the formatted node start column position to be able to
+            --  get the right indented text edit (to trim the spaces added as
+            --  offset) when the formatted node is rewritten
+            Text_Edit_Sloc.Start_Column := 1;
+         end if;
+
          return Formatted_Edits'
            (Unit => Unit,
             Edit =>
               Text_Edit'
-                (Location => Enclosing_Node.Sloc_Range,
+                (Location => Text_Edit_Sloc,
                  Text     =>
                    Prettier_Ada.Documents.Format (Document, Format_Opt)),
             Formatted   => Enclosing_Node,
@@ -813,25 +838,24 @@ package body Gnatformat.Formatting is
    -----------
 
    function Image (Edit : Formatted_Edits) return String is
-      use Ada.Characters.Latin_1;
       use Ada.Directories;
       use Ada.Strings.Unbounded;
       use Langkit_Support.Slocs;
    begin
       return
         "*************************************"
-        & LF
+        & Ada.Characters.Latin_1.LF
         & Simple_Name (Edit.Unit.Get_Filename)
         & "("
         & Edit.Formatted.Image
         & ") - "
         & Image (Edit.Edit.Location)
-        & LF
+        & Ada.Characters.Latin_1.LF
         & '^'
-        & LF
+        & Ada.Characters.Latin_1.LF
         & To_String (Edit.Edit.Text)
         & '$'
-        & LF
+        & Ada.Characters.Latin_1.LF
         & "*************************************";
    end Image;
 
@@ -894,19 +918,18 @@ package body Gnatformat.Formatting is
    -----------
 
    function Image (Edit : Range_Format_Result) return String is
-      use Ada.Characters.Latin_1;
       use Ada.Strings.Unbounded;
       use Langkit_Support.Slocs;
    begin
       return
         "*************************************"
         & Image (Edit.Span)
-        & LF
+        & Ada.Characters.Latin_1.LF
         & '^'
-        & LF
+        & Ada.Characters.Latin_1.LF
         & To_String (Edit.Formatted_Span)
         & '$'
-        & LF
+        & Ada.Characters.Latin_1.LF
         & "*************************************";
    end Image;
 

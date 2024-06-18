@@ -3,15 +3,10 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
-with Ada.Text_IO;
-with GNAT.OS_Lib;
-
 with GPR2;
 with GPR2.Project.Attribute_Index;
 with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
-
-with Libadalang.Generic_API;
 
 package body Gnatformat.Configuration is
 
@@ -190,6 +185,7 @@ package body Gnatformat.Configuration is
       return Prettier_Ada.Documents.Format_Options_Type
    is
       use type Optional_Positive;
+      use Prettier_Ada.Documents;
 
       Width              : constant Natural :=
         Self.Width or Prettier_Ada.Documents.Default_Format_Options.Width;
@@ -866,13 +862,15 @@ package body Gnatformat.Configuration is
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
       use type GNATCOLL.VFS.Virtual_File;
+      use Langkit_Support.Generic_API;
 
    begin
       if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Unparsing configuration file must be provided");
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Gnatformat_Trace.Trace
+           ("Using the default unparsing configuration");
+         return
+           Unparsing.Default_Unparsing_Configuration
+             (Language => Libadalang.Generic_API.Ada_Lang_Id);
       end if;
 
       declare
@@ -884,7 +882,7 @@ package body Gnatformat.Configuration is
            ("Loading formatting rules from """ & Rules_File_Name & """");
 
          return
-           Langkit_Support.Generic_API.Unparsing.Load_Unparsing_Config
+           Unparsing.Load_Unparsing_Config
              (Libadalang.Generic_API.Ada_Lang_Id,
               Rules_File_Name,
               Diagnostics);

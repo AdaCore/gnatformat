@@ -71,7 +71,7 @@ is
    --  If Gnatformat.Command_Line.Sources contains any sources, meaning that
    --  the user provided a list of sources to be formatted, dispatches to
    --  Get_Command_Line_Sources. Otherwise dispatches to Get_Project_Sources.
-   
+
    procedure Load_Project
      (Project_Tree : in out GPR2.Project.Tree.Object;
       Project_File : GNATCOLL.VFS.Virtual_File);
@@ -351,7 +351,7 @@ is
          return Get_Command_Line_Sources (Project_Tree, Failed);
       end if;
    end Get_Sources;
-   
+
    ------------------
    -- Load_Project --
    ------------------

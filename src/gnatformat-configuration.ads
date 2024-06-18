@@ -21,7 +21,6 @@ private with GPR2.View_Ids;
 
 private with Libadalang.Generic_API;
 
-with Langkit_Support.Generic_API.Unparsing;
 with Langkit_Support.Diagnostics;
 
 package Gnatformat.Configuration is
@@ -175,7 +174,7 @@ package Gnatformat.Configuration is
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
-   
+
    ----------------------------------------------
    --  Getters for Format_Options_Type fields  --
    ----------------------------------------------
