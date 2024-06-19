@@ -78,28 +78,30 @@ install-bin:
 
 .PHONY: test-programs
 test-programs:
-	gprbuild \
-		-v \
-		-k \
-      -XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-      -P$(TEST_PROGRAMS) \
-		-p \
-		-j$(PROCESSORS); \
+	for proj in $(TEST_PROGRAMS) ; do \
+		gprbuild \
+			-v \
+			-k \
+			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+			-P $$proj \
+			-p \
+			-j$(PROCESSORS) ; \
+	done;
 
 .PHONY: install-test-programs
 install-test-programs:
-	gprinstall \
-      -XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		--prefix="$(PREFIX)" \
-		--install-name=api_testing \
-		--mode=usage \
-		-P$(TEST_PROGRAMS) \
-		-p \
-		-f ;
+	for proj in $(TEST_PROGRAMS) ; do \
+		gprinstall \
+			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+			--prefix="$(PREFIX)" \
+			--install-name=api_testing \
+			--mode=usage \
+			-P $$proj -p -f ; \
+	done ;
 
 .PHONY: bin
 test:

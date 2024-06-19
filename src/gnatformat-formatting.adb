@@ -6,12 +6,15 @@
 
 with Ada.Characters.Latin_1;
 with Ada.Directories;
+with Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO;
 
 with Libadalang.Generic_API;
 with Langkit_Support.Text;
 with Libadalang.Common;
 
 with Prettier_Ada.Documents; use Prettier_Ada.Documents;
+with Prettier_Ada.Documents.Json;
 
 package body Gnatformat.Formatting is
 
@@ -713,12 +716,12 @@ package body Gnatformat.Formatting is
       use Langkit_Support.Slocs;
       --  use Ada.Strings.Unbounded;
 
-      Enclosing_Node   : Ada_Node := No_Ada_Node;
-      Initial_Indent   : Natural  := 0;
-      Indent_Offset    : Indentation_Offset_Type := (0, 0);
-      Estimated_Indent : Natural := 0;
+      Enclosing_Node        : Ada_Node := No_Ada_Node;
+      Initial_Indentation   : Natural  := 0;
+      Indentation_Offset    : Indentation_Offset_Type := (0, 0);
+      Estimated_Indentation : Natural := 0;
 
-      Format_Opt       : Prettier_Ada.Documents.Format_Options_Type :=
+      Format_Options        : Prettier_Ada.Documents.Format_Options_Type :=
         Options.Into (Ada_Language);
       Offset_Set       : Boolean := False;
    begin
@@ -742,6 +745,8 @@ package body Gnatformat.Formatting is
          Enclosing_Node => Enclosing_Node);
       pragma Assert (Enclosing_Node /= No_Ada_Node);
 
+      Ada.Text_IO.Put_Line ("MKU Enclosing_Node = " & Image (Enclosing_Node));
+
       --  2. Compute the offset for the indentation of the enclosing node
       --     based on the previous or next sibling starting column position and
       --     also the estimated indentation. If these are different use the
@@ -751,29 +756,29 @@ package body Gnatformat.Formatting is
 
       declare
          use Ada.Directories;
-         Opt_Indentation         : constant Natural :=
+         Current_Indentation         : constant Natural :=
            Gnatformat.Configuration.Get_Indentation
              (Options         => Options,
               Source_Filename => Simple_Name (Unit.Get_Filename),
               Language        => Ada_Language);
 
-         Opt_Continuation_Indent : constant Natural :=
+         Current_Continuation_Indent : constant Natural :=
            Gnatformat.Configuration.Get_Continuation_Line
              (Options         => Options,
               Source_Filename => Simple_Name (Unit.Get_Filename),
               Language        => Ada_Language);
       begin
-         Initial_Indent := Get_Initial_Indentation
+         Initial_Indentation := Get_Initial_Indentation
            (Node        => Enclosing_Node,
-            Indentation => Opt_Indentation);
+            Indentation => Current_Indentation);
 
-         Estimated_Indent := Estimate_Indentation
+         Estimated_Indentation := Estimate_Indentation
            (Node               => Enclosing_Node,
-            Indentation        => Opt_Indentation,
-            Inline_Indentation => Opt_Continuation_Indent);
+            Indentation        => Current_Indentation,
+            Inline_Indentation => Current_Continuation_Indent);
 
-         if Initial_Indent /= Estimated_Indent then
-            Initial_Indent := Estimated_Indent;
+         if Initial_Indentation /= Estimated_Indentation then
+            Initial_Indentation := Estimated_Indentation;
          end if;
 
          --  Update the Indentation_Offset value of Format_Opt using the
@@ -782,17 +787,19 @@ package body Gnatformat.Formatting is
          --  next step with the document resulting from the unparsing of the
          --  Enclosing_Node.
 
-         if Format_Opt.Indentation.Kind = Spaces then
-            Indent_Offset := (Tabs => 0, Spaces => Initial_Indent);
+         if Format_Options.Indentation.Kind = Spaces then
+            Indentation_Offset := (Tabs => 0, Spaces => Initial_Indentation);
          else
             --  Convert the offset into tabs usage compatible value
-            Indent_Offset :=
-              (Tabs => Initial_Indent / Format_Opt.Indentation.Width,
-               Spaces => Initial_Indent mod Format_Opt.Indentation.Width);
+            Indentation_Offset :=
+              (Tabs   =>
+                 Initial_Indentation / Format_Options.Indentation.Width,
+               Spaces =>
+                 Initial_Indentation mod Format_Options.Indentation.Width);
          end if;
 
-         if Format_Opt.Indentation.Offset /= Indent_Offset then
-            Format_Opt.Indentation.Offset := Indent_Offset;
+         if Format_Options.Indentation.Offset /= Indentation_Offset then
+            Format_Options.Indentation.Offset := Indentation_Offset;
             Offset_Set := True;
          end if;
       end;
@@ -808,7 +815,7 @@ package body Gnatformat.Formatting is
              (Libadalang.Generic_API.To_Generic_Node (Enclosing_Node),
               Unparsing_Config);
 
-         Diagnostics_V   : constant Diagnostics_Vectors.Vector :=
+         Diagnostics     : constant Diagnostics_Vectors.Vector :=
            Diagnostics_Array_To_Vector (Unit.Diagnostics);
          Text_Edit_Sloc  : Langkit_Support.Slocs.Source_Location_Range :=
            Enclosing_Node.Sloc_Range;
@@ -821,15 +828,26 @@ package body Gnatformat.Formatting is
             Text_Edit_Sloc.Start_Column := 1;
          end if;
 
+         --  Create the doc.json file to dump the generated document
+         declare
+            use Ada.Text_IO;
+            F         : File_Type;
+         begin
+            Create (F, Name => "doc.json");
+            Ada.Text_IO.Unbounded_IO.Put_Line
+              (F, Prettier_Ada.Documents.Json.Serialize (Document));
+            Close (F);
+         end;
+
          return Formatted_Edits'
            (Unit => Unit,
             Edit =>
               Text_Edit'
                 (Location => Text_Edit_Sloc,
                  Text     =>
-                   Prettier_Ada.Documents.Format (Document, Format_Opt)),
+                   Prettier_Ada.Documents.Format (Document, Format_Options)),
             Formatted   => Enclosing_Node,
-            Diagnostics => Diagnostics_V);
+            Diagnostics => Diagnostics);
       end;
    end Format_Selection;
 
