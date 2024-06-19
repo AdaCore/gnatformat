@@ -128,7 +128,7 @@ is
 
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
-                  "Failed to resolve " & Source.Display_Full_Name);
+                  "Failed to resolve " & Source.Display_Base_Name);
 
                if not Gnatformat.Command_Line.Keep_Going.Get then
                   GNAT.OS_Lib.OS_Exit (1);
@@ -688,7 +688,8 @@ begin
          if Gnatformat.Command_Line.Pipe.Get then
             for Source of Sources loop
                begin
-                  Ada.Text_IO.Put_Line (Source.Path_Name.Value);
+                  Ada.Text_IO.Put_Line
+                    (GPR2.Path_Name.Simple_Name (Source.Path_Name.Value));
                   Ada.Strings.Unbounded.Text_IO.Put_Line
                     (Format_Source (Source));
                   Ada.Text_IO.New_Line;
@@ -699,7 +700,8 @@ begin
 
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
-                        "Failed to format " & Source.Path_Name.Value);
+                        "Failed to format " &
+                          GPR2.Path_Name.Simple_Name (Source.Path_Name.Value));
 
                      if Gnatformat.Command_Line.Keep_Going.Get then
                         Gnatformat_Trace.Trace
@@ -735,7 +737,8 @@ begin
 
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
-                        "Failed to format " & Source.Path_Name.Value);
+                        "Failed to format "
+                        & GPR2.Path_Name.Simple_Name (Source.Path_Name.Value));
 
                      if Gnatformat.Command_Line.Keep_Going.Get then
                         Gnatformat_Trace.Trace
