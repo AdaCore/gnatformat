@@ -659,8 +659,8 @@ begin
 
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
-                        "Failed to format " &
-                          GPR2.Path_Name.Simple_Name (Source.Path_Name.Value));
+                        "Failed to format "
+                        & GPR2.Path_Name.Simple_Name (Source.Path_Name.Value));
 
                      if Gnatformat.Command_Line.Keep_Going.Get then
                         Gnatformat_Trace.Trace
