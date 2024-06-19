@@ -1,0 +1,7 @@
+description: With an Ada file and without selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+  ]
+status_code: 1

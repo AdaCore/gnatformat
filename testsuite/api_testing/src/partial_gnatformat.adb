@@ -21,8 +21,7 @@ with Gnatformat;
 with Gnatformat.Formatting;
 with Gnatformat.Configuration;
 
---  Testing entry point for the gnatformat library API for IDE integration and
---  partial formatting.
+--  Gnatformat library API entry point for range formatting tests.
 
 procedure Partial_Gnatformat is
 
@@ -47,7 +46,7 @@ procedure Partial_Gnatformat is
       is (GNATCOLL.VFS.Create_From_UTF8 (File_Name));
       --  Creates a file from its display name
 
-      package Unparsing_Config_File is new Parse_Option
+      package Unparsing_Configuration_File is new Parse_Option
         (Parser      => Parser,
          Long        => "--unparsing-config",
          Name        => "UNPARSING_CONFIGURATION_FILE",
@@ -63,7 +62,7 @@ procedure Partial_Gnatformat is
          Arg_Type    => Unbounded_String,
          Convert     => To_Unbounded_String);
 
-      --  Selection specifics for partial formatting of a file
+      --  Selection specifics for range formatting of a file
 
       package Selection_Start_Line is new Parse_Option
         (Parser      => Parser,
@@ -100,13 +99,6 @@ procedure Partial_Gnatformat is
          Arg_Type    => Natural,
          Convert     => Natural'Value,
          Default_Val => 0);
-
-      package Pipe is new Parse_Flag
-        (Parser => Parser,
-         Short  => "-p",
-         Long   => "--pipe",
-         Help   =>
-         "Print the result to stdout instead of editing the files on disk");
    end Args;
 
    Edits : Gnatformat.Formatting.Formatted_Edits;
@@ -129,14 +121,14 @@ begin
       GNAT.OS_Lib.OS_Exit (1);
    end if;
 
-   --  Format the given source file or selection and dump the output of
+   --  Formats the given source file or selection and dump the output of
    --  the formatting
 
    declare
       use Langkit_Support.Slocs;
 
-      Ctx   : constant Analysis_Context := Create_Context;
-      Unit  : constant Analysis_Unit    := Ctx.Get_From_File
+      Context  : constant Analysis_Context := Create_Context;
+      Unit     : constant Analysis_Unit    := Context.Get_From_File
         (Filename => To_String (Args.Source_File.Get));
 
       Selection_Range : constant Source_Location_Range :=
@@ -151,18 +143,18 @@ begin
 
       --  Compute the edits for the source file selection. If no selection
       --  range is provided then the whole file will be reformatted.
-      if Args.Unparsing_Config_File.Get /= GNATCOLL.VFS.No_File then
+      if Args.Unparsing_Configuration_File.Get /= GNATCOLL.VFS.No_File then
          declare
-            Unparse_Diag    : Diagnostics_Vectors.Vector;
-            Unparsing_Conf  : constant Unparsing_Configuration :=
+            Diagnostics      : Diagnostics_Vectors.Vector;
+            Configuration    : constant Unparsing_Configuration :=
               Gnatformat.Configuration.Load_Unparsing_Configuration
-                (Args.Unparsing_Config_File.Get, Unparse_Diag);
+                (Args.Unparsing_Configuration_File.Get, Diagnostics);
          begin
             Edits := Gnatformat.Formatting.Format_Selection
               (Unit                  => Unit,
                Input_Selection_Range => Selection_Range,
                Options               => Default_Format_Options,
-               Unparsing_Config      => Unparsing_Conf);
+               Unparsing_Config      => Configuration);
          end;
       else
          Edits := Gnatformat.Formatting.Format_Selection
@@ -172,11 +164,10 @@ begin
 
       end if;
 
-      --  If requested, also dump the reformatted Ada source code to the output
-      if Args.Pipe.Get then
-         Put_Line (Gnatformat.Formatting.Image (Edits));
-         Ada.Text_IO.New_Line;
-      end if;
+      --  Dumps the reformatted Ada source code to the output
+      Put_Line (Gnatformat.Formatting.Image (Edits));
+      Ada.Text_IO.New_Line;
+
    end;
 
 end Partial_Gnatformat;

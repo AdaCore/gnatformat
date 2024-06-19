@@ -9,7 +9,7 @@ LIB_PROJECT = gnat/gnatformat.gpr
 
 BIN_PROJECT = gnat/gnatformat_driver.gpr
 
-TEST_PROGRAMS = testsuite/api_testing/api_testing.gpr
+TEST_PROGRAMS = testsuite/api_testing/partial_gnatformat.gpr
 
 .PHONY: all
 all: lib bin test-programs

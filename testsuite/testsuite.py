@@ -89,7 +89,7 @@ class GNATformatDriver(DiffTestDriver):
             ReplaceBuildVersionAndDate(),
         ]
 
-class APITestingDriver(DiffTestDriver):
+class PartialGNATformat(DiffTestDriver):
     """
     Driver to run partial_gnatformat.
 
@@ -103,21 +103,19 @@ class APITestingDriver(DiffTestDriver):
        results. If a "test.out" file is missing, it will be treated as empty.
 
     This driver executes the gnatformat binary with the arguments defined in
-    test.yaml (defaulting to --pipe) and subsequently verifies its output
-    against the expected output in the "test.out" file.
+    test.yaml and subsequently verifies its output against the expected output in the "test.out" file.
     """
 
     def run(self):
         # Run the "gnatformat" program...
-        argv = ["partial_gnatformat"] + self.test_env.get("args", ["--pipe"])
-
+        argv = ["partial_gnatformat"] + self.test_env.get("args")
         # ... on the input Ada source code file
         self.shell(valgrind_wrap(self.env, argv))
 
 
 class GNATformatTestsuite(Testsuite):
     tests_subdir = "tests"
-    test_driver_map = {"gnatformat": GNATformatDriver, "partial_gnatformat":APITestingDriver}
+    test_driver_map = {"gnatformat": GNATformatDriver, "partial_gnatformat":PartialGNATformat}
 
     def add_options(self, parser):
         parser.add_argument(

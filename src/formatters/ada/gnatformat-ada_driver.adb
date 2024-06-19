@@ -535,24 +535,24 @@ begin
       use type Gnatformat.Command_Line.Sources.Result_Array;
       use type Langkit_Support_Unparsing.Unparsing_Configuration;
 
-      Project_File : constant GNATCOLL.VFS.Virtual_File :=
+      Project_File                 : constant GNATCOLL.VFS.Virtual_File :=
         Resolve_Project_File;
-      Project_Tree : GPR2.Project.Tree.Object;
+      Project_Tree                 : GPR2.Project.Tree.Object;
 
-      CLI_Formatting_Config :
+      CLI_Formatting_Config        :
         constant Gnatformat.Configuration.Format_Options_Type :=
           Gnatformat.Command_Line.Configuration.Get;
 
-      Diagnostics             :
+      Diagnostics                  :
         Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
 
-      Unparsing_Conf_File : constant GNATCOLL.VFS.Virtual_File :=
+      Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
         Gnatformat.Command_Line.Unparsing_Configuration.Get;
 
-      Unparsing_Configuration :
+      Unparsing_Configuration      :
         constant Langkit_Support_Unparsing.Unparsing_Configuration :=
         Gnatformat.Configuration.Load_Unparsing_Configuration
-          (Unparsing_Conf_File, Diagnostics);
+          (Unparsing_Configuration_File, Diagnostics);
 
    begin
       if Project_File = GNATCOLL.VFS.No_File
