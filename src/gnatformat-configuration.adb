@@ -671,6 +671,15 @@ package body Gnatformat.Configuration is
    --  Getters for Format_Options_Type fields  --
    ----------------------------------------------
 
+   function Into
+     (Format_Options    : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages)
+      return Basic_Format_Options_Type
+   is (if Format_Options.Sources.Contains (Source_Filename)
+       then Format_Options.Sources.Element (Source_Filename)
+       else Format_Options.Language (Language_Fallback));
+
    -----------------
    --  Get_Width  --
    -----------------
@@ -681,30 +690,11 @@ package body Gnatformat.Configuration is
       Language        : Supported_Languages := Ada_Language)
       return Natural
    is
-      Res                : Natural;
-      Present_In_Sources : Boolean := False;
+      use Optional_Positives;
    begin
-      if Options.Sources.Contains (Key => Source_Filename) then
-         declare
-            Basic_Opt : constant Basic_Format_Options_Type :=
-              Options.Sources.Element (Key => Source_Filename);
-         begin
-            if Basic_Opt /= Undefined_Basic_Format_Options
-              and then Basic_Opt.Width.Is_Set
-            then
-               Present_In_Sources := True;
-               Res := Basic_Opt.Width.Value;
-            end if;
-         end;
-      end if;
-
-      if not Present_In_Sources then
-         Res := (if Options.Language (Language).Width.Is_Set then
-                    Options.Language (Language).Width.Value
-                 else 0);
-      end if;
-
-      return Res;
+      return
+        Into (Options, Source_Filename, Language).Width
+        or Default_Basic_Format_Options.Width.Value;
    end Get_Width;
 
    -----------------------
@@ -717,30 +707,11 @@ package body Gnatformat.Configuration is
       Language        : Supported_Languages := Ada_Language)
       return Natural
    is
-      Res                : Natural;
-      Present_In_Sources : Boolean := False;
+      use Optional_Positives;
    begin
-      if Options.Sources.Contains (Key => Source_Filename) then
-         declare
-            Basic_Opt : constant Basic_Format_Options_Type :=
-              Options.Sources.Element (Key => Source_Filename);
-         begin
-            if Basic_Opt /= Undefined_Basic_Format_Options
-              and then Basic_Opt.Indentation.Is_Set
-            then
-               Present_In_Sources := True;
-               Res := Basic_Opt.Indentation.Value;
-            end if;
-         end;
-      end if;
-
-      if not Present_In_Sources then
-         Res := (if Options.Language (Language).Indentation.Is_Set then
-                    Options.Language (Language).Indentation.Value
-                 else 0);
-      end if;
-
-      return Res;
+      return
+        Into (Options, Source_Filename, Language).Indentation
+        or Default_Basic_Format_Options.Indentation.Value;
    end Get_Indentation;
 
    ----------------------------
@@ -753,27 +724,16 @@ package body Gnatformat.Configuration is
       Language        : Supported_Languages := Ada_Language)
       return Indentation_Kind
    is
-      Res                : Indentation_Kind;
-      Present_In_Sources : Boolean := False;
+      Res       : Indentation_Kind;
+      Basic_Opt : constant Basic_Format_Options_Type :=
+        Into (Options, Source_Filename, Language);
    begin
-      if Options.Sources.Contains (Key => Source_Filename) then
-         declare
-            Basic_Opt : constant Basic_Format_Options_Type :=
-              Options.Sources.Element (Key => Source_Filename);
-         begin
-            if Basic_Opt /= Undefined_Basic_Format_Options
-              and then Basic_Opt.Indentation_Kind.Is_Set
-            then
-               Present_In_Sources := True;
-               Res := Basic_Opt.Indentation_Kind.Value;
-            end if;
-         end;
-      end if;
-
-      if not Present_In_Sources then
-         Res := (if Options.Language (Language).Indentation_Kind.Is_Set then
-                    Options.Language (Language).Indentation_Kind.Value
-                 else Spaces);
+      if Basic_Opt /= Undefined_Basic_Format_Options
+        and then Basic_Opt.Indentation_Kind.Is_Set
+      then
+         Res := Basic_Opt.Indentation_Kind.Value;
+      else
+         Res := Default_Basic_Format_Options.Indentation_Kind.Value;
       end if;
 
       return Res;
@@ -789,30 +749,11 @@ package body Gnatformat.Configuration is
       Language        : Supported_Languages := Ada_Language)
       return Natural
    is
-      Res                : Natural;
-      Present_In_Sources : Boolean := False;
+      use Optional_Positives;
    begin
-      if Options.Sources.Contains (Key => Source_Filename) then
-         declare
-            Basic_Opt : constant Basic_Format_Options_Type :=
-              Options.Sources.Element (Key => Source_Filename);
-         begin
-            if Basic_Opt /= Undefined_Basic_Format_Options
-              and then Basic_Opt.Continuation_Line.Is_Set
-            then
-               Present_In_Sources := True;
-               Res := Basic_Opt.Continuation_Line.Value;
-            end if;
-         end;
-      end if;
-
-      if not Present_In_Sources then
-         Res := (if Options.Language (Language).Continuation_Line.Is_Set
-                 then Options.Language (Language).Continuation_Line.Value
-                 else 0);
-      end if;
-
-      return Res;
+      return
+        Into (Options, Source_Filename, Language).Continuation_Line
+        or Default_Basic_Format_Options.Continuation_Line.Value;
    end Get_Continuation_Line;
 
    -----------------------
@@ -826,26 +767,15 @@ package body Gnatformat.Configuration is
       return End_Of_Line_Kind
    is
       Res                : End_Of_Line_Kind;
-      Present_In_Sources : Boolean := False;
+      Basic_Opt : constant Basic_Format_Options_Type :=
+        Into (Options, Source_Filename, Language);
    begin
-      if Options.Sources.Contains (Key => Source_Filename) then
-         declare
-            Basic_Opt : constant Basic_Format_Options_Type :=
-              Options.Sources.Element (Key => Source_Filename);
-         begin
-            if Basic_Opt /= Undefined_Basic_Format_Options
-              and then Basic_Opt.End_Of_Line.Is_Set
-            then
-               Present_In_Sources := True;
-               Res := Basic_Opt.End_Of_Line.Value;
-            end if;
-         end;
-      end if;
-
-      if not Present_In_Sources then
-         Res := (if Options.Language (Language).End_Of_Line.Is_Set
-                 then Options.Language (Language).End_Of_Line.Value
-                 else LF);
+      if Basic_Opt /= Undefined_Basic_Format_Options
+        and then Basic_Opt.End_Of_Line.Is_Set
+      then
+         Res := Basic_Opt.End_Of_Line.Value;
+      else
+         Res := Default_Basic_Format_Options.End_Of_Line.Value;
       end if;
 
       return Res;
