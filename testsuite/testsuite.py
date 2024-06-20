@@ -102,8 +102,9 @@ class PartialGNATformat(DiffTestDriver):
     2. Include a "test.out" text file in the test directory with the expected
        results. If a "test.out" file is missing, it will be treated as empty.
 
-    This driver executes the gnatformat binary with the arguments defined in
-    test.yaml and subsequently verifies its output against the expected output in the "test.out" file.
+    This driver executes the partial_gnatformat binary with the arguments defined in
+    test.yaml and subsequently verifies its output against the expected output in the
+    "test.out" file.
     """
 
     def run(self):

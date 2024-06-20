@@ -1,5 +1,4 @@
 <CompilationUnit test.ads:3:1-10:10>
-*************************************
 test.ads(<CompilationUnit test.ads:3:1-10:10>) - 3:1-10:10
 ^
 
@@ -12,5 +11,4 @@ package test is
 
    V2 : Boolean := False;
 end test;$
-*************************************
 

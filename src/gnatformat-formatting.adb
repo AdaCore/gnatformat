@@ -745,8 +745,6 @@ package body Gnatformat.Formatting is
          Enclosing_Node => Enclosing_Node);
       pragma Assert (Enclosing_Node /= No_Ada_Node);
 
-      Ada.Text_IO.Put_Line ("MKU Enclosing_Node = " & Image (Enclosing_Node));
-
       --  2. Compute the offset for the indentation of the enclosing node
       --     based on the previous or next sibling starting column position and
       --     also the estimated indentation. If these are different use the
@@ -831,7 +829,7 @@ package body Gnatformat.Formatting is
          --  Create the doc.json file to dump the generated document
          declare
             use Ada.Text_IO;
-            F         : File_Type;
+            F  : File_Type;
          begin
             Create (F, Name => "doc.json");
             Ada.Text_IO.Unbounded_IO.Put_Line
@@ -861,9 +859,7 @@ package body Gnatformat.Formatting is
       use Langkit_Support.Slocs;
    begin
       return
-        "*************************************"
-        & Ada.Characters.Latin_1.LF
-        & Simple_Name (Edit.Unit.Get_Filename)
+        Simple_Name (Edit.Unit.Get_Filename)
         & "("
         & Edit.Formatted.Image
         & ") - "
@@ -872,9 +868,7 @@ package body Gnatformat.Formatting is
         & '^'
         & Ada.Characters.Latin_1.LF
         & To_String (Edit.Edit.Text)
-        & '$'
-        & Ada.Characters.Latin_1.LF
-        & "*************************************";
+        & '$';
    end Image;
 
    --------------------------------------------------------------------------
@@ -940,15 +934,12 @@ package body Gnatformat.Formatting is
       use Langkit_Support.Slocs;
    begin
       return
-        "*************************************"
-        & Image (Edit.Span)
+        Image (Edit.Span)
         & Ada.Characters.Latin_1.LF
         & '^'
         & Ada.Characters.Latin_1.LF
         & To_String (Edit.Formatted_Span)
-        & '$'
-        & Ada.Characters.Latin_1.LF
-        & "*************************************";
+        & '$';
    end Image;
 
 end Gnatformat.Formatting;

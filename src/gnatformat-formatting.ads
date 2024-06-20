@@ -76,9 +76,9 @@ package Gnatformat.Formatting is
    --  Configuation.
 
    ----------------------------------------------------------------------------
-   --       API used by the gnatformat partial formatting test driver        --
-   --  This is the formatting library API part to be used from the partial   --
-   --  gnatformat test driver                                                --
+   --       API used by the gnatformat range formatting test driver          --
+   --  NOTE: This is the formatting library API part used from the           --
+   --        partial_gnatformat test driver                                  --
    ----------------------------------------------------------------------------
 
    type Text_Edit is
