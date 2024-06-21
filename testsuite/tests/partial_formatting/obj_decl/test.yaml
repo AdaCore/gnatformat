@@ -9,3 +9,6 @@ args:
     "-EC 10",
   ]
 status_code: 1
+control:
+- [XFAIL, "True",
+   "unexpected output: waiting for issue #eng/libadalang/langkit!1126"]
