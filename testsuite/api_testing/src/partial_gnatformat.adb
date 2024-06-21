@@ -150,14 +150,14 @@ begin
               Gnatformat.Configuration.Load_Unparsing_Configuration
                 (Args.Unparsing_Configuration_File.Get, Diagnostics);
          begin
-            Edits := Gnatformat.Formatting.Format_Selection
+            Edits := Gnatformat.Formatting.Range_Format
               (Unit                  => Unit,
                Input_Selection_Range => Selection_Range,
                Options               => Default_Format_Options,
                Unparsing_Config      => Configuration);
          end;
       else
-         Edits := Gnatformat.Formatting.Format_Selection
+         Edits := Gnatformat.Formatting.Range_Format
            (Unit                  => Unit,
             Input_Selection_Range => Selection_Range,
             Options               => Default_Format_Options);

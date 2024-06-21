@@ -699,11 +699,11 @@ package body Gnatformat.Formatting is
         Parent_Based_Indentation (Parents, Indentation, Inline_Indentation);
    end Estimate_Indentation;
 
-   ------------------------
-   --  Format_Selection  --
-   ------------------------
+   --------------------
+   --  Range_Format  --
+   --------------------
 
-   function Format_Selection
+   function Range_Format
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Input_Selection_Range : Langkit_Support.Slocs.Source_Location_Range;
       Options               : Gnatformat.Configuration.Format_Options_Type;
@@ -847,7 +847,7 @@ package body Gnatformat.Formatting is
             Formatted   => Enclosing_Node,
             Diagnostics => Diagnostics);
       end;
-   end Format_Selection;
+   end Range_Format;
 
    -----------
    -- Image --
@@ -868,77 +868,6 @@ package body Gnatformat.Formatting is
         & '^'
         & Ada.Characters.Latin_1.LF
         & To_String (Edit.Edit.Text)
-        & '$';
-   end Image;
-
-   --------------------------------------------------------------------------
-
-   ------------------
-   -- Range_Format --
-   ------------------
-
-   function Range_Format
-     (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
-      Span           : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options : Gnatformat.Configuration.Format_Options_Type;
-      Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
-      return Range_Format_Result
-   is
-      use Libadalang.Generic_API;
-      Edits : constant Gnatformat.Formatting.Formatted_Edits :=
-        Format_Selection
-          (Unit                  => From_Generic_Unit (Unit),
-           Input_Selection_Range => Span,
-           Options               => Format_Options,
-           Unparsing_Config      => Configuration);
-   begin
-      return
-        Range_Format_Result'
-          (Span           => Edits.Edit.Location,
-           Formatted_Span => Edits.Edit.Text);
-   end Range_Format;
-
-   ------------------
-   -- Range_Format --
-   ------------------
-
-   function Range_Format
-     (Unit           : Libadalang.Analysis.Analysis_Unit;
-      Span           : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options : Gnatformat.Configuration.Format_Options_Type;
-      Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
-      return Range_Format_Result
-   is
-      Edits : constant Gnatformat.Formatting.Formatted_Edits :=
-        Format_Selection (Unit                  => Unit,
-                          Input_Selection_Range => Span,
-                          Options               => Format_Options,
-                          Unparsing_Config      => Configuration);
-   begin
-      return
-        Range_Format_Result'
-          (Span           => Edits.Edit.Location,
-           Formatted_Span => Edits.Edit.Text);
-   end Range_Format;
-
-   -----------
-   -- Image --
-   -----------
-
-   function Image (Edit : Range_Format_Result) return String is
-      use Ada.Strings.Unbounded;
-      use Langkit_Support.Slocs;
-   begin
-      return
-        Image (Edit.Span)
-        & Ada.Characters.Latin_1.LF
-        & '^'
-        & Ada.Characters.Latin_1.LF
-        & To_String (Edit.Formatted_Span)
         & '$';
    end Image;
 
