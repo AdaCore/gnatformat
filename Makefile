@@ -9,7 +9,7 @@ LIB_PROJECT = gnat/gnatformat.gpr
 
 BIN_PROJECT = gnat/gnatformat_driver.gpr
 
-TEST_PROGRAMS = testsuite/api_testing/partial_gnatformat.gpr
+TEST_PROGRAMS = testsuite/test_programs/partial_gnatformat.gpr
 
 .PHONY: all
 all: lib bin test-programs
@@ -98,11 +98,11 @@ install-test-programs:
 			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 			--prefix="$(PREFIX)" \
-			--install-name=api_testing \
+			--install-name=test_programs \
 			--mode=usage \
 			-P $$proj -p -f ; \
 	done ;
 
-.PHONY: bin
+.PHONY: test
 test:
 	python testsuite/testsuite.py
