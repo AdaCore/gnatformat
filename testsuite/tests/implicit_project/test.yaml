@@ -1,0 +1,6 @@
+description: |
+  Test that when only one project project exists on the working directory it is
+  implicitly loaded. This is tested by confirming that project sources are
+  found.
+driver: gnatformat
+args: ["--pipe"]

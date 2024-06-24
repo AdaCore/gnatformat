@@ -58,6 +58,8 @@ package body Gnatformat.Configuration is
 
    procedure Elaborate_GPR2 is
    begin
+      Gnatformat_Trace.Trace ("Elaborating GPR2");
+
       GPR2.Project.Registry.Pack.Add
         (Package_Id, GPR2.Project.Registry.Pack.Everywhere);
 
@@ -184,12 +186,12 @@ package body Gnatformat.Configuration is
    is
       use type Optional_Positive;
 
-      Width             : constant Natural :=
+      Width              : constant Natural :=
         Self.Width or Prettier_Ada.Documents.Default_Format_Options.Width;
-      Indentation       : constant Natural :=
+      Indentation        : constant Natural :=
         Self.Indentation
         or Prettier_Ada.Documents.Default_Format_Options.Indentation.Width;
-      Indentation_Kind  : constant Prettier_Ada.Documents.Indentation_Kind :=
+      Indentation_Kind   : constant Prettier_Ada.Documents.Indentation_Kind :=
         (case Self.Indentation_Kind.Is_Set is
            when True  =>
              (case Self.Indentation_Kind.Value is
@@ -197,7 +199,10 @@ package body Gnatformat.Configuration is
                 when Tabs   => Prettier_Ada.Documents.Tabs),
            when False =>
              Prettier_Ada.Documents.Default_Format_Options.Indentation.Kind);
-      End_Of_Line       : constant Prettier_Ada.Documents.End_Of_Line_Kind :=
+      Indentation_Offset :
+        constant Prettier_Ada.Documents.Indentation_Offset_Type :=
+          (Tabs => 0, Spaces => 0);
+      End_Of_Line        : constant Prettier_Ada.Documents.End_Of_Line_Kind :=
         (case Self.End_Of_Line.Is_Set is
            when True  =>
              (case Self.End_Of_Line.Value is
@@ -210,7 +215,7 @@ package body Gnatformat.Configuration is
       return
         Prettier_Ada.Documents.Format_Options_Type'
           (Width       => Width,
-           Indentation => (Indentation_Kind, Indentation),
+           Indentation => (Indentation_Kind, Indentation, Indentation_Offset),
            End_Of_Line => End_Of_Line);
    end Into;
 
