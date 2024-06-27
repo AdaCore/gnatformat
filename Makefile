@@ -9,10 +9,10 @@ LIB_PROJECT = gnat/gnatformat.gpr
 
 BIN_PROJECT = gnat/gnatformat_driver.gpr
 
-TEST_PROGRAMS = gnat/test_programs.gpr
+TEST_PROGRAMS = testsuite/test_programs/partial_gnatformat.gpr
 
 .PHONY: all
-all: lib bin
+all: lib bin test-programs
 
 .PHONY: lib
 lib:
@@ -78,10 +78,31 @@ install-bin:
 
 .PHONY: test-programs
 test-programs:
+	for proj in $(TEST_PROGRAMS) ; do \
+		gprbuild \
+			-v \
+			-k \
+			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+			-P $$proj \
+			-p \
+			-j$(PROCESSORS) ; \
+	done;
 
 .PHONY: install-test-programs
 install-test-programs:
+	for proj in $(TEST_PROGRAMS) ; do \
+		gprinstall \
+			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+			--prefix="$(PREFIX)" \
+			--install-name=test_programs \
+			--mode=usage \
+			-P $$proj -p -f ; \
+	done ;
 
-.PHONY: bin
+.PHONY: test
 test:
 	python testsuite/testsuite.py
