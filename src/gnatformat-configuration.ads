@@ -5,10 +5,14 @@
 
 with Gnatformat.Utils;
 
+with GNATCOLL.VFS;
+
 with GPR2.Project.View;
 with GPR2.Project.Attribute;
 
+with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
+
 with Prettier_Ada.Documents;
 
 private with Ada.Containers.Hashed_Maps;
@@ -170,6 +174,50 @@ package Gnatformat.Configuration is
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+
+   ----------------------------------------------
+   --  Getters for Format_Options_Type fields  --
+   ----------------------------------------------
+   function Get_Width
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_Indentation
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_Indentation_Kind
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Indentation_Kind;
+
+   function Get_Continuation_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return Natural;
+
+   function Get_End_Of_Line
+     (Options         : Format_Options_Type;
+      Source_Filename : String;
+      Language        : Supported_Languages := Ada_Language)
+      return End_Of_Line_Kind;
+
+   -----------------------------------------------
+   --  Helper function for formatting purposes  --
+   -----------------------------------------------
+
+   function Load_Unparsing_Configuration
+     (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Diagnostics :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Loads the formatting rules
 
 private
 
