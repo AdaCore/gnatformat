@@ -62,14 +62,27 @@ package Gnatformat.Configuration is
       Language : Supported_Languages)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Language into an
-   --  equivalent Prettier_Ada Format_Options.Type.
+   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
+   --  associated to Language, then returns Default_Format_Options.
 
    function Into
      (Self            : Format_Options_Type;
       Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Source_Filename into an
-   --  equivalent Prettier_Ada Format_Options.Type.
+   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
+   --  associated to Source_Filename, then returns Default_Format_Options.
+
+   function Into
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages)
+      return Prettier_Ada.Documents.Format_Options_Type;
+   --  Converts a Format_Options_type for the provided Source_Filename into an
+   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
+   --  for this source, then fallback to the configuration associated to
+   --  Langauge_Fallback. If there's no configuration for Language_Fallback
+   --  returns Default_Format_Options.
 
    procedure Overwrite
      (Target : in out Format_Options_Type;
