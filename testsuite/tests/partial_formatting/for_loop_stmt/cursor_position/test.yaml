@@ -1,0 +1,11 @@
+description: ForLoopStmt formatting from cursor position.
+driver: partial_gnatformat
+args:
+  [
+    "main.adb",
+    "-SL 5",
+    "-SC 5",
+    "-EL 5",
+    "-EC 5",
+  ]
+status_code: 1

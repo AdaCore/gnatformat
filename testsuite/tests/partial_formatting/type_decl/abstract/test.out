@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:20:1-32:37>
+test.ads(<ConcreteTypeDecl ["Set"] test.ads:23:5-23:45>) - 23:1-23:45
+^
+   type Set is abstract tagged null record;$
+

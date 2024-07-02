@@ -1,0 +1,5 @@
+<CompilationUnit test.adb:26:1-77:31>
+test.adb(<SingleTaskDecl ["T"] test.adb:61:4-61:11>) - 61:1-61:11
+^
+   task T;$
+

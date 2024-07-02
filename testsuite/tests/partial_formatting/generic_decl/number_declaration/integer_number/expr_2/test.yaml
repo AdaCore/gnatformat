@@ -1,0 +1,10 @@
+description: NumberDecl formatting from line selection an integer number declaration.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 28",
+    "-EL 28",
+    "-EC 36",
+  ]
+status_code: 1

@@ -1,0 +1,9 @@
+description: SubtypeDecl formatting with partial selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 24",
+    "-EL 25",
+  ]
+status_code: 1

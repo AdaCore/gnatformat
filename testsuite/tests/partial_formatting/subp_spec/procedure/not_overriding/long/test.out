@@ -1,0 +1,6 @@
+<CompilationUnit test.ads:1:1-10:10>
+test.ads(<SubpSpec test.ads:8:19-8:96>) - 8:1-8:96
+^
+   procedure Bar
+     (Self : Baz; I : Integer; J : Integer; K, L, M, N, O, P : Integer)$
+

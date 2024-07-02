@@ -1,0 +1,10 @@
+<CompilationUnit test.adb:26:1-55:32>
+test.adb(<ProtectedTypeDecl ["P_Obj_Type"] test.adb:31:4-36:19>) - 31:1-36:19
+^
+   protected type P_Obj_Type is
+      procedure Set (V : Integer);
+      function Get return Integer;
+   private
+      Local : Integer := 0;
+   end P_Obj_Type;$
+

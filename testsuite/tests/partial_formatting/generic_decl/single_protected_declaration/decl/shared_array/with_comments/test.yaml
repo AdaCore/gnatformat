@@ -1,0 +1,12 @@
+description: SingleProtectedDecl formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.adb",
+    "-SL 59",
+    "-EL 66",
+  ]
+status_code: 1
+control:
+- [XFAIL, "True",
+   "unexpected output: waiting for issue #eng/libadalang/langkit#810"]

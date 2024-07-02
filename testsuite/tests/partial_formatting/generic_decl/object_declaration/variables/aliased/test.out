@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Hello"] test.ads:74:4-74:49>) - 74:1-74:49
+^
+   Hello : aliased String := "Hi, world.";$
+

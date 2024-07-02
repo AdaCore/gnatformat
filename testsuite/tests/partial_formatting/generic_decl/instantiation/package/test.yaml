@@ -1,0 +1,9 @@
+description: GenericPackageInstantiation formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 29",
+    "-EL 30",
+  ]
+status_code: 1

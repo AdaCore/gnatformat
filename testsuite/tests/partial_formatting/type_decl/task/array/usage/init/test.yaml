@@ -1,0 +1,9 @@
+description: ForLoopStmt formatting for line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.adb",
+    "-SL 48",
+    "-EL 50",
+  ]
+status_code: 1

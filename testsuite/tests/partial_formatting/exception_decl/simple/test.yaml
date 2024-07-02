@@ -1,0 +1,10 @@
+description: ExceptionDecl formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 21",
+    "-EL 21",
+    "-EC 21",
+  ]
+status_code: 1

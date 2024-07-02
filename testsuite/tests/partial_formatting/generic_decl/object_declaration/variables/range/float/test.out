@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Teta", "Phi"] test.ads:75:4-75:41>) - 75:1-75:41
+^
+   Teta, Phi : Float range -Pi .. +Pi;$
+

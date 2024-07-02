@@ -1,0 +1,9 @@
+description: NumberDecl formatting from line selection a real number declaration.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 23",
+    "-EL 24",
+  ]
+status_code: 1

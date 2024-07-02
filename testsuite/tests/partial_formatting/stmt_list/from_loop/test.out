@@ -1,0 +1,7 @@
+<CompilationUnit main.adb:1:1-14:10>
+main.adb(<StmtList main.adb:7:7-11:12>) - 7:1-11:12
+^
+      A := 1;
+      -- Comment;
+      B := 2;$
+

@@ -1,0 +1,9 @@
+description: GenericSubpInstantiation formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 25",
+    "-EL 26",
+  ]
+status_code: 1

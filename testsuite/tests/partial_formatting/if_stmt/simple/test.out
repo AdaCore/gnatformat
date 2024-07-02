@@ -1,0 +1,7 @@
+<CompilationUnit main.adb:1:1-7:10>
+main.adb(<IfStmt main.adb:4:7-6:11>) - 4:1-6:11
+^
+   if My_Var = 10 then
+      Put_Line (My_Var'Img);
+   end if;$
+

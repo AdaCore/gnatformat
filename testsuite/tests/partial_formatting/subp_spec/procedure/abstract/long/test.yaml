@@ -1,0 +1,11 @@
+description: SubpSpec formatting with partial selection of a long overriding procedure.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 4",
+    "-SC 9",
+    "-EL 4",
+    "-EC 13",
+  ]
+status_code: 1
