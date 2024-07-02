@@ -41,23 +41,24 @@ package Gnatformat.Command_Line is
       Default_Val => GNATCOLL.VFS.No_File);
 
    package Scenario is new Parse_Option_List
-     (Parser   => Parser,
-      Short    => "-X",
-      Name     => "KEY=VALUE",
-      Help     =>
+     (Parser     => Parser,
+      Short      => "-X",
+      Name       => "KEY=VALUE",
+      Help       =>
         "Specify an external reference to a scenario variable",
-      Arg_Type => Unbounded_String,
-      Convert  => To_Unbounded_String);
+      Accumulate => True,
+      Arg_Type   => Unbounded_String,
+      Convert    => To_Unbounded_String);
 
-   package No_Subprojects is new Parse_Flag
+   package Root_Project_Only is new Parse_Flag
       (Parser => Parser,
        Long   => "--no-subprojects",
        Help   => "Only process the root project, not the subprojects");
 
-   package Process_All_Files is new Parse_Flag
+   package All_Sources is new Parse_Flag
      (Parser => Parser,
       Short  => "-U",
-      Name   => "Process All Files",
+      Name   => "Process all sources",
       Help   =>
         "Process all files, not only those that are in the closure of mains");
 

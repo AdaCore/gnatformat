@@ -1,0 +1,6 @@
+library project Test_D is
+   for Library_Name use "Test_D";
+   for Library_Dir use "lib";
+   for Object_Dir use "obj";
+   for Library_Interface use ("test_d", "test_d_dep");
+end Test_D;

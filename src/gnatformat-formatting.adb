@@ -31,7 +31,8 @@ package body Gnatformat.Formatting is
       return Ada.Strings.Unbounded.Unbounded_String
    is (Format
          (Libadalang.Generic_API.To_Generic_Unit (Unit),
-          Format_Options.Into (Ada_Language),
+          Format_Options.Into
+            (Ada.Directories.Simple_Name (Unit.Get_Filename), Ada_Language),
           Configuration));
 
    ------------

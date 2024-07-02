@@ -1,4 +1,4 @@
-test.adb
+--  test.adb
 with Test_Dep;
 
 procedure Main
@@ -7,7 +7,7 @@ begin
    null;
 end Main;
 
-test_dep.ads
+--  test_dep.ads
 package Test_Dep is
    A : constant Integer := 1;
 end Test_Dep;

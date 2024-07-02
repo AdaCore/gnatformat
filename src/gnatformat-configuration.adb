@@ -188,10 +188,9 @@ package body Gnatformat.Configuration is
       use Prettier_Ada.Documents;
 
       Width              : constant Natural :=
-        Self.Width or Prettier_Ada.Documents.Default_Format_Options.Width;
+        Self.Width or Default_Basic_Format_Options.Width.Value;
       Indentation        : constant Natural :=
-        Self.Indentation
-        or Prettier_Ada.Documents.Default_Format_Options.Indentation.Width;
+        Self.Indentation or Default_Basic_Format_Options.Indentation.Value;
       Indentation_Kind   : constant Prettier_Ada.Documents.Indentation_Kind :=
         (case Self.Indentation_Kind.Is_Set is
            when True  =>
@@ -199,7 +198,9 @@ package body Gnatformat.Configuration is
                 when Spaces => Prettier_Ada.Documents.Spaces,
                 when Tabs   => Prettier_Ada.Documents.Tabs),
            when False =>
-             Prettier_Ada.Documents.Default_Format_Options.Indentation.Kind);
+             (case Default_Basic_Format_Options.Indentation_Kind.Value is
+                when Spaces => Prettier_Ada.Documents.Spaces,
+                when Tabs   => Prettier_Ada.Documents.Tabs));
       Indentation_Offset :
         constant Prettier_Ada.Documents.Indentation_Offset_Type :=
           (Tabs => 0, Spaces => 0);
@@ -210,7 +211,9 @@ package body Gnatformat.Configuration is
                 when LF   => Prettier_Ada.Documents.LF,
                 when CRLF => Prettier_Ada.Documents.CRLF),
            when False =>
-             Prettier_Ada.Documents.Default_Format_Options.End_Of_Line);
+             (case Default_Basic_Format_Options.End_Of_Line.Value is
+                when LF   => Prettier_Ada.Documents.LF,
+                when CRLF => Prettier_Ada.Documents.CRLF));
 
    begin
       return
@@ -241,6 +244,19 @@ package body Gnatformat.Configuration is
    is (if Self.Sources.Contains (Source_Filename)
        then Self.Sources.Element (Source_Filename).Into
        else Prettier_Ada.Documents.Default_Format_Options);
+
+   ----------
+   -- Into --
+   ----------
+
+   function Into
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages)
+      return Prettier_Ada.Documents.Format_Options_Type
+   is (if Self.Sources.Contains (Source_Filename)
+       then Self.Sources.Element (Source_Filename).Into
+       else Self.Into (Language_Fallback));
 
    --------------
    -- Override --
@@ -481,26 +497,46 @@ package body Gnatformat.Configuration is
 
       begin
          if Attribute.Index = Ada_Attribute_Index then
-            Gnatformat_Trace.Trace ("Ada attribute");
+            Gnatformat_Trace.Trace ("Ada attribute " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
                when Continuation_Line =>
+                  Gnatformat_Trace.Trace
+                    (Continuation_Line'Image
+                     & " = "
+                     & Attribute_Value.Continuation_Line'Image);
                   Self.With_Continuation_Line_Indentation
                     (Attribute_Value.Continuation_Line, Ada_Language);
 
                when End_Of_Line =>
+                  Gnatformat_Trace.Trace
+                    (End_Of_Line'Image
+                     & " = "
+                     & Attribute_Value.End_Of_Line'Image);
                   Self.With_End_Of_Line
                     (Attribute_Value.End_Of_Line, Ada_Language);
 
                when Indentation =>
+                  Gnatformat_Trace.Trace
+                    (Indentation'Image
+                     & " = "
+                     & Attribute_Value.Indentation'Image);
                   Self.With_Indentation
                     (Attribute_Value.Indentation, Ada_Language);
 
                when Indentation_Kind =>
+                  Gnatformat_Trace.Trace
+                    (Indentation_Kind'Image
+                     & " = "
+                     & Attribute_Value.Indentation_Kind'Image);
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Ada_Language);
 
                when Width =>
+                  Gnatformat_Trace.Trace
+                    (Width'Image
+                     & " = "
+                     & Attribute_Value.Width'Image);
                   Self.With_Width
                     (Attribute_Value.Width, Ada_Language);
 
@@ -509,26 +545,47 @@ package body Gnatformat.Configuration is
             end case;
 
          else
-            Gnatformat_Trace.Trace ("Source attribute");
+            Gnatformat_Trace.Trace
+              ("Source attribute for " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
                when Continuation_Line =>
+                  Gnatformat_Trace.Trace
+                    (Continuation_Line'Image
+                     & " = "
+                     & Attribute_Value.Continuation_Line'Image);
                   Self.With_Continuation_Line_Indentation
                     (Attribute_Value.Continuation_Line, Attribute.Index.Text);
 
                when End_Of_Line =>
+                  Gnatformat_Trace.Trace
+                    (End_Of_Line'Image
+                     & " = "
+                     & Attribute_Value.End_Of_Line'Image);
                   Self.With_End_Of_Line
                     (Attribute_Value.End_Of_Line, Attribute.Index.Text);
 
                when Indentation =>
+                  Gnatformat_Trace.Trace
+                    (Indentation'Image
+                     & " = "
+                     & Attribute_Value.Indentation'Image);
                   Self.With_Indentation
                     (Attribute_Value.Indentation, Attribute.Index.Text);
 
                when Indentation_Kind =>
+                  Gnatformat_Trace.Trace
+                    (Indentation_Kind'Image
+                     & " = "
+                     & Attribute_Value.Indentation_Kind'Image);
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Attribute.Index.Text);
 
                when Width =>
+                  Gnatformat_Trace.Trace
+                    (Width'Image
+                     & " = "
+                     & Attribute_Value.Width'Image);
                   Self.With_Width
                     (Attribute_Value.Width, Attribute.Index.Text);
 
