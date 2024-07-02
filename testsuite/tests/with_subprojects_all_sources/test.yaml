@@ -1,0 +1,4 @@
+description: Test that subproject are also formatted (except the ones marked as
+  externally built).
+driver: gnatformat
+args: ["-P", "project_a/test_a.gpr", "--pipe", "-U"]

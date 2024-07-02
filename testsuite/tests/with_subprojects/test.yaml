@@ -1,0 +1,4 @@
+description: Test that unused sources from project dependencies are not
+  formatted.
+driver: gnatformat
+args: ["-P", "project_a/test_a.gpr", "--pipe"]

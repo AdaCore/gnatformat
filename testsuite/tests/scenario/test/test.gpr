@@ -1,0 +1,22 @@
+project Test is
+   type Mode_Type is ("test_1", "test_2");
+   Mode_1 : Mode_Type := external ("mode_1", "test_1");
+   Mode_2 : Mode_Type := external ("mode_2", "test_2");
+
+   for Object_Dir use ".";
+   for Exec_dir use ".";
+
+   case Mode_1 is
+      when "test_1" =>
+         for Source_Dirs use ("test_1");
+         for Main use ("test_1.adb");
+      when "test_2" =>
+         case Mode_2 is
+            when "test_1" =>
+               for Source_Dirs use ("test_2", "test_2/test_2_1");
+            when "test_2" =>
+               for Source_Dirs use ("test_2", "test_2/test_2_2");
+         end case;
+         for Main use ("test_2.adb");
+   end case;
+end Test;

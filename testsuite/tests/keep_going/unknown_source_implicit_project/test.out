@@ -1,5 +1,5 @@
 Failed to resolve test_dep.adb
-test.adb
+--  test.adb
 with Test_Dep;
 
 procedure Main

@@ -1,0 +1,10 @@
+with "./../project_b/test_b.gpr";
+with "./../project_c/test_c.gpr";
+with "./../project_d/test_d.gpr";
+
+project Test_A is
+   for Source_Dirs use (".");
+   for Object_Dir use ".";
+   for Exec_dir use ".";
+   for Main use ("test_a.adb");
+end Test_A;

@@ -3,6 +3,7 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Containers;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Directories;
 with Ada.Exceptions;
@@ -22,7 +23,6 @@ with Gnatformat.Configuration;
 with Gnatformat.Formatting;
 
 with GPR2;
-
 with GPR2.Build.Compilation_Unit;
 with GPR2.Build.Source;      use GPR2.Build.Source;
 with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
@@ -295,10 +295,10 @@ begin
 
       Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
         Gnatformat.Command_Line.Unparsing_Configuration.Get;
-      Unparsing_Configuration :
-        constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Load_Unparsing_Configuration
-          (Unparsing_Configuration_File, Diagnostics);
+      Unparsing_Configuration      :
+        constant Langkit_Support_Unparsing.Unparsing_Configuration      :=
+          Gnatformat.Configuration.Load_Unparsing_Configuration
+            (Unparsing_Configuration_File, Diagnostics);
 
    begin
       if Project_File = GNATCOLL.VFS.No_File
@@ -348,12 +348,36 @@ begin
                .Configuration
                .Create_Project_Format_Options_Cache;
 
+         General_Failed : Boolean := False;
+
+         Print_Source_Simple_Name : Boolean := True;
+
          function Format_Source
            (Path : GPR2.Path_Name.Object;
             View : GPR2.Project.View.Object)
             return Ada.Strings.Unbounded.Unbounded_String;
          --  Resolves the right format options for Path and formats it.
          --  View is the owning view of the source.
+
+         procedure Process_Part
+           (Kind     : GPR2.Unit_Kind;
+            View     : GPR2.Project.View.Object;
+            Path     : GPR2.Path_Name.Object;
+            Index    : GPR2.Unit_Index;
+            Sep_Name : GPR2.Optional_Name_Type);
+         --  Process one Part (ie, one source) by calling Process_Source with
+         --  Path and View. Kind, Index and Sep_Name are not used.
+
+         procedure Process_Source
+           (Path : GPR2.Path_Name.Object;
+            View : GPR2.Project.View.Object);
+         --  Formats the source defined by Path.
+         --  If --pipe is used, then prints the formatted source to stdout.
+         --  Otherwise writes it to disk.
+
+         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object);
+         --  Process one compilation unit by calling Process_Part for each
+         --  Unit's part.
 
          -------------------
          -- Format_Source --
@@ -366,14 +390,14 @@ begin
          is
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
               LAL_Context.Get_From_File (String (Path.Value));
+
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type :=
                 Project_Format_Options_Cache.Get (View);
 
          begin
             --  TODO: Cache the override
-            Project_Formatting_Config.Overwrite
-              (CLI_Formatting_Config);
+            Project_Formatting_Config.Overwrite (CLI_Formatting_Config);
 
             return
               Gnatformat.Formatting.Format
@@ -382,37 +406,31 @@ begin
                  Configuration  => Unparsing_Configuration);
          end Format_Source;
 
-         General_Failed : Boolean := False;
+         ------------------
+         -- Process_Unit --
+         ------------------
 
-         procedure Process_Part
-           (Kind     : GPR2.Unit_Kind;
-            View     : GPR2.Project.View.Object;
-            Path     : GPR2.Path_Name.Object;
-            Index    : GPR2.Unit_Index;
-            Sep_Name : GPR2.Optional_Name_Type);
-         --  Process one Part (ie, one source)
-
-         procedure Process_Source
-           (Path : GPR2.Path_Name.Object;
-            View : GPR2.Project.View.Object);
-
-         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object);
-         --  Process one compilation unit
-
-         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object) is
+         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object)
+         is
          begin
             Unit.For_All_Part (Process_Part'Access);
          end Process_Unit;
 
+         --------------------
+         -- Process_Source --
+         --------------------
+
          procedure Process_Source
            (Path : GPR2.Path_Name.Object;
-            View : GPR2.Project.View.Object) is
+            View : GPR2.Project.View.Object)
+         is
          begin
             if Gnatformat.Command_Line.Pipe.Get then
                begin
-                  --  TODO: do we need to output the file name?
-                  Ada.Text_IO.Put_Line
-                    (String (Path.Base_Filename) & String (Path.Extension));
+                  if Print_Source_Simple_Name then
+                     Ada.Text_IO.Put_Line ("--  " & String (Path.Simple_Name));
+                  end if;
+
                   Ada.Strings.Unbounded.Text_IO.Put_Line
                     (Format_Source (Path, View));
                   Ada.Text_IO.New_Line;
@@ -423,8 +441,7 @@ begin
 
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
-                        "Failed to format "
-                        & String (Path.Value));
+                        "Failed to format " & String (Path.Value));
 
                      if Gnatformat.Command_Line.Keep_Going.Get then
                         Gnatformat_Trace.Trace
@@ -470,6 +487,10 @@ begin
             end if;
          end Process_Source;
 
+         ------------------
+         -- Process_Part --
+         ------------------
+
          procedure Process_Part
            (Kind     : GPR2.Unit_Kind;
             View     : GPR2.Project.View.Object;
@@ -482,22 +503,34 @@ begin
             Process_Source (Path, View);
          end Process_Part;
 
-         use Source_List;
-         Command_Line_Sources : constant Source_List.List :=
-           Get_Command_Line_Sources (Project_Tree, General_Failed);
+         use type Ada.Containers.Count_Type;
+
       begin
-         if not Command_Line_Sources.Is_Empty then
-            for Source of Command_Line_Sources loop
-               Process_Source (Source.Path_Name, Source.Owning_View);
-            end loop;
+         if Gnatformat.Command_Line.Sources.Get'Length > 0 then
+            --  Only print the source simple name as a comment if there's
+            --- more than one source to format.
+
+            Print_Source_Simple_Name :=
+               Gnatformat.Command_Line.Sources.Get'Length > 1;
+
+            declare
+               Command_Line_Sources : constant Source_List.List :=
+                 Get_Command_Line_Sources (Project_Tree, General_Failed);
+
+            begin
+               for Source of Command_Line_Sources loop
+                  Process_Source (Source.Path_Name, Source.Owning_View);
+               end loop;
+            end;
+
          else
             Project_Tree.For_Each_Ada_Closure
-              (Process_Unit'Access,
-                All_Sources       =>
-                  Gnatformat.Command_Line.Process_All_Files.Get,
-                Root_Project_Only =>
-                  Gnatformat.Command_Line.No_Subprojects.Get,
-                Externally_Built  => False);
+              (Action            => Process_Unit'Access,
+               All_Sources       =>
+                 Gnatformat.Command_Line.All_Sources.Get,
+               Root_Project_Only =>
+                 Gnatformat.Command_Line.Root_Project_Only.Get,
+               Externally_Built  => False);
          end if;
 
          if General_Failed then
