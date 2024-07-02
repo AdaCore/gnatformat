@@ -1,0 +1,9 @@
+<CompilationUnit main.adb:1:1-6:10>
+main.adb(<CallStmt main.adb:4:1-4:95>) - 4:1-4:95
+^
+   Foo
+     (AAAA => Foo_1,
+     BB => Foo_2,
+     CCCCCCC => Foo_3,
+     DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD => 7);$
+

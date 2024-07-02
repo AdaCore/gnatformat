@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:21:1-25:32>
+test.ads(<NullSubpDecl ["Simplify"] test.ads:23:4-23:57>) - 23:1-23:57
+^
+   procedure Simplify (Expr : in out Expression) is null;$
+

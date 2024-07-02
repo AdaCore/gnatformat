@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:19:1-25:27>
+test.ads(<ExceptionDecl ["Overflow", "Underflow"] test.ads:23:1-23:33>) - 23:1-23:33
+^
+   Overflow, Underflow : exception;$
+

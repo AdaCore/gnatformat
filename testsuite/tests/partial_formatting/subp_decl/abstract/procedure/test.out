@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:20:1-32:37>
+test.ads(<AbstractSubpDecl ["Take"] test.ads:29:5-30:51>) - 29:1-30:51
+^
+   procedure Take (Element : out Element_Type; From : in out Set) is abstract;$
+

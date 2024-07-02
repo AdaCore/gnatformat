@@ -1,0 +1,10 @@
+<CompilationUnit test.adb:1:1-10:10>
+test.adb(<SubpBody ["Bar"] test.adb:2:4-9:12>) - 2:1-9:12
+^
+   overriding
+   procedure Bar (Self : Baz; I : Integer)
+   is
+   begin
+      null;
+   end Bar;$
+

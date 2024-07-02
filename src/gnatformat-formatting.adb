@@ -264,7 +264,9 @@ package body Gnatformat.Formatting is
       function Is_Relevant_Parent_Kind
         (Kind : Ada_Node_Kind_Type) return Boolean
       is (Kind in Ada_Decl_Block | Ada_Type_Decl | Ada_Compilation_Unit
-                | Ada_Stmt | Ada_Basic_Decl);
+            | Ada_Stmt | Ada_Stmt_List | Ada_Ada_Node_List
+            | Ada_Basic_Decl | Ada_Subp_Spec
+            | Ada_Use_Type_Clause);
 
       function Is_Relevant_Parent_Node
         (Node : Ada_Node'Class) return Boolean
@@ -361,9 +363,9 @@ package body Gnatformat.Formatting is
                Start_Parents : constant Ada_Node_Array := Start_Node.Parents;
                End_Parents   : constant Ada_Node_Array := End_Node.Parents;
             begin
-               for Idx in Start_Parents'First .. Start_Parents'Last - 1 loop
+               for Crt_Parent of Start_Parents loop
                   for I of End_Parents loop
-                     if Start_Parents (Idx) = I then
+                     if Crt_Parent = I then
                         return I.As_Ada_Node;
                      end if;
                   end loop;
@@ -412,6 +414,7 @@ package body Gnatformat.Formatting is
               Get_Common_Enclosing_Parent_Node (Start_Node, End_Node);
 
             Parent_Node := Enclosing_Node;
+
             if Enclosing_Node /= No_Ada_Node
               and then not Is_Relevant_Parent_Kind (Kind (Enclosing_Node))
             then

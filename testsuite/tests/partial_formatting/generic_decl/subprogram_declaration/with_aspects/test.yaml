@@ -1,0 +1,9 @@
+description: GenericSubpDecl formatting from partial selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 26",
+    "-EL 31",
+  ]
+status_code: 1

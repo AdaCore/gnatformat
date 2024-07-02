@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Color_Table"] test.ads:69:4-69:43>) - 69:1-69:43
+^
+   Color_Table : array (1 .. Max) of Color;$
+

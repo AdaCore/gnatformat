@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:1:1-6:10>
+test.ads(<SubpSpec test.ads:2:4-5:19>) - 2:1-5:19
+^
+   procedure Example (A : Integer; B : Integer; C : Integer)$
+
