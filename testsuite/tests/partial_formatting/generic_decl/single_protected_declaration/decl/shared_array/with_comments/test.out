@@ -6,6 +6,6 @@ test.adb(<SingleProtectedDecl ["Shared_Array"] test.adb:59:4-65:21>) - 59:1-65:2
       function Component (N : in Index) return Item;
       procedure Set_Component (N : in Index; E : in Item);
    private
-      Table : Item_Array(Index) := (others => Null_Item);
+      Table : Item_Array (Index) := (others => Null_Item);
    end Shared_Array;$
 
