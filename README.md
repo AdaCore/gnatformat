@@ -5,9 +5,9 @@ It is based on the [Prettier-Ada](https://github.com/AdaCore/prettier-ada) libra
 a port of the [Prettier](https://github.com/prettier/prettier) formatter engine
 to the Ada programming language.
 
-The intent of `gnatformat` is to format a valid Ada source code according to the
-coding style described in the [GNAT Coding Style]
-(https://gcc.gnu.org/onlinedocs/gnat-style.pdf) guide. 
+The intent of `gnatformat` is to format a valid Ada source code according to the coding
+style described in the [GNAT Coding Style](https://gcc.gnu.org/onlinedocs/gnat-style.pdf)
+guide. 
 
 ## Usage
 
