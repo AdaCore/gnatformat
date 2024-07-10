@@ -7,6 +7,3 @@ args:
     "-EL 66",
   ]
 status_code: 1
-control:
-- [XFAIL, "True",
-   "unexpected output: waiting for issue #eng/libadalang/langkit#810"]
