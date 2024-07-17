@@ -1,0 +1,9 @@
+description: StmtList formatting with partial selection.
+driver: partial_gnatformat
+args:
+  [
+    "main.adb",
+    "-SL 5",
+    "-EL 11",
+  ]
+status_code: 1

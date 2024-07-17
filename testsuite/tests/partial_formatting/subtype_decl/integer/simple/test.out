@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:19:1-72:26>
+test.ads(<SubtypeDecl ["Int"] test.ads:28:4-28:27>) - 28:1-28:27
+^
+   subtype Int is Integer;$
+

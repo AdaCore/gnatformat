@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Limit"] test.ads:81:4-81:43>) - 81:1-81:43
+^
+   Limit : constant Integer := 10_000;$
+

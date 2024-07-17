@@ -1,0 +1,6 @@
+<CompilationUnit test.ads:26:1-35:37>
+test.ads(<ExprFunction ["Is_Origin"] test.ads:32:4-33:30>) - 32:1-33:30
+^
+   function Is_Origin (P : in Point) return Boolean
+   is (P.X = 0.0 and P.Y = 0.0);$
+

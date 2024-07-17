@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:18:1-31:24>
+test.ads(<NumberDecl ["One", "Un", "Eins"] test.ads:29:4-29:34>) - 29:1-29:34
+^
+   One, Un, Eins : constant := 1;$
+

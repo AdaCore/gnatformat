@@ -1,0 +1,9 @@
+description: NoTypeObjectRenamingDecl formatting for line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 50",
+    "-EL 51",
+  ]
+status_code: 1

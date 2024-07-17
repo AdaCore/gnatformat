@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:27:1-149:23>
+test.ads(<SingleTaskDecl ["User"] test.ads:138:4-138:14>) - 138:1-138:14
+^
+   task User;$
+

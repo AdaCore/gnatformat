@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Option"] test.ads:72:4-72:58>) - 72:1-72:58
+^
+   Option : Bit_Vector (1 .. 10) := (others => True);$
+

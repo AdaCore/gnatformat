@@ -1,0 +1,9 @@
+<CompilationUnit test.ads:20:1-32:36>
+test.ads(<GenericSubpDecl ["Squaring"] test.ads:26:4-30:44>) - 26:1-30:44
+^
+   generic
+      type Item(<>)is private;
+      with function "*" (U, V : Item) return Item is <>;
+
+   function Squaring (X : Item) return Item;$
+

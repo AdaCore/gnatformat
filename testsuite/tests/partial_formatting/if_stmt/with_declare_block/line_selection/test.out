@@ -1,0 +1,11 @@
+<CompilationUnit main.adb:1:1-14:10>
+main.adb(<IfStmt main.adb:5:11-11:17>) - 5:1-11:17
+^
+      if Item.kind = Snippet then
+         declare
+            X : Integer;
+         begin
+            null;
+         end;
+      end if;$
+

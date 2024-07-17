@@ -1,0 +1,9 @@
+<CompilationUnit test.adb:30:1-41:29>
+test.adb(<TaskBody ["T"] test.adb:35:4-38:10>) - 35:1-38:10
+^
+   task body T
+   is
+   begin
+      Put_Line ("In task T");
+   end T;$
+

@@ -1,0 +1,9 @@
+description: ConcreteTypeDecl formatting for line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 84",
+    "-EL 90",
+  ]
+status_code: 1

@@ -1,0 +1,9 @@
+description: TaskBody formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.adb",
+    "-SL 34",
+    "-EL 40",
+  ]
+status_code: 1
