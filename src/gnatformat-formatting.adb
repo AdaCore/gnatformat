@@ -763,7 +763,7 @@ package body Gnatformat.Formatting is
               Language        => Ada_Language);
 
          Current_Continuation_Indent : constant Natural :=
-           Gnatformat.Configuration.Get_Continuation_Line
+           Gnatformat.Configuration.Get_Indentation_Continuation
              (Options         => Options,
               Source_Filename => Simple_Name (Unit.Get_Filename),
               Language        => Ada_Language);

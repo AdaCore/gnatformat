@@ -35,7 +35,6 @@ with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
-with Libadalang.Generic_API;
 
 procedure Gnatformat.Ada_Driver
 is
@@ -87,8 +86,6 @@ is
          declare
             Resolved_Source : constant GPR2.Build.Source.Object :=
               Root_Project.Source (GPR2.Simple_Name (Source.Base_Name));
-
-            use type GPR2.Build.Source.Object;
 
          begin
             if Resolved_Source = GPR2.Build.Source.Undefined then
@@ -502,8 +499,6 @@ begin
          begin
             Process_Source (Path, View);
          end Process_Part;
-
-         use type Ada.Containers.Count_Type;
 
       begin
          if Gnatformat.Command_Line.Sources.Get'Length > 0 then
