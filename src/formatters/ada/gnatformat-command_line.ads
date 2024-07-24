@@ -128,9 +128,9 @@ package Gnatformat.Command_Line is
       Default_Val =>
         Gnatformat.Configuration.Optional_Indentation_Kinds.None);
 
-   package Continuation_Line_Indentation is new Parse_Option
+   package Indentation_Continuation is new Parse_Option
      (Parser      => Parser,
-      Long        => "--continuation-line-indentation",
+      Long        => "--indentation-continuation",
       Help        =>
         "Continuation Line Indentation size (defaults to indentation-1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,

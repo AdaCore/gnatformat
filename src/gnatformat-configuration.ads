@@ -119,17 +119,18 @@ package Gnatformat.Configuration is
       return Format_Options_Type;
    --  Returns the format options current state
 
-   procedure With_Continuation_Line_Indentation
-     (Self                          : in out Format_Options_Builder_Type;
-      Continuation_Line_Indentation : Positive;
-      Language                      : Supported_Languages);
-   --  Sets the format option Continuation_Line for the provided Language
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Language                 : Supported_Languages);
+   --  Sets the format option Indentation_Continuation for the provided
+   --  Language.
 
-   procedure With_Continuation_Line_Indentation
-     (Self                          : in out Format_Options_Builder_Type;
-      Continuation_Line_Indentation : Positive;
-      Source_Filename : String);
-   --  Sets the format option Continuation_Line for the provided
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Source_Filename          : String);
+   --  Sets the format option Indentation_Continuation for the provided
    --  Source_Filename.
 
    procedure With_End_Of_Line
@@ -209,7 +210,7 @@ package Gnatformat.Configuration is
       Language        : Supported_Languages := Ada_Language)
       return Indentation_Kind;
 
-   function Get_Continuation_Line
+   function Get_Indentation_Continuation
      (Options         : Format_Options_Type;
       Source_Filename : String;
       Language        : Supported_Languages := Ada_Language)
@@ -251,12 +252,10 @@ private
    Q_Indentation_Kind_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Indentation_Kind_Attribute_Id);
 
-   Continuation_Line_Indentation_Attribute_Id   :
-     constant GPR2.Attribute_Id   :=
-       GPR2."+" ("continuation_line_indentation");
-   Q_Continuation_Line_Indentation_Attribute_Id :
-     constant GPR2.Q_Attribute_Id :=
-       (Package_Id, Continuation_Line_Indentation_Attribute_Id);
+   Indentation_Continuation_Attribute_Id   : constant GPR2.Attribute_Id   :=
+     GPR2."+" ("indentation_continuation");
+   Q_Indentation_Continuation_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Indentation_Continuation_Attribute_Id);
 
    End_Of_Line_Attribute_Id   : constant GPR2.Attribute_Id   :=
      GPR2."+" ("end_of_line");
@@ -265,14 +264,19 @@ private
 
    type Basic_Format_Options_Type is
      record
-       Width             : Optional_Positive         := (Is_Set => False);
-       Indentation       : Optional_Positive         := (Is_Set => False);
-       Indentation_Kind  : Optional_Indentation_Kind := (Is_Set => False);
-       Continuation_Line : Optional_Positive         := (Is_Set => False);
-       End_Of_Line       : Optional_End_Of_Line_Kind := (Is_Set => False);
+       Width                    : Optional_Positive         :=
+         (Is_Set => False);
+       Indentation              : Optional_Positive         :=
+         (Is_Set => False);
+       Indentation_Kind         : Optional_Indentation_Kind :=
+         (Is_Set => False);
+       Indentation_Continuation : Optional_Positive         :=
+         (Is_Set => False);
+       End_Of_Line              : Optional_End_Of_Line_Kind :=
+         (Is_Set => False);
      end record;
 
-   function Continuation_Line_Indentation
+   function Indentation_Continuation
      (Self : Basic_Format_Options_Type)
       return Positive;
    --  Returns the continuation line indentation which was explicitly set or
@@ -290,11 +294,11 @@ private
    --  Overwrites Target's options by Source's ones
 
    Default_Basic_Format_Options : constant Basic_Format_Options_Type :=
-     (Width             => (Is_Set => True, Value => 79),
-      Indentation       => (Is_Set => True, Value => 3),
-      Indentation_Kind  => (Is_Set => True, Value => Spaces),
-      Continuation_Line => (Is_Set => True, Value => 2),
-      End_Of_Line       => (Is_Set => True, Value => LF));
+     (Width                    => (Is_Set => True, Value => 79),
+      Indentation              => (Is_Set => True, Value => 3),
+      Indentation_Kind         => (Is_Set => True, Value => Spaces),
+      Indentation_Continuation => (Is_Set => True, Value => 2),
+      End_Of_Line              => (Is_Set => True, Value => LF));
 
    Undefined_Basic_Format_Options : constant Basic_Format_Options_Type :=
      (others => <>);
