@@ -1,0 +1,16 @@
+.. Custom macro definitions
+
+.. |GNATformat|     replace:: :program:`GNATformat`
+.. |Prettier-Ada|   replace:: :program:`Prettier Ada library`
+.. |Prettier|       replace:: :program:`Prettier`
+
+.. |GNATpro|        replace:: :program:`GNAT Pro`
+.. |GNAT|           replace:: :program:`GNAT`
+.. |GNAT-Style|     replace:: :program:`GNAT Coding Style`
+
+.. |GNATStudio|     replace:: :program:`GNAT Studio`
+.. |VSCode|         replace:: :program:`Visual Studio Code`
+
+.. |ALS|            replace:: :program:`Ada Language Server`
+
+.. |github|         replace:: :program:`GitHub`
