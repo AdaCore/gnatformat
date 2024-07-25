@@ -758,15 +758,15 @@ package body Gnatformat.Formatting is
          use Ada.Directories;
          Current_Indentation         : constant Natural :=
            Gnatformat.Configuration.Get_Indentation
-             (Options         => Options,
-              Source_Filename => Simple_Name (Unit.Get_Filename),
-              Language        => Ada_Language);
+             (Self              => Options,
+              Source_Filename   => Simple_Name (Unit.Get_Filename),
+              Language_Fallback => Ada_Language);
 
          Current_Continuation_Indent : constant Natural :=
            Gnatformat.Configuration.Get_Indentation_Continuation
-             (Options         => Options,
-              Source_Filename => Simple_Name (Unit.Get_Filename),
-              Language        => Ada_Language);
+             (Self              => Options,
+              Source_Filename   => Simple_Name (Unit.Get_Filename),
+              Language_Fallback => Ada_Language);
       begin
          Initial_Indentation := Get_Initial_Indentation
            (Node        => Enclosing_Node,
