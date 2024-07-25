@@ -19,11 +19,11 @@ package body Gnatformat.Configuration is
       return Format_Options_Type
    is (Self.Format_Options);
 
-   -----------------------------------
-   -- Continuation_Line_Indentation --
-   -----------------------------------
+   ------------------------------
+   -- Indentation_Continuation --
+   ------------------------------
 
-   function Continuation_Line_Indentation
+   function Indentation_Continuation
      (Self : Basic_Format_Options_Type)
       return Positive
    is
@@ -31,10 +31,10 @@ package body Gnatformat.Configuration is
 
    begin
       return
-        Self.Continuation_Line
+        Self.Indentation_Continuation
         or ((Self.Indentation
              or Default_Basic_Format_Options.Indentation.Value) - 1);
-   end Continuation_Line_Indentation;
+   end Indentation_Continuation;
 
    -----------------------------------
    -- Create_Format_Options_Builder --
@@ -97,7 +97,7 @@ package body Gnatformat.Configuration is
         (Q_Indentation_Kind_Attribute_Id, "Indentation kind: spaces | tabs");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Continuation_Line_Indentation_Attribute_Id,
+        (Name                  => Q_Indentation_Continuation_Attribute_Id,
          Index_Type            =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
          Value                 => GPR2.Project.Registry.Attribute.Single,
@@ -105,7 +105,7 @@ package body Gnatformat.Configuration is
          Is_Allowed_In         =>
            GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
-        (Q_Continuation_Line_Indentation_Attribute_Id,
+        (Q_Indentation_Continuation_Attribute_Id,
          "Continuation Line Indentation size");
 
       GPR2.Project.Registry.Attribute.Add
@@ -187,21 +187,25 @@ package body Gnatformat.Configuration is
       use type Optional_Positive;
       use Prettier_Ada.Documents;
 
-      Width              : constant Natural :=
+      Width                     : constant Natural :=
         Self.Width or Default_Basic_Format_Options.Width.Value;
-      Indentation        : constant Natural :=
+      Indentation               : constant Natural :=
         Self.Indentation or Default_Basic_Format_Options.Indentation.Value;
-      Indentation_Kind   : constant Prettier_Ada.Documents.Indentation_Kind :=
-        (case Self.Indentation_Kind.Is_Set is
-           when True  =>
-             (case Self.Indentation_Kind.Value is
-                when Spaces => Prettier_Ada.Documents.Spaces,
-                when Tabs   => Prettier_Ada.Documents.Tabs),
-           when False =>
-             (case Default_Basic_Format_Options.Indentation_Kind.Value is
-                when Spaces => Prettier_Ada.Documents.Spaces,
-                when Tabs   => Prettier_Ada.Documents.Tabs));
-      Indentation_Offset :
+      Indentation_Kind          :
+        constant Prettier_Ada.Documents.Indentation_Kind :=
+          (case Self.Indentation_Kind.Is_Set is
+             when True  =>
+               (case Self.Indentation_Kind.Value is
+                  when Spaces => Prettier_Ada.Documents.Spaces,
+                  when Tabs   => Prettier_Ada.Documents.Tabs),
+             when False =>
+               (case Default_Basic_Format_Options.Indentation_Kind.Value is
+                  when Spaces => Prettier_Ada.Documents.Spaces,
+                  when Tabs   => Prettier_Ada.Documents.Tabs));
+      Indentation_Continuation  : constant Positive :=
+        Self.Indentation_Continuation
+        or Default_Basic_Format_Options.Indentation_Continuation.Value;
+      Indentation_Offset        :
         constant Prettier_Ada.Documents.Indentation_Offset_Type :=
           (Tabs => 0, Spaces => 0);
       End_Of_Line        : constant Prettier_Ada.Documents.End_Of_Line_Kind :=
@@ -218,9 +222,13 @@ package body Gnatformat.Configuration is
    begin
       return
         Prettier_Ada.Documents.Format_Options_Type'
-          (Width       => Width,
-           Indentation => (Indentation_Kind, Indentation, Indentation_Offset),
-           End_Of_Line => End_Of_Line);
+          (Width             => Width,
+           Indentation       =>
+             (Indentation_Kind,
+              Indentation,
+              Indentation_Continuation,
+              Indentation_Offset),
+           End_Of_Line       => End_Of_Line);
    end Into;
 
    ----------
@@ -312,28 +320,28 @@ package body Gnatformat.Configuration is
       end loop;
    end Overwrite;
 
-   ----------------------------------------
-   -- With_Continuation_Line_Indentation --
-   ----------------------------------------
+   -----------------------------------
+   -- With_Indentation_Continuation --
+   -----------------------------------
 
-   procedure With_Continuation_Line_Indentation
-     (Self                          : in out Format_Options_Builder_Type;
-      Continuation_Line_Indentation : Positive;
-      Language                      : Supported_Languages)
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Language                 : Supported_Languages)
    is
    begin
-      Self.Format_Options.Language (Language).Continuation_Line :=
-        (Is_Set => True, Value => Continuation_Line_Indentation);
-   end With_Continuation_Line_Indentation;
+      Self.Format_Options.Language (Language).Indentation_Continuation :=
+        (Is_Set => True, Value => Indentation_Continuation);
+   end With_Indentation_Continuation;
 
-   ----------------------------------------
-   -- With_Continuation_Line_Indentation --
-   ----------------------------------------
+   -----------------------------------
+   -- With_Indentation_Continuation --
+   -----------------------------------
 
-   procedure With_Continuation_Line_Indentation
-     (Self                          : in out Format_Options_Builder_Type;
-      Continuation_Line_Indentation : Positive;
-      Source_Filename               : String)
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Source_Filename          : String)
    is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
@@ -341,17 +349,17 @@ package body Gnatformat.Configuration is
            .Format_Options
            .Sources
            .Reference (Source_Filename)
-           .Continuation_Line :=
-           (Is_Set => True, Value => Continuation_Line_Indentation);
+           .Indentation_Continuation :=
+           (Is_Set => True, Value => Indentation_Continuation);
 
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Continuation_Line =>
-               (Is_Set => True, Value => Continuation_Line_Indentation),
+            (Indentation_Continuation =>
+               (Is_Set => True, Value => Indentation_Continuation),
              others            => <>));
       end if;
-   end With_Continuation_Line_Indentation;
+   end With_Indentation_Continuation;
 
    ----------------------
    -- With_End_Of_Line --
@@ -419,18 +427,18 @@ package body Gnatformat.Configuration is
          use type GPR2.Q_Optional_Attribute_Id;
 
          type Format_Option_Kind is
-           (Continuation_Line,
-            End_Of_Line,
+           (End_Of_Line,
             Indentation,
             Indentation_Kind,
+            Indentation_Continuation,
             Width,
             Unknown);
 
          type Attribute_Value_Type (Kind : Format_Option_Kind := Unknown) is
            record
              case Kind is
-               when Continuation_Line =>
-                 Continuation_Line : Positive;
+               when Indentation_Continuation =>
+                 Indentation_Continuation : Positive;
                when End_Of_Line =>
                  End_Of_Line : End_Of_Line_Kind;
                when Indentation =>
@@ -500,13 +508,13 @@ package body Gnatformat.Configuration is
             Gnatformat_Trace.Trace ("Ada attribute " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Continuation_Line =>
+               when Indentation_Continuation =>
                   Gnatformat_Trace.Trace
-                    (Continuation_Line'Image
+                    (Indentation_Continuation'Image
                      & " = "
-                     & Attribute_Value.Continuation_Line'Image);
-                  Self.With_Continuation_Line_Indentation
-                    (Attribute_Value.Continuation_Line, Ada_Language);
+                     & Attribute_Value.Indentation_Continuation'Image);
+                  Self.With_Indentation_Continuation
+                    (Attribute_Value.Indentation_Continuation, Ada_Language);
 
                when End_Of_Line =>
                   Gnatformat_Trace.Trace
@@ -549,13 +557,14 @@ package body Gnatformat.Configuration is
               ("Source attribute for " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Continuation_Line =>
+               when Indentation_Continuation =>
                   Gnatformat_Trace.Trace
-                    (Continuation_Line'Image
+                    (Indentation_Continuation'Image
                      & " = "
-                     & Attribute_Value.Continuation_Line'Image);
-                  Self.With_Continuation_Line_Indentation
-                    (Attribute_Value.Continuation_Line, Attribute.Index.Text);
+                     & Attribute_Value.Indentation_Continuation'Image);
+                  Self.With_Indentation_Continuation
+                    (Attribute_Value.Indentation_Continuation,
+                     Attribute.Index.Text);
 
                when End_Of_Line =>
                   Gnatformat_Trace.Trace
@@ -796,11 +805,11 @@ package body Gnatformat.Configuration is
       return Res;
    end Get_Indentation_Kind;
 
-   -----------------------------
-   --  Get_Continuation_Line  --
-   -----------------------------
+   ------------------------------------
+   --  Get_Indentation_Continuation  --
+   ------------------------------------
 
-   function Get_Continuation_Line
+   function Get_Indentation_Continuation
      (Options         : Format_Options_Type;
       Source_Filename : String;
       Language        : Supported_Languages := Ada_Language)
@@ -809,9 +818,9 @@ package body Gnatformat.Configuration is
       use Optional_Positives;
    begin
       return
-        Into (Options, Source_Filename, Language).Continuation_Line
-        or Default_Basic_Format_Options.Continuation_Line.Value;
-   end Get_Continuation_Line;
+        Into (Options, Source_Filename, Language).Indentation_Continuation
+        or Default_Basic_Format_Options.Indentation_Continuation.Value;
+   end Get_Indentation_Continuation;
 
    -----------------------
    --  Get_End_Of_Line  --
