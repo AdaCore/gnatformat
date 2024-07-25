@@ -52,6 +52,81 @@ package Gnatformat.Configuration is
 
    type Format_Options_Type is private;
 
+   function Get_End_Of_Line
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return End_Of_Line_Kind;
+   --  Retrieves the end-of-line option for the specified Source_Filename if it
+   --  exists.
+   --  If the end-of-line option for Source_Filename does not exist, the
+   --  function will fall back to the end-of-line option associated with the
+   --  given Language_Fallback if it is available.
+   --  If neither the Source_Filename end-of-line option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  end-of-line value defined by
+   --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Indentation
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Positive;
+   --  Retrieves the indentation option for the specified Source_Filename if it
+   --  exists.
+   --  If the indentation option for Source_Filename does not exist, the
+   --  function will fall back to the indentation option associated with the
+   --  given Language_Fallback if it is available.
+   --  If neither the Source_Filename indentation option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  indentation value defined by
+   --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Indentation_Kind
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Indentation_Kind;
+   --  Retrieves the indentaiton-kind option for the specified Source_Filename
+   --  if it exists.
+   --  If the indentaiton-kind option for Source_Filename does not exist, the
+   --  function will fall back to the indentaiton-kind option associated with
+   --  the given Language_Fallback if it is available.
+   --  If neither the Source_Filename indentaiton-kind option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  indentaiton-kind value defined by
+   --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Indentation_Continuation
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Positive;
+   --  Retrieves the indentaiton-continuation option for the specified
+   --  Source_Filename it exists.
+   --  If the indentaiton-continuation option for Source_Filename does not
+   --  exist, the function will fall back to the indentaiton-continuation
+   --  option associated with the given Language_Fallback if it is available.
+   --  If neither the Source_Filename indentaiton-continuation option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  indentaiton-continuation value defined by
+   --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Width
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Positive;
+   --  Retrieves the width option for the specified Source_Filename if it
+   --  exists.
+   --  If the width option for Source_Filename does not exist, the
+   --  function will fall back to the width option associated with the
+   --  given Language_Fallback if it is available.
+   --  If neither the Source_Filename width option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  width value defined by
+   --  Default_Basic_Format_Options.End_Of_Line.Value.
+
    function From_Project
      (Project : GPR2.Project.View.Object)
       return Format_Options_Type;
@@ -148,7 +223,8 @@ package Gnatformat.Configuration is
    procedure With_From_Attribute
      (Self      : in out Format_Options_Builder_Type;
       Attribute : GPR2.Project.Attribute.Object);
-   --  TODO
+   --  Parses Attribute and sets a format option according to the Attribute id
+   --  and value. If the Attribute id is unknown, then it's ignored.
 
    procedure With_Indentation
      (Self        : in out Format_Options_Builder_Type;
@@ -189,46 +265,9 @@ package Gnatformat.Configuration is
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
 
-   ----------------------------------------------
-   --  Getters for Format_Options_Type fields  --
-   ----------------------------------------------
-   function Get_Width
-     (Options         : Format_Options_Type;
-      Source_Filename : String;
-      Language        : Supported_Languages := Ada_Language)
-      return Natural;
-
-   function Get_Indentation
-     (Options         : Format_Options_Type;
-      Source_Filename : String;
-      Language        : Supported_Languages := Ada_Language)
-      return Natural;
-
-   function Get_Indentation_Kind
-     (Options         : Format_Options_Type;
-      Source_Filename : String;
-      Language        : Supported_Languages := Ada_Language)
-      return Indentation_Kind;
-
-   function Get_Indentation_Continuation
-     (Options         : Format_Options_Type;
-      Source_Filename : String;
-      Language        : Supported_Languages := Ada_Language)
-      return Natural;
-
-   function Get_End_Of_Line
-     (Options         : Format_Options_Type;
-      Source_Filename : String;
-      Language        : Supported_Languages := Ada_Language)
-      return End_Of_Line_Kind;
-
-   -----------------------------------------------
-   --  Helper function for formatting purposes  --
-   -----------------------------------------------
-
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
-      Diagnostics :
+      Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
    --  Loads the formatting rules
@@ -276,17 +315,19 @@ private
          (Is_Set => False);
      end record;
 
-   function Indentation_Continuation
-     (Self : Basic_Format_Options_Type)
-      return Positive;
-   --  Returns the continuation line indentation which was explicitly set or
-   --  default to Indentation - 1.
-
    function Into
      (Self : Basic_Format_Options_Type)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Basic_Format_Options_Type into an equivalent
    --  Prettier_Ada Format_Options.Type.
+
+   function Into
+     (Format_Options    : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages)
+      return Basic_Format_Options_Type;
+   --  Gets Basic_Format_Options_Type for Source_Filename if existent,
+   --  otherwise fallsback Language_Fallback's Basic_Format_Options_Type.
 
    procedure Overwrite
      (Target : in out Basic_Format_Options_Type;
