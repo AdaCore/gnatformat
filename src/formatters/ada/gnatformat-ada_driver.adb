@@ -336,8 +336,7 @@ begin
       declare
          LAL_Context :
            constant Libadalang.Analysis.Analysis_Context :=
-             Libadalang.Analysis.Create_Context_From_Project
-               (Project_Tree);
+             Libadalang.Analysis.Create_Context;
 
          Project_Format_Options_Cache :
            Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
