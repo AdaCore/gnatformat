@@ -72,8 +72,6 @@ is
    is
       Sources : Source_List.List;
 
-      Root_Project : constant GPR2.Project.View.Object :=
-        Project_Tree.Root_Project;
    begin
       Gnatformat_Trace.Trace ("Getting command line sources");
 
@@ -85,7 +83,8 @@ is
          Gnatformat_Trace.Trace ("Resolving " & Source.Display_Full_Name);
          declare
             Resolved_Source : constant GPR2.Build.Source.Object :=
-              Root_Project.Source (GPR2.Simple_Name (Source.Base_Name));
+              Project_Tree.Root_Project.Source
+                (GPR2.Simple_Name (Source.Base_Name));
 
          begin
             if Resolved_Source = GPR2.Build.Source.Undefined then
@@ -125,6 +124,9 @@ is
 
          Options.Add_Switch
            (GPR2.Options.P, GNATCOLL.VFS."+" (Project_File.Full_Name));
+
+      else
+         return;
       end if;
 
       for Scenario_Variable of Gnatformat.Command_Line.Scenario.Get loop
@@ -371,6 +373,11 @@ begin
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
 
+         procedure Process_Source (Source : GNATCOLL.VFS.Virtual_File);
+         --  Formats the source defined by Source.
+         --  If --pipe is used, then prints the formatted source to stdout.
+         --  Otherwise writes it to disk.
+
          procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object);
          --  Process one compilation unit by calling Process_Part for each
          --  Unit's part.
@@ -483,6 +490,66 @@ begin
             end if;
          end Process_Source;
 
+         --------------------
+         -- Process_Source --
+         --------------------
+
+         procedure Process_Source (Source : GNATCOLL.VFS.Virtual_File) is
+            Unit : constant Libadalang.Analysis.Analysis_Unit :=
+              LAL_Context.Get_From_File (Source.Display_Full_Name);
+
+         begin
+            if Gnatformat.Command_Line.Pipe.Get then
+               if Print_Source_Simple_Name then
+                  Ada.Text_IO.Put_Line ("--  " & Source.Display_Base_Name);
+               end if;
+
+               Ada.Strings.Unbounded.Text_IO.Put_Line
+                 (Gnatformat.Formatting.Format
+                    (Unit           => Unit,
+                     Format_Options =>
+                       Gnatformat.Configuration.Default_Format_Options,
+                     Configuration  => Unparsing_Configuration));
+               Ada.Text_IO.New_Line;
+            else
+               declare
+                  Source_File : Ada.Text_IO.File_Type;
+
+               begin
+                  Ada.Text_IO.Create
+                    (File => Source_File,
+                     Mode => Ada.Text_IO.Out_File,
+                     Name => Source.Display_Full_Name);
+
+                  Ada.Text_IO.Unbounded_IO.Put
+                    (Source_File,
+                     Gnatformat.Formatting.Format
+                       (Unit           => Unit,
+                        Format_Options =>
+                          Gnatformat.Configuration.Default_Format_Options,
+                        Configuration  => Unparsing_Configuration));
+
+                  Ada.Text_IO.Close (Source_File);
+               end;
+            end if;
+
+         exception
+            when E : others =>
+               General_Failed := True;
+
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  "Failed to format " & Source.Display_Full_Name);
+
+               if Gnatformat.Command_Line.Keep_Going.Get then
+                  Gnatformat_Trace.Trace
+                    (Ada.Exceptions.Exception_Information (E));
+
+               else
+                  Ada.Exceptions.Reraise_Occurrence (E);
+               end if;
+         end Process_Source;
+
          ------------------
          -- Process_Part --
          ------------------
@@ -507,15 +574,21 @@ begin
             Print_Source_Simple_Name :=
                Gnatformat.Command_Line.Sources.Get'Length > 1;
 
-            declare
-               Command_Line_Sources : constant Source_List.List :=
-                 Get_Command_Line_Sources (Project_Tree, General_Failed);
+            if Project_Tree.Is_Defined then
+               declare
+                  Command_Line_Sources : constant Source_List.List :=
+                    Get_Command_Line_Sources (Project_Tree, General_Failed);
 
-            begin
-               for Source of Command_Line_Sources loop
-                  Process_Source (Source.Path_Name, Source.Owning_View);
+               begin
+                  for Source of Command_Line_Sources loop
+                     Process_Source (Source.Path_Name, Source.Owning_View);
+                  end loop;
+               end;
+            else
+               for Source of Gnatformat.Command_Line.Sources.Get loop
+                  Process_Source (Source);
                end loop;
-            end;
+            end if;
 
          else
             Project_Tree.For_Each_Ada_Closure
