@@ -1,8 +1,7 @@
 <CompilationUnit main.adb:1:1-10:10>
 main.adb(<SubpBody ["main"] main.adb:1:1-10:10>) - 1:1-10:10
 ^
-procedure main
-is
+procedure main is
 begin
 
    declare

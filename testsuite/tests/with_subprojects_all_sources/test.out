@@ -1,8 +1,7 @@
 --  test_a.adb
 with Test_A_Dep;
 
-procedure Test_A
-is
+procedure Test_A is
 begin
    null;
 end Test_A;
@@ -20,8 +19,7 @@ end Test_A_Unused_Dep;
 --  test_b.adb
 with Test_B_Dep;
 
-procedure Test_B
-is
+procedure Test_B is
 begin
    null;
 end Test_B;

@@ -2,9 +2,9 @@
 test.ads(<SubpSpec test.ads:4:4-4:91>) - 4:1-4:91
 ^
    procedure Bar
-     (Self : Foo;
-      I : Integer;
-      I : Integer;
-      J : Integer;
+     (Self          : Foo;
+      I             : Integer;
+      I             : Integer;
+      J             : Integer;
       K, L, M, O, P : Integer)$
 

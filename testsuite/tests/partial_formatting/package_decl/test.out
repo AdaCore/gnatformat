@@ -5,7 +5,7 @@ package Package_Declaration is
 
    type Rational is
      record
-       Numerator : Integer;
+       Numerator   : Integer;
        Denominator : Positive;
      end record;
 
