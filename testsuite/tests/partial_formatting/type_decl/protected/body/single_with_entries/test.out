@@ -2,8 +2,7 @@
 test.adb(<ProtectedBody ["Obj"] test.adb:38:4-57:12>) - 38:1-57:12
 ^
    protected body Obj is
-      procedure Set (V : Integer)
-      is
+      procedure Set (V : Integer) is
       begin
          Local := V;
          Is_Set := True;

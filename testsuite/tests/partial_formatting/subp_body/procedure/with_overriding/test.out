@@ -2,8 +2,7 @@
 test.adb(<SubpBody ["Bar"] test.adb:2:4-9:12>) - 2:1-9:12
 ^
    overriding
-   procedure Bar (Self : Baz; I : Integer)
-   is
+   procedure Bar (Self : Baz; I : Integer) is
    begin
       null;
    end Bar;$
