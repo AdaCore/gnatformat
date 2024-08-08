@@ -1,7 +1,7 @@
 
 --  Based on ARM 2022
 --  $3.1:
---  basic_declaration ::= 
+--  basic_declaration ::=
 --       type_declaration | subtype_declaration
 --     | object_declaration | number_declaration
 --     | subprogram_declaration | abstract_subprogram_declaration
@@ -15,7 +15,7 @@
 --     | private_type_declaration
 --     | private_extension_declaration
 --  $3.2.1:
---  full_type_declaration ::= 
+--  full_type_declaration ::=
 --       type defining_identifier [known_discriminant_part] is type_definition
 --          [aspect_specification];
 --     | task_type_declaration
@@ -26,7 +26,7 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Protected_Objects_Entries is
-   
+
    protected Obj is
       procedure Set (V : Integer);
       entry Get (V : out Integer);

@@ -8,8 +8,7 @@ test.adb(<ProtectedBody ["Obj"] test.adb:38:4-57:12>) - 38:1-57:12
          Is_Set := True;
       end Set;
 
-      entry Get(V : out Integer) when Is_Set
-      is
+      entry Get (V : out Integer) when Is_Set is
          --  Entry is blocked until the
          --  condition is true. The barrier
          --  is evaluated at call of entries

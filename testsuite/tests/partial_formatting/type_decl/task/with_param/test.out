@@ -1,9 +1,8 @@
 <CompilationUnit test.ads:27:1-149:23>
 test.ads(<TaskTypeDecl ["Keyboard_Driver"] test.ads:119:4-123:24>) - 119:1-123:24
 ^
-   task type Keyboard_Driver (ID : Keyboard_ID := New_ID)
-   is new
-      Serial_Device
+   task type Keyboard_Driver (ID : Keyboard_ID := New_ID) is
+     new Serial_Device
    with
       entry Read (C : out Character);
       entry Write (C : in Character);
