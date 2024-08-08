@@ -1,10 +1,9 @@
 <CompilationUnit test.ads:27:1-149:23>
 test.ads(<ConcreteTypeDecl ["Cell"] test.ads:61:4-65:15>) - 61:1-65:15
 ^
-   type Cell is
-     record
-       Value : Integer;
-       Succ  : Link;
-       Pred  : Link;
-     end record;$
+   type Cell is record
+      Value : Integer;
+      Succ  : Link;
+      Pred  : Link;
+   end record;$
 
