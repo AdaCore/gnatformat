@@ -8,7 +8,7 @@
 package Gnatformat.Utils is
 
    generic
-      type T is (<>);
+      type T is private;
    package Optional is
       type Optional_Type (Is_Set : Boolean := False) is
          record
@@ -21,10 +21,6 @@ package Gnatformat.Utils is
          end record;
 
       None : constant Optional_Type := (Is_Set => False);
-
-      function To_Value (S : String) return Optional_Type
-      is (Is_Set => True, Value => T'Value (S));
-      --  Try to convert a String into an Optional_Type
 
       function "Or" (Left : Optional_Type; Right : T) return T
       is (if Left.Is_Set then Left.Value else Right);

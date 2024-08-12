@@ -3,6 +3,8 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Strings.Unbounded;
+
 with Gnatformat.Utils;
 
 with GNATCOLL.VFS;
@@ -24,6 +26,8 @@ private with Libadalang.Generic_API;
 with Langkit_Support.Diagnostics;
 
 package Gnatformat.Configuration is
+
+   Default_Charset : constant String := "iso-8859-1";
 
    type Format_Options_Type;
 
@@ -50,7 +54,26 @@ package Gnatformat.Configuration is
    package Optional_Positives is new Gnatformat.Utils.Optional (Positive);
    subtype Optional_Positive is Optional_Positives.Optional_Type;
 
+   package Optional_Unbounded_Strings is new
+     Gnatformat.Utils.Optional (Ada.Strings.Unbounded.Unbounded_String);
+   subtype Optional_Unbounded_String is
+     Optional_Unbounded_Strings.Optional_Type;
+
    type Format_Options_Type is private;
+
+   function Get_Charset
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Ada.Strings.Unbounded.Unbounded_String;
+   --  Retrieves the charset option for the specified Source_Filename if it
+   --  exists.
+   --  If the charset option for Source_Filename does not exist, the function
+   --  will fall back to the charset option associated with the given
+   --  Language_Fallback if it is available.
+   --  If neither the Source_Filename charset option nor the Language_Fallback
+   --  option is available, the function returns the default charset defined
+   --  by Default_Basic_Format_Options.Charset.Value.
 
    function Get_End_Of_Line
      (Self              : Format_Options_Type;
@@ -194,19 +217,17 @@ package Gnatformat.Configuration is
       return Format_Options_Type;
    --  Returns the format options current state
 
-   procedure With_Indentation_Continuation
-     (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Language                 : Supported_Languages);
-   --  Sets the format option Indentation_Continuation for the provided
-   --  Language.
+   procedure With_Charset
+     (Self     : in out Format_Options_Builder_Type;
+      Charset  : Ada.Strings.Unbounded.Unbounded_String;
+      Language : Supported_Languages);
+   --  Sets the format option Charset for the provided Language
 
-   procedure With_Indentation_Continuation
-     (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Source_Filename          : String);
-   --  Sets the format option Indentation_Continuation for the provided
-   --  Source_Filename.
+   procedure With_Charset
+     (Self            : in out Format_Options_Builder_Type;
+      Charset         : Ada.Strings.Unbounded.Unbounded_String;
+      Source_Filename : String);
+   --  Sets the format option Charset for the provided Source_Filename
 
    procedure With_End_Of_Line
      (Self        : in out Format_Options_Builder_Type;
@@ -237,6 +258,20 @@ package Gnatformat.Configuration is
       Indentation     : Positive;
       Source_Filename : String);
    --  Sets the format option Indentation for the provided Source_Filename
+
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Language                 : Supported_Languages);
+   --  Sets the format option Indentation_Continuation for the provided
+   --  Language.
+
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Source_Filename          : String);
+   --  Sets the format option Indentation_Continuation for the provided
+   --  Source_Filename.
 
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
@@ -301,6 +336,11 @@ private
    Q_End_Of_Line_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, End_Of_Line_Attribute_Id);
 
+   Charset_Attribute_Id   : constant GPR2.Attribute_Id   :=
+     GPR2."+" ("charset");
+   Q_Charset_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Charset_Attribute_Id);
+
    type Basic_Format_Options_Type is
      record
        Width                    : Optional_Positive         :=
@@ -312,6 +352,8 @@ private
        Indentation_Continuation : Optional_Positive         :=
          (Is_Set => False);
        End_Of_Line              : Optional_End_Of_Line_Kind :=
+         (Is_Set => False);
+       Charset                  : Optional_Unbounded_String :=
          (Is_Set => False);
      end record;
 
@@ -339,7 +381,11 @@ private
       Indentation              => (Is_Set => True, Value => 3),
       Indentation_Kind         => (Is_Set => True, Value => Spaces),
       Indentation_Continuation => (Is_Set => True, Value => 2),
-      End_Of_Line              => (Is_Set => True, Value => LF));
+      End_Of_Line              => (Is_Set => True, Value => LF),
+      Charset                  =>
+        (Is_Set => True,
+         Value  =>
+           Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)));
 
    Undefined_Basic_Format_Options : constant Basic_Format_Options_Type :=
      (others => <>);

@@ -15,6 +15,9 @@ package body Gnatformat.Command_Line.Configuration is
         Gnatformat.Configuration.Format_Options_Builder_Type
           := Gnatformat.Configuration.Create_Format_Options_Builder;
 
+      Charset_Value                  :
+        constant Gnatformat.Configuration.Optional_Unbounded_String :=
+          Charset.Get;
       Width_Value                    :
         constant Gnatformat.Configuration.Optional_Positive         :=
           Width.Get;
@@ -32,6 +35,11 @@ package body Gnatformat.Command_Line.Configuration is
           End_Of_Line.Get;
 
    begin
+      if Charset_Value.Is_Set then
+         Format_Options_Builder.With_Charset
+           (Charset  => Charset_Value.Value,
+            Language => Ada_Language);
+      end if;
       if Width_Value.Is_Set then
          Format_Options_Builder.With_Width
            (Width    => Width_Value.Value,

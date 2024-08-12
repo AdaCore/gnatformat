@@ -29,6 +29,33 @@ package Gnatformat.Command_Line is
    is (GNATCOLL.VFS.Create_From_UTF8 (File_Name));
    --  Creates a file from its display name
 
+   function To_Optional_Positive
+     (Number : String) return Gnatformat.Configuration.Optional_Positive
+   is ((Is_Set => True, Value => Positive'Value (Number)));
+   --  Converts a string to Gnatformat.Configuration.Optional_Positive
+
+   function To_Optional_Indentation_Kind
+     (Indentation_Kind : String)
+      return Gnatformat.Configuration.Optional_Indentation_Kind
+   is ((Is_Set => True,
+        Value  =>
+          Gnatformat.Configuration.Indentation_Kind'Value (Indentation_Kind)));
+   --  Converts a string to Gnatformat.Configuration.Optional_Indentation_Kind
+
+   function To_Optional_End_Of_Line_Kind
+     (End_Of_Line_Kind: String)
+      return Gnatformat.Configuration.Optional_End_Of_Line_Kind
+   is ((Is_Set => True,
+        Value  =>
+          Gnatformat.Configuration.End_Of_Line_Kind'Value (End_Of_Line_Kind)));
+   --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
+
+   function To_Optional_Unbounded_String
+     (S: String)
+      return Gnatformat.Configuration.Optional_Unbounded_String
+   is ((Is_Set => True, Value => To_Unbounded_String (S)));
+   --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
+
    package Project is new Parse_Option
      (Parser      => Parser,
       Short       => "-P",
@@ -107,7 +134,7 @@ package Gnatformat.Command_Line is
       Long        => "--width",
       Help        => "Max line width",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => Gnatformat.Configuration.Optional_Positives.To_Value,
+      Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package Indentation is new Parse_Option
@@ -115,7 +142,7 @@ package Gnatformat.Command_Line is
       Long        => "--indentation",
       Help        => "Indentation size",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => Gnatformat.Configuration.Optional_Positives.To_Value,
+      Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package Indentation_Kind is new Parse_Option
@@ -123,8 +150,7 @@ package Gnatformat.Command_Line is
       Long        => "--indentation-kind",
       Help        => "Indentation kind: tabs | spaces",
       Arg_Type    => Gnatformat.Configuration.Optional_Indentation_Kind,
-      Convert     =>
-        Gnatformat.Configuration.Optional_Indentation_Kinds.To_Value,
+      Convert     => To_Optional_Indentation_Kind,
       Default_Val =>
         Gnatformat.Configuration.Optional_Indentation_Kinds.None);
 
@@ -134,7 +160,7 @@ package Gnatformat.Command_Line is
       Help        =>
         "Continuation Line Indentation size (defaults to indentation-1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => Gnatformat.Configuration.Optional_Positives.To_Value,
+      Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package End_Of_Line is new Parse_Option
@@ -142,10 +168,17 @@ package Gnatformat.Command_Line is
       Long        => "--end-of-line",
       Help        => "End of line sequence: lf | crlf",
       Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
-      Convert     =>
-        Gnatformat.Configuration.Optional_End_Of_Line_Kinds.To_Value,
+      Convert     => To_Optional_End_Of_Line_Kind,
       Default_Val =>
         Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
+
+   package Charset is new Parse_Option
+     (Parser      => Parser,
+      Long        => "--charset",
+      Help        => "Charset to use for source decoding",
+      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+      Convert     => To_Optional_Unbounded_String,
+      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
 
    package Sources is new Parse_Positional_Arg_List
      (Parser      => Parser,
