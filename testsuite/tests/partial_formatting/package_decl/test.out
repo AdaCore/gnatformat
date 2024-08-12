@@ -3,11 +3,10 @@ test.ads(<PackageDecl ["Package_Declaration"] test.ads:25:1-39:25>) - 25:1-39:25
 ^
 package Package_Declaration is
 
-   type Rational is
-     record
-       Numerator   : Integer;
-       Denominator : Positive;
-     end record;
+   type Rational is record
+      Numerator   : Integer;
+      Denominator : Positive;
+   end record;
 
    function "=" (X, Y : Rational) return Boolean;
    function "/" (X, Y : Integer) return Rational;
