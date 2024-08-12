@@ -1,0 +1,4 @@
+description: |
+  Test the Charset attribute but using a source that contains UTF-8 characters.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

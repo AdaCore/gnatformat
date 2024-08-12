@@ -102,6 +102,17 @@ package body Gnatformat.Configuration is
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_End_Of_Line_Attribute_Id, "End of line sequence: lf | crlf");
 
+      GPR2.Project.Registry.Attribute.Add
+        (Name                  => Q_Charset_Attribute_Id,
+         Index_Type            =>
+           GPR2.Project.Registry.Attribute.Language_Index,
+         Value                 => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive  => False,
+         Is_Allowed_In         =>
+           GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Charset_Attribute_Id, "Charset to use for source decoding");
+
    end Elaborate_GPR2;
 
    -----------------
@@ -158,6 +169,24 @@ package body Gnatformat.Configuration is
          end;
       end if;
    end Get;
+
+   -----------------
+   -- Get_Charset --
+   -----------------
+
+   function Get_Charset
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Ada.Strings.Unbounded.Unbounded_String
+   is
+      use Optional_Unbounded_Strings;
+
+   begin
+      return
+        Into (Self,  Source_Filename, Language_Fallback).Charset
+        or Default_Basic_Format_Options.Charset.Value;
+   end Get_Charset;
 
    ---------------------
    -- Get_End_Of_Line --
@@ -445,46 +474,39 @@ package body Gnatformat.Configuration is
       end loop;
    end Overwrite;
 
-   -----------------------------------
-   -- With_Indentation_Continuation --
-   -----------------------------------
+   ------------------
+   -- With_Charset --
+   ------------------
 
-   procedure With_Indentation_Continuation
-     (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Language                 : Supported_Languages)
-   is
+   procedure With_Charset
+     (Self     : in out Format_Options_Builder_Type;
+      Charset  : Ada.Strings.Unbounded.Unbounded_String;
+      Language : Supported_Languages) is
    begin
-      Self.Format_Options.Language (Language).Indentation_Continuation :=
-        (Is_Set => True, Value => Indentation_Continuation);
-   end With_Indentation_Continuation;
+      Self.Format_Options.Language (Language).Charset :=
+        (Is_Set => True, Value => Charset);
+   end With_Charset;
 
-   -----------------------------------
-   -- With_Indentation_Continuation --
-   -----------------------------------
+   ------------------
+   -- With_Charset --
+   ------------------
 
-   procedure With_Indentation_Continuation
-     (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Source_Filename          : String)
-   is
+   procedure With_Charset
+     (Self            : in out Format_Options_Builder_Type;
+      Charset         : Ada.Strings.Unbounded.Unbounded_String;
+      Source_Filename : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
-         Self
-           .Format_Options
-           .Sources
-           .Reference (Source_Filename)
-           .Indentation_Continuation :=
-           (Is_Set => True, Value => Indentation_Continuation);
+         Self.Format_Options.Sources.Reference (Source_Filename).Charset :=
+           (Is_Set => True, Value => Charset);
 
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Indentation_Continuation =>
-               (Is_Set => True, Value => Indentation_Continuation),
-             others            => <>));
+            (Charset => (Is_Set => True, Value => Charset),
+             others      => <>));
       end if;
-   end With_Indentation_Continuation;
+   end With_Charset;
 
    ----------------------
    -- With_End_Of_Line --
@@ -552,7 +574,8 @@ package body Gnatformat.Configuration is
          use type GPR2.Q_Optional_Attribute_Id;
 
          type Format_Option_Kind is
-           (End_Of_Line,
+           (Charset,
+            End_Of_Line,
             Indentation,
             Indentation_Kind,
             Indentation_Continuation,
@@ -562,12 +585,14 @@ package body Gnatformat.Configuration is
          type Attribute_Value_Type (Kind : Format_Option_Kind := Unknown) is
            record
              case Kind is
-               when Indentation_Continuation =>
-                 Indentation_Continuation : Positive;
+               when Charset =>
+                 Charset : Ada.Strings.Unbounded.Unbounded_String;
                when End_Of_Line =>
                  End_Of_Line : End_Of_Line_Kind;
                when Indentation =>
                  Indentation : Positive;
+               when Indentation_Continuation =>
+                 Indentation_Continuation : Positive;
                when Indentation_Kind =>
                  Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
                when Width =>
@@ -593,7 +618,14 @@ package body Gnatformat.Configuration is
             Raw_Attribute_Value : constant String := Attribute.Value.Text;
 
          begin
-            if Q_Attribute_Id = Q_Width_Attribute_Id then
+            if Q_Attribute_Id = Q_Charset_Attribute_Id then
+               return
+                 (Kind    => Charset,
+                  Charset =>
+                    Ada.Strings.Unbounded.To_Unbounded_String
+                      (Raw_Attribute_Value));
+
+            elsif Q_Attribute_Id = Q_Width_Attribute_Id then
                return
                  (Kind  => Width,
                   Width => Positive'Value (Raw_Attribute_Value));
@@ -633,13 +665,13 @@ package body Gnatformat.Configuration is
             Gnatformat_Trace.Trace ("Ada attribute " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Indentation_Continuation =>
+               when Charset =>
                   Gnatformat_Trace.Trace
-                    (Indentation_Continuation'Image
+                    (Charset'Image
                      & " = "
-                     & Attribute_Value.Indentation_Continuation'Image);
-                  Self.With_Indentation_Continuation
-                    (Attribute_Value.Indentation_Continuation, Ada_Language);
+                     & Ada.Strings.Unbounded.To_String
+                         (Attribute_Value.Charset));
+                  Self.With_Charset (Attribute_Value.Charset, Ada_Language);
 
                when End_Of_Line =>
                   Gnatformat_Trace.Trace
@@ -656,6 +688,14 @@ package body Gnatformat.Configuration is
                      & Attribute_Value.Indentation'Image);
                   Self.With_Indentation
                     (Attribute_Value.Indentation, Ada_Language);
+
+               when Indentation_Continuation =>
+                  Gnatformat_Trace.Trace
+                    (Indentation_Continuation'Image
+                     & " = "
+                     & Attribute_Value.Indentation_Continuation'Image);
+                  Self.With_Indentation_Continuation
+                    (Attribute_Value.Indentation_Continuation, Ada_Language);
 
                when Indentation_Kind =>
                   Gnatformat_Trace.Trace
@@ -682,14 +722,14 @@ package body Gnatformat.Configuration is
               ("Source attribute for " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Indentation_Continuation =>
+               when Charset =>
                   Gnatformat_Trace.Trace
-                    (Indentation_Continuation'Image
+                    (Charset'Image
                      & " = "
-                     & Attribute_Value.Indentation_Continuation'Image);
-                  Self.With_Indentation_Continuation
-                    (Attribute_Value.Indentation_Continuation,
-                     Attribute.Index.Text);
+                     & Ada.Strings.Unbounded.To_String
+                         (Attribute_Value.Charset));
+                  Self.With_Charset
+                    (Attribute_Value.Charset, Attribute.Index.Text);
 
                when End_Of_Line =>
                   Gnatformat_Trace.Trace
@@ -706,6 +746,15 @@ package body Gnatformat.Configuration is
                      & Attribute_Value.Indentation'Image);
                   Self.With_Indentation
                     (Attribute_Value.Indentation, Attribute.Index.Text);
+
+               when Indentation_Continuation =>
+                  Gnatformat_Trace.Trace
+                    (Indentation_Continuation'Image
+                     & " = "
+                     & Attribute_Value.Indentation_Continuation'Image);
+                  Self.With_Indentation_Continuation
+                    (Attribute_Value.Indentation_Continuation,
+                     Attribute.Index.Text);
 
                when Indentation_Kind =>
                   Gnatformat_Trace.Trace
@@ -783,6 +832,47 @@ package body Gnatformat.Configuration is
       Self.Format_Options.Language (Language).Indentation :=
         (Is_Set => True, Value => Indentation);
    end With_Indentation;
+
+   -----------------------------------
+   -- With_Indentation_Continuation --
+   -----------------------------------
+
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Language                 : Supported_Languages)
+   is
+   begin
+      Self.Format_Options.Language (Language).Indentation_Continuation :=
+        (Is_Set => True, Value => Indentation_Continuation);
+   end With_Indentation_Continuation;
+
+   -----------------------------------
+   -- With_Indentation_Continuation --
+   -----------------------------------
+
+   procedure With_Indentation_Continuation
+     (Self                     : in out Format_Options_Builder_Type;
+      Indentation_Continuation : Positive;
+      Source_Filename          : String)
+   is
+   begin
+      if Self.Format_Options.Sources.Contains (Source_Filename) then
+         Self
+           .Format_Options
+           .Sources
+           .Reference (Source_Filename)
+           .Indentation_Continuation :=
+           (Is_Set => True, Value => Indentation_Continuation);
+
+      else
+         Self.Format_Options.Sources.Insert
+           (Source_Filename,
+            (Indentation_Continuation =>
+               (Is_Set => True, Value => Indentation_Continuation),
+             others            => <>));
+      end if;
+   end With_Indentation_Continuation;
 
    ---------------------------
    -- With_Indentation_Kind --

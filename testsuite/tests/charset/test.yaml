@@ -1,0 +1,3 @@
+description: Test the --charset switch by formatting a source with UTF-8 characters
+driver: gnatformat
+args: ["--charset=utf-8", "--pipe", "test.ads"]

@@ -373,7 +373,8 @@ begin
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
 
-         procedure Process_Source (Source : GNATCOLL.VFS.Virtual_File);
+         procedure Process_Source
+           (Source  : GNATCOLL.VFS.Virtual_File; Charset : String);
          --  Formats the source defined by Source.
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
@@ -391,9 +392,6 @@ begin
             View : GPR2.Project.View.Object)
             return Ada.Strings.Unbounded.Unbounded_String
          is
-            Unit : constant Libadalang.Analysis.Analysis_Unit :=
-              LAL_Context.Get_From_File (String (Path.Value));
-
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type :=
                 Project_Format_Options_Cache.Get (View);
@@ -402,11 +400,20 @@ begin
             --  TODO: Cache the override
             Project_Formatting_Config.Overwrite (CLI_Formatting_Config);
 
-            return
-              Gnatformat.Formatting.Format
-                (Unit           => Unit,
-                 Format_Options => Project_Formatting_Config,
-                 Configuration  => Unparsing_Configuration);
+            declare
+               Charset : constant String :=
+                 Ada.Strings.Unbounded.To_String
+                   (Project_Formatting_Config
+                      .Get_Charset (String (Path.Simple_Name)));
+               Unit    : constant Libadalang.Analysis.Analysis_Unit :=
+                 LAL_Context.Get_From_File (String (Path.Value), Charset);
+            begin
+               return
+                 Gnatformat.Formatting.Format
+                   (Unit           => Unit,
+                    Format_Options => Project_Formatting_Config,
+                    Configuration  => Unparsing_Configuration);
+            end;
          end Format_Source;
 
          ------------------
@@ -494,9 +501,11 @@ begin
          -- Process_Source --
          --------------------
 
-         procedure Process_Source (Source : GNATCOLL.VFS.Virtual_File) is
+         procedure Process_Source
+           (Source  : GNATCOLL.VFS.Virtual_File; Charset : String)
+         is
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
-              LAL_Context.Get_From_File (Source.Display_Full_Name);
+              LAL_Context.Get_From_File (Source.Display_Full_Name, Charset);
 
          begin
             if Gnatformat.Command_Line.Pipe.Get then
@@ -586,7 +595,19 @@ begin
                end;
             else
                for Source of Gnatformat.Command_Line.Sources.Get loop
-                  Process_Source (Source);
+                  declare
+                     Charset :
+                       constant Gnatformat
+                                  .Configuration
+                                  .Optional_Unbounded_String :=
+                         Gnatformat.Command_Line.Charset.Get;
+                  begin
+                     Process_Source
+                       (Source,
+                        (if Charset.Is_Set
+                         then Ada.Strings.Unbounded.To_String (Charset.Value)
+                         else Gnatformat.Configuration.Default_Charset));
+                  end;
                end loop;
             end if;
 
