@@ -7,10 +7,13 @@ with Ada.Containers;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Directories;
 with Ada.Exceptions;
+with Ada.Streams.Stream_IO;
 with Ada.Strings.Unbounded;
+pragma Warnings (Off, "-gnatwi");
+with Ada.Strings.Unbounded.Aux;
+pragma Warnings (On, "-gnatwi");
 with Ada.Strings.Unbounded.Text_IO;
 with Ada.Text_IO;
-with Ada.Text_IO.Unbounded_IO;
 
 with GNAT.OS_Lib;
 
@@ -432,8 +435,7 @@ begin
 
          procedure Process_Source
            (Path : GPR2.Path_Name.Object;
-            View : GPR2.Project.View.Object)
-         is
+            View : GPR2.Project.View.Object) is
          begin
             if Gnatformat.Command_Line.Pipe.Get then
                begin
@@ -441,60 +443,97 @@ begin
                      Ada.Text_IO.Put_Line ("--  " & String (Path.Simple_Name));
                   end if;
 
-                  Ada.Strings.Unbounded.Text_IO.Put_Line
+                  Ada.Strings.Unbounded.Text_IO.Put
                     (Format_Source (Path, View));
                   Ada.Text_IO.New_Line;
-
-               exception
-                  when E : others =>
-                     General_Failed := True;
-
-                     Ada.Text_IO.Put_Line
-                       (Ada.Text_IO.Standard_Error,
-                        "Failed to format " & String (Path.Value));
-
-                     if Gnatformat.Command_Line.Keep_Going.Get then
-                        Gnatformat_Trace.Trace
-                          (Ada.Exceptions.Exception_Information (E));
-
-                     else
-                        Ada.Exceptions.Reraise_Occurrence (E);
-                     end if;
                end;
+
             else
                declare
-                  Formatted_Source :
+                  Formatted_Source        :
                     constant Ada.Strings.Unbounded.Unbounded_String :=
                       Format_Source (Path, View);
-                  Source_File      : Ada.Text_IO.File_Type;
+                  Formatted_Source_Access :
+                    Ada.Strings.Unbounded.Aux.Big_String_Access;
+                  Formatted_Source_Length : Natural;
+
+                  Source_File   : Ada.Streams.Stream_IO.File_Type;
+                  Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
 
                begin
-                  Ada.Text_IO.Create
-                    (File => Source_File,
-                     Mode => Ada.Text_IO.Out_File,
-                     Name => String (Path.Value));
+                  if Gnatformat.Command_Line.Check.Get then
+                     declare
+                        Original_Source_Size :
+                          constant Ada.Directories.File_Size :=
+                            Ada.Directories.Size (String (Path.Value));
+                        Original_Source      :
+                          Ada.Strings.Unbounded.String_Access :=
+                            new String (1 .. Integer (Original_Source_Size));
 
-                  Ada.Text_IO.Unbounded_IO.Put (Source_File, Formatted_Source);
+                        use type Ada.Strings.Unbounded.Unbounded_String;
 
-                  Ada.Text_IO.Close (Source_File);
+                     begin
+                        Ada.Streams.Stream_IO.Open
+                          (File => Source_File,
+                           Mode => Ada.Streams.Stream_IO.In_File,
+                           Name => String (Path.Value));
 
-               exception
-                  when E : others =>
-                     General_Failed := True;
+                        Source_Stream :=
+                          Ada.Streams.Stream_IO.Stream (Source_File);
 
-                     Ada.Text_IO.Put_Line
-                       (Ada.Text_IO.Standard_Error,
-                        "Failed to format " & String (Path.Value));
+                        String'Read (Source_Stream, Original_Source.all);
 
-                     if Gnatformat.Command_Line.Keep_Going.Get then
-                        Gnatformat_Trace.Trace
-                          (Ada.Exceptions.Exception_Information (E));
+                        Ada.Streams.Stream_IO.Close (Source_File);
 
-                     else
-                        Ada.Exceptions.Reraise_Occurrence (E);
-                     end if;
+                        if Original_Source.all /= Formatted_Source then
+                           General_Failed := True;
+                           Ada.Text_IO.Put_Line
+                             (Ada.Text_IO.Standard_Error,
+                              String (Path.Value)
+                              & " is not correctly formatted");
+                        end if;
+
+                        Ada.Strings.Unbounded.Free (Original_Source);
+                     end;
+
+                  else
+                     Ada.Strings.Unbounded.Aux.Get_String
+                       (Formatted_Source,
+                        Formatted_Source_Access,
+                        Formatted_Source_Length);
+
+                     Ada.Streams.Stream_IO.Create
+                       (File => Source_File,
+                        Mode => Ada.Streams.Stream_IO.Out_File,
+                        Name => String (Path.Value));
+
+                     Source_Stream :=
+                       Ada.Streams.Stream_IO.Stream (Source_File);
+
+                     String'Write
+                       (Source_Stream,
+                        Formatted_Source_Access.all
+                          (1 .. Formatted_Source_Length));
+
+                     Ada.Streams.Stream_IO.Close (Source_File);
+                  end if;
                end;
             end if;
+         exception
+            when E : others =>
+               General_Failed := True;
+
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  "Failed to format " & String (Path.Value));
+
+               if Gnatformat.Command_Line.Keep_Going.Get then
+                  Gnatformat_Trace.Trace
+                    (Ada.Exceptions.Exception_Information (E));
+
+               else
+                  Ada.Exceptions.Reraise_Occurrence (E);
+               end if;
          end Process_Source;
 
          --------------------
@@ -513,32 +552,86 @@ begin
                   Ada.Text_IO.Put_Line ("--  " & Source.Display_Base_Name);
                end if;
 
-               Ada.Strings.Unbounded.Text_IO.Put_Line
+               Ada.Strings.Unbounded.Text_IO.Put
                  (Gnatformat.Formatting.Format
                     (Unit           => Unit,
                      Format_Options =>
                        Gnatformat.Configuration.Default_Format_Options,
                      Configuration  => Unparsing_Configuration));
                Ada.Text_IO.New_Line;
+
             else
                declare
-                  Source_File : Ada.Text_IO.File_Type;
+                  Formatted_Source        :
+                    constant Ada.Strings.Unbounded.Unbounded_String :=
+                      Gnatformat.Formatting.Format
+                        (Unit           => Unit,
+                         Format_Options =>
+                           Gnatformat.Configuration.Default_Format_Options,
+                         Configuration  => Unparsing_Configuration);
+                  Formatted_Source_Access :
+                    Ada.Strings.Unbounded.Aux.Big_String_Access;
+                  Formatted_Source_Length : Natural;
+
+                  Source_File   : Ada.Streams.Stream_IO.File_Type;
+                  Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
 
                begin
-                  Ada.Text_IO.Create
-                    (File => Source_File,
-                     Mode => Ada.Text_IO.Out_File,
-                     Name => Source.Display_Full_Name);
+                  if Gnatformat.Command_Line.Check.Get then
+                     declare
+                        Original_Source_Size :
+                          constant Ada.Directories.File_Size :=
+                            Ada.Directories.Size (Source.Display_Full_Name);
+                        Original_Source      :
+                          Ada.Strings.Unbounded.String_Access :=
+                            new String (1 .. Integer (Original_Source_Size));
 
-                  Ada.Text_IO.Unbounded_IO.Put
-                    (Source_File,
-                     Gnatformat.Formatting.Format
-                       (Unit           => Unit,
-                        Format_Options =>
-                          Gnatformat.Configuration.Default_Format_Options,
-                        Configuration  => Unparsing_Configuration));
+                        use type Ada.Strings.Unbounded.Unbounded_String;
 
-                  Ada.Text_IO.Close (Source_File);
+                     begin
+                        Ada.Streams.Stream_IO.Open
+                          (File => Source_File,
+                           Mode => Ada.Streams.Stream_IO.In_File,
+                           Name => Source.Display_Full_Name);
+
+                        Source_Stream :=
+                          Ada.Streams.Stream_IO.Stream (Source_File);
+
+                        String'Read (Source_Stream, Original_Source.all);
+
+                        Ada.Streams.Stream_IO.Close (Source_File);
+
+                        if Original_Source.all /= Formatted_Source then
+                           General_Failed := True;
+                           Ada.Text_IO.Put_Line
+                             (Ada.Text_IO.Standard_Error,
+                              Source.Display_Full_Name
+                              & " is not correctly formatted");
+                        end if;
+
+                        Ada.Strings.Unbounded.Free (Original_Source);
+                     end;
+
+                  else
+                     Ada.Strings.Unbounded.Aux.Get_String
+                       (Formatted_Source,
+                        Formatted_Source_Access,
+                        Formatted_Source_Length);
+
+                     Ada.Streams.Stream_IO.Create
+                       (File => Source_File,
+                        Mode => Ada.Streams.Stream_IO.Out_File,
+                        Name => Source.Display_Full_Name);
+
+                     Source_Stream := Ada.Streams.Stream_IO.Stream (Source_File);
+
+                     String'Write
+                       (Source_Stream,
+                        Formatted_Source_Access.all
+                          (1 .. Formatted_Source_Length));
+
+                     Ada.Streams.Stream_IO.Close (Source_File);
+                  end if;
                end;
             end if;
 
