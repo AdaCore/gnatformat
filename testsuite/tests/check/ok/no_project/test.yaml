@@ -1,0 +1,5 @@
+description: |
+  Test that gnatformat is able to check if the provided list of sources are
+  correctly formatted even when there's no project file.
+driver: gnatformat
+args: ["--check", "test.adb", "test_dep.ads"]

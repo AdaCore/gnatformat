@@ -26,10 +26,10 @@ optional arguments:
    --verbose                   Print debug logs
    --version, -v               Show the version
    --check                     Exit with error code 1 if the input is not 
-                               formatted correctly; print the name of files that
-                                would be formatted
+                               formatted correctly and prints the file names 
+                               that would be formatted
    --pipe, -p                  Print the result to stdout instead of editing the
-                                files on disk
+                                files on disk (takes precedence over --check)
    --keep-going, -k            Keep going after errors formatting a source file
    --unparsing-configuration   Unparsing configuration file
    --width                     Max line width

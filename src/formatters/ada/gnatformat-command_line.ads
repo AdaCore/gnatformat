@@ -104,15 +104,16 @@ package Gnatformat.Command_Line is
      (Parser => Parser,
       Long   => "--check",
       Help   =>
-        "Exit with error code 1 if the input is not formatted correctly; "
-        & "print the name of files that would be formatted");
+        "Exit with error code 1 if the input is not formatted correctly and "
+        & "prints the file names that would be formatted");
 
    package Pipe is new Parse_Flag
      (Parser => Parser,
       Short  => "-p",
       Long   => "--pipe",
       Help   =>
-        "Print the result to stdout instead of editing the files on disk");
+        "Print the result to stdout instead of editing the files on disk "
+        & "(takes precedence over --check)");
 
    package Keep_Going is new Parse_Flag
      (Parser => Parser,
