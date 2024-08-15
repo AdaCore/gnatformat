@@ -4,8 +4,8 @@ usage: gnatformat [--help|-h] [--project|-P PROJECT] [-X KEY=VALUE
                  [--unparsing-configuration UNPARSING_CONFIGURATION_FILE] 
                  [--width WIDTH] [--indentation INDENTATION] [--indentation-kind
                   INDENTATION-KIND] [--indentation-continuation 
-                 INDENTATION-CONTINUATION] [--end-of-line END-OF-LINE] SOURCE 
-                 [SOURCE ...] 
+                 INDENTATION-CONTINUATION] [--end-of-line END-OF-LINE] 
+                 [--charset CHARSET] SOURCE [SOURCE ...] 
 
 GNATformat debug (test) - Format Ada code
 
@@ -26,10 +26,10 @@ optional arguments:
    --verbose                   Print debug logs
    --version, -v               Show the version
    --check                     Exit with error code 1 if the input is not 
-                               formatted correctly; print the name of files that
-                                would be formatted
+                               formatted correctly and prints the file names 
+                               that would be formatted
    --pipe, -p                  Print the result to stdout instead of editing the
-                                files on disk
+                                files on disk (takes precedence over --check)
    --keep-going, -k            Keep going after errors formatting a source file
    --unparsing-configuration   Unparsing configuration file
    --width                     Max line width
@@ -38,5 +38,6 @@ optional arguments:
    --indentation-continuation  Continuation Line Indentation size (defaults to 
                                indentation-1)
    --end-of-line               End of line sequence: lf | crlf
+   --charset                   Charset to use for source decoding
    
 
