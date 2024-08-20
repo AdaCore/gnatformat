@@ -431,12 +431,14 @@ package body Gnatformat.Configuration is
       use type Optional_Positive;
       use type Optional_Indentation_Kind;
       use type Optional_End_Of_Line_Kind;
+      use type Optional_Unbounded_String;
 
    begin
       Target.Width := Source.Width or @;
       Target.Indentation := Source.Indentation or @;
       Target.Indentation_Kind := Source.Indentation_Kind or @;
       Target.End_Of_Line := Source.End_Of_Line or @;
+      Target.Charset := Source.Charset or @;
    end Overwrite;
 
    --------------
