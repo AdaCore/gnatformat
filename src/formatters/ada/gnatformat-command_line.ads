@@ -172,9 +172,7 @@ package Gnatformat.Command_Line is
      (Parser      => Parser,
       Short       => "-eol",
       Long        => "--end-of-line",
-      Help        =>
-         "End of line sequence: lf | crlf (by default it detects automatically"
-         & " the used sequence)",
+      Help        => "End of line sequence: lf | crlf (default value = lf)",
       Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
       Convert     => To_Optional_End_Of_Line_Kind,
       Default_Val => Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
@@ -182,7 +180,8 @@ package Gnatformat.Command_Line is
    package Charset is new Parse_Option
      (Parser      => Parser,
       Long        => "--charset",
-      Help        => "Charset to use for source decoding",
+      Help        =>
+         "Charset to use for source decoding (default value = iso-8859-1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
       Convert     => To_Optional_Unbounded_String,
       Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
