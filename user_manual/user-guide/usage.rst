@@ -49,14 +49,36 @@ The specific options allowing to customize the formatting of your sources are:
   In the absence of this, the default value is ``indentation - 1``.
 * ``--end-of-line``: allows you to choose the end of line sequence (i.e., ``lf`` or ``crlf``).
   In the absence of this, the default value is ``lf``.
+* ``--charset``: allows you to specify the charset to use for source decoding.
 
 As a libray
 -----------
 
-The formatting functionality is also available as via a library.
+The formatting functionality is also available via a library.
 
-This ``gnatformat`` library is included in the |ALS| and can therefore be used through IDEs
-like |GNATStudio| and |VSCode|. 
+In order to use it as a libray, the API is located in the (:file:`gnatformat-formattng.ads`)
+and the entry point is the function ``Gnatformat.Formatting.Format`` having the following interface::
+  
+  function Format
+     (Unit           : Libadalang.Analysis.Analysis_Unit;
+      Format_Options : Gnatformat.Configuration.Format_Options_Type;
+      Configuration  :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
+      return Ada.Strings.Unbounded.Unbounded_String;
+   --  Formats the given Unit using the provided Format_Options and
+   --  Configuration.
 
+where:
+* the ``Unit`` is a Libadalang analysis unit node correspondin to the file to be formatted
+* the ``Format_Options`` are formatting the options that are specified through the (:file:`.gpr`)
+  project file
+* the ``Configuration`` uses a predefined configuration, i.e. the `Default_Unparsing_Configuration`,
+  that implements the formatting rules according to the coding style described in the |GNAT-Style|
+  guide.
 
-TO BE COMPLETED!!!
+This entry point can be used in order to integrate with other tools.   
+
+On our side, the ``gnatformat`` library is included in the |ALS| and can therefore be used through
+IDEs like |GNATStudio| and |VSCode|. 
+
