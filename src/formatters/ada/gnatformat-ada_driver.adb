@@ -623,7 +623,8 @@ begin
                         Mode => Ada.Streams.Stream_IO.Out_File,
                         Name => Source.Display_Full_Name);
 
-                     Source_Stream := Ada.Streams.Stream_IO.Stream (Source_File);
+                     Source_Stream := Ada.Streams.Stream_IO.Stream
+                       (Source_File);
 
                      String'Write
                        (Source_Stream,
