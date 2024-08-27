@@ -43,7 +43,7 @@ package Gnatformat.Command_Line is
    --  Converts a string to Gnatformat.Configuration.Optional_Indentation_Kind
 
    function To_Optional_End_Of_Line_Kind
-     (End_Of_Line_Kind: String)
+     (End_Of_Line_Kind : String)
       return Gnatformat.Configuration.Optional_End_Of_Line_Kind
    is ((Is_Set => True,
         Value  =>
@@ -51,7 +51,7 @@ package Gnatformat.Command_Line is
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
 
    function To_Optional_Unbounded_String
-     (S: String)
+     (S : String)
       return Gnatformat.Configuration.Optional_Unbounded_String
    is ((Is_Set => True, Value => To_Unbounded_String (S)));
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
@@ -132,51 +132,56 @@ package Gnatformat.Command_Line is
 
    package Width is new Parse_Option
      (Parser      => Parser,
+      Short       => "-w",
       Long        => "--width",
-      Help        => "Max line width",
+      Help        => "Max line width (default value = 79)",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
       Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package Indentation is new Parse_Option
      (Parser      => Parser,
+      Short       => "-i",
       Long        => "--indentation",
-      Help        => "Indentation size",
+      Help        => "Indentation size (default value = 3)",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
       Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package Indentation_Kind is new Parse_Option
      (Parser      => Parser,
+      Short       => "-ik",
       Long        => "--indentation-kind",
-      Help        => "Indentation kind: tabs | spaces",
+      Help        =>
+         "Indentation kind: tabs | spaces (default value = spaces)",
       Arg_Type    => Gnatformat.Configuration.Optional_Indentation_Kind,
       Convert     => To_Optional_Indentation_Kind,
-      Default_Val =>
-        Gnatformat.Configuration.Optional_Indentation_Kinds.None);
+      Default_Val => Gnatformat.Configuration.Optional_Indentation_Kinds.None);
 
    package Indentation_Continuation is new Parse_Option
      (Parser      => Parser,
+      Short       => "-ic",
       Long        => "--indentation-continuation",
       Help        =>
-        "Continuation Line Indentation size (defaults to indentation-1)",
+        "Continuation Line Indentation size (default value = indentation - 1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Positive,
       Convert     => To_Optional_Positive,
       Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
    package End_Of_Line is new Parse_Option
      (Parser      => Parser,
+      Short       => "-eol",
       Long        => "--end-of-line",
-      Help        => "End of line sequence: lf | crlf",
+      Help        => "End of line sequence: lf | crlf (default value = lf)",
       Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
       Convert     => To_Optional_End_Of_Line_Kind,
-      Default_Val =>
-        Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
+      Default_Val => Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
 
    package Charset is new Parse_Option
      (Parser      => Parser,
       Long        => "--charset",
-      Help        => "Charset to use for source decoding",
+      Help        =>
+         "Charset to use for source decoding (default value = iso-8859-1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
       Convert     => To_Optional_Unbounded_String,
       Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
