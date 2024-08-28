@@ -150,17 +150,15 @@ package Gnatformat.Command_Line is
 
    package Indentation_Kind is new Parse_Option
      (Parser      => Parser,
-      Short       => "-ik",
       Long        => "--indentation-kind",
       Help        =>
-         "Indentation kind: tabs | spaces (default value = spaces)",
+        "Indentation kind: tabs | spaces (default value = spaces)",
       Arg_Type    => Gnatformat.Configuration.Optional_Indentation_Kind,
       Convert     => To_Optional_Indentation_Kind,
       Default_Val => Gnatformat.Configuration.Optional_Indentation_Kinds.None);
 
    package Indentation_Continuation is new Parse_Option
      (Parser      => Parser,
-      Short       => "-ic",
       Long        => "--indentation-continuation",
       Help        =>
         "Continuation Line Indentation size (default value = indentation - 1)",
@@ -170,7 +168,6 @@ package Gnatformat.Command_Line is
 
    package End_Of_Line is new Parse_Option
      (Parser      => Parser,
-      Short       => "-eol",
       Long        => "--end-of-line",
       Help        => "End of line sequence: lf | crlf (default value = lf)",
       Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
@@ -181,7 +178,7 @@ package Gnatformat.Command_Line is
      (Parser      => Parser,
       Long        => "--charset",
       Help        =>
-         "Charset to use for source decoding (default value = iso-8859-1)",
+        "Charset to use for source decoding (default value = iso-8859-1)",
       Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
       Convert     => To_Optional_Unbounded_String,
       Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
