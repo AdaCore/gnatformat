@@ -39,17 +39,18 @@ The specific options allowing to customize the formatting of your sources are:
 
 * ``--unparsing-configuration``: allows to specify a custom unparsing configuration file
   to be used instead of the default one.
-* ``--width``: allows to specify the maximum line length.
-  In the absence of this, the default value is ``79``.
-* ``--indentation``: allows to specify the indentation size.
-  In the absence of this, the default value is ``3``.
+* ``--width, -w``: allows to specify the maximum line length.
+  In the absence of this option, the default value is ``79``.
+* ``--indentation, -i``: allows to specify the indentation size.
+  In the absence of this option, the default value is ``3``.
 * ``--indentation-kind``: allows to specify the indentation kind (i.e., ``tabs`` or ``spaces``).
-  In the absence of this, the choice by default is ``spaces``.
+  In the absence of this option, the choice by default is ``spaces``.
 * ``--indentation-continuation``: allows to specify the continuation line indentation size.
-  In the absence of this, the default value is ``indentation - 1``.
+  In the absence of this option, the default value is ``indentation - 1``.
 * ``--end-of-line``: allows you to choose the end of line sequence (i.e., ``lf`` or ``crlf``).
-  In the absence of this, the default value is ``lf``.
+  In the absence of this option, the default value is ``lf``.
 * ``--charset``: allows you to specify the charset to use for source decoding.
+  In absence of this option, the default value is ``iso-8859-1``.
 
 As a libray
 -----------
@@ -70,10 +71,11 @@ and the entry point is the function ``Gnatformat.Formatting.Format`` having the 
    --  Configuration.
 
 where:
-* the ``Unit`` is a Libadalang analysis unit node correspondin to the file to be formatted
-* the ``Format_Options`` are formatting the options that are specified through the (:file:`.gpr`)
-  project file
-* the ``Configuration`` uses a predefined configuration, i.e. the `Default_Unparsing_Configuration`,
+
+* ``Unit`` is a Libadalang analysis unit node correspondin to the file to be formatted,
+* ``Format_Options`` are formatting the options that are specified through the (:file:`.gpr`)
+  project file,
+* ``Configuration`` uses a predefined configuration, i.e. the `Default_Unparsing_Configuration`,
   that implements the formatting rules according to the coding style described in the |GNAT-Style|
   guide.
 
