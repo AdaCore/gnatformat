@@ -11,7 +11,7 @@ to the coding style described in the |GNAT-Style| available online at
 https://gcc.gnu.org/onlinedocs/gnat-style.pdf.
 
 |GNATformat| is available as a command line tool or as a library on the
-platforms
+following platforms
 
 * Windows (64-bits)
 * Linux (64-bits)
