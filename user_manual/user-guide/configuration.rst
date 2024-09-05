@@ -36,14 +36,16 @@ switch and its usage is limited for development proposes.
 The project file attributes
 ---------------------------
 
-The formatting of your sources can be customized through the (:file:`.gpr`) project file by defining
+The formatting of your sources can be customized through the :file:`.gpr` project file by defining
 a specific package called ``package Format``.
+
 In this package all the attributes corresponding to the command line arguments can be added. There is
-a one to one correspondence between the command line arguments and (:file:`.gpr`) project file attributes.
+a one to one correspondence between the command line arguments and project file attributes.
+
 The attribute has the same functionality as its associated command line argument and can be customized
 in order to comply with a specific source code formatting use case. 
 
-The lines below shows the implementation of the ``Format`` package as part of project file (:file:`.gpr`)::
+The lines below shows the implementation of the ``Format`` package as part of the project file :file:`.gpr`::
   
   package Format is
 

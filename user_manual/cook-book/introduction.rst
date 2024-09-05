@@ -12,7 +12,7 @@ Prerequisites
 |GNATformat| setup
 ---------------------
 
-  * *(on Windows)* run the installer, and place :file:`<install_prefix>\bin` in
+  * *(on Windows)* run the installer, and place :file:`<install_prefix>/bin` in
     your :envvar:`$PATH`
 
   * *(on \*NIX)* extract the installation directory from the archive, and place
@@ -35,8 +35,7 @@ https://gcc.gnu.org/onlinedocs/gnat-style.pdf
 
 For more information about the tool, the full manual is available at 
 
-  * :file:`<install_prefix>/share/doc/gnatformat/html`
+  * in your installation folder, under :file:`<install_prefix>/share/doc/gnatformat/html`
 
-And online at https://docs.adacore.com/live/wave/gnatformat/html/gnatformat/index.html.
-
+  * online, at https://docs.adacore.com/live/wave/gnatformat/html/user-guide/index.html
 
