@@ -1,4 +1,5 @@
-description: Test the -P switch by confirming that project sources are found
+description: Test the End_Of_Line attribute by confirming that test_dep.ads is
+  formatted with CRLF (while the default is LF).
 driver: gnatformat
 args: ["-P", "test/test.gpr", "--pipe"]
 strict_line_endings: True

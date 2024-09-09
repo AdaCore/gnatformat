@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import sys
+from os import sep
 
 import e3.env
 import e3.testsuite
@@ -85,7 +86,7 @@ class GNATformatDriver(DiffTestDriver):
     @property
     def output_refiners(self):
         return super().output_refiners + [
-            ReplacePath(self.working_dir()),
+            ReplacePath(self.working_dir() + sep),
             ReplaceBuildVersionAndDate(),
         ]
 
