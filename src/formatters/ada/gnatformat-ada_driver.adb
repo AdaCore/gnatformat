@@ -398,7 +398,6 @@ begin
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type :=
                 Project_Format_Options_Cache.Get (View);
-
          begin
             --  TODO: Cache the override
             Project_Formatting_Config.Overwrite (CLI_Formatting_Config);
@@ -489,7 +488,7 @@ begin
                            General_Failed := True;
                            Ada.Text_IO.Put_Line
                              (Ada.Text_IO.Standard_Error,
-                              String (Path.Value)
+                              String (Path.Simple_Name)
                               & " is not correctly formatted");
                         end if;
 
