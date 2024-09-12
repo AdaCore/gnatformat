@@ -33,6 +33,7 @@ with GPR2.Options;
 with GPR2.Path_Name;
 with GPR2.Project.Tree;
 with GPR2.Project.View;
+with GPR2.Reporter.Console;
 
 with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
@@ -118,6 +119,7 @@ is
       Project_File : GNATCOLL.VFS.Virtual_File)
    is
       Options : GPR2.Options.Object;
+      use GPR2.Reporter;
 
    begin
       Gnatformat.Configuration.Elaborate_GPR2;
@@ -138,11 +140,9 @@ is
             Ada.Strings.Unbounded.To_String (Scenario_Variable));
       end loop;
 
-      --  Do not emit project load warnings
-      GPR2.Project.Tree.Verbosity := GPR2.Project.Tree.Quiet;
-
       if not Project_Tree.Load
         (Options,
+         Reporter         => Console.Create (No_Warnings),
          Absent_Dir_Error => GPR2.No_Error)
       then
          Ada.Text_IO.Put_Line
@@ -150,7 +150,6 @@ is
             "Failed to load project """
             & Project_File.Display_Full_Name (Normalize => True)
             & """");
-         Project_Tree.Log_Messages.Output_Messages;
          GNAT.OS_Lib.OS_Exit (1);
 
       else
