@@ -1,0 +1,9 @@
+description: ObjDecl formatting from line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 84",
+    "-EL 85",
+  ]
+status_code: 1

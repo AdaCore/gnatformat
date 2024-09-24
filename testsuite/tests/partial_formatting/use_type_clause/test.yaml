@@ -1,0 +1,11 @@
+description: Test UseTypeClause partial formatting.
+driver: partial_gnatformat
+args:
+  [
+    "test.adb",
+    "-SL 5",
+    "-SC 4",
+    "-EL 5",
+    "-EC 5",
+  ]
+status_code: 1

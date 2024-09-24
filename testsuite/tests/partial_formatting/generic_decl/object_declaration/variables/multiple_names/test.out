@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["John", "Paul"] test.ads:56:4-56:62>) - 56:1-56:62
+^
+   John, Paul : not null Person_Name := new Person (Sex => M);$
+

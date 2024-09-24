@@ -1,0 +1,5 @@
+description: |
+  Test that gnatformat is able to format the provided list of sources even when
+  there's no project file.
+driver: gnatformat
+args: ["--pipe", "test.adb", "test_dep.ads"]

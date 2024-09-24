@@ -1,0 +1,14 @@
+<CompilationUnit main.adb:1:1-10:10>
+main.adb(<SubpBody ["Main"] main.adb:1:1-10:10>) - 1:1-10:10
+^
+procedure Main is
+
+begin
+   declare
+      A : Integer;
+   begin
+      null;
+   end;
+
+end Main;$
+

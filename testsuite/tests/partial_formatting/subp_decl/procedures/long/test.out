@@ -1,0 +1,8 @@
+<CompilationUnit test.ads:21:1-42:28>
+test.ads(<SubpDecl ["Print_Header"] test.ads:38:4-40:42>) - 38:1-40:42
+^
+   procedure Print_Header
+     (Pages  : in Natural;
+      Header : in Line := (1 .. Line'Last => ' ');
+      Center : in Boolean := True);$
+

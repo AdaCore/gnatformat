@@ -1,0 +1,8 @@
+<CompilationUnit test.ads:27:1-149:23>
+test.ads(<SingleTaskDecl ["Parser"] test.ads:133:4-136:8>) - 133:1-136:8
+^
+   task Parser is
+      entry Next_Lexeme (L : in Lexical_Element);
+      entry Next_Action (A : out Parser_Action);
+   end;$
+

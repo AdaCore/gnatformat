@@ -1,0 +1,36 @@
+--  test_a.adb
+with Test_A_Dep;
+
+procedure Test_A is
+begin
+   null;
+end Test_A;
+
+--  test_a_dep.ads
+package Test_A_Dep is
+   A : constant Integer := 1;
+end Test_A_Dep;
+
+--  test_a_unused_dep.ads
+package Test_A_Unused_Dep is
+   A : constant Integer := 1;
+end Test_A_Unused_Dep;
+
+--  test_b.adb
+with Test_B_Dep;
+
+procedure Test_B is
+begin
+   null;
+end Test_B;
+
+--  test_b_dep.ads
+package Test_B_Dep is
+   A : constant Integer := 1;
+end Test_B_Dep;
+
+--  test_b_unused_dep.ads
+package Test_B_Unused_Dep is
+   A : constant Integer := 1;
+end Test_B_Unused_Dep;
+

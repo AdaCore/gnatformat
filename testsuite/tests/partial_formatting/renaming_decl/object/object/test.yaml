@@ -1,0 +1,9 @@
+description: ObjectDecl formatting for line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 44",
+    "-EL 45",
+  ]
+status_code: 1

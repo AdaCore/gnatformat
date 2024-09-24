@@ -1,0 +1,9 @@
+description: SubpBody formatting with partial selection a main procedure.
+driver: partial_gnatformat
+args:
+  [
+    "main.adb",
+    "-SL 1",
+    "-EL 10",
+  ]
+status_code: 1

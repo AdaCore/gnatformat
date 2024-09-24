@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:19:1-72:26>
+test.ads(<SubtypeDecl ["Up_To_K"] test.ads:33:4-33:43>) - 33:1-33:43
+^
+   subtype Up_To_K is Column range 1 .. K;$
+

@@ -1,0 +1,8 @@
+<CompilationUnit test.adb:1:1-10:10>
+test.adb(<SubpBody ["Example"] test.adb:2:4-9:16>) - 2:1-9:16
+^
+   procedure Example (A : Integer; B : Integer; C : Integer) is
+   begin
+      null;
+   end Example;$
+

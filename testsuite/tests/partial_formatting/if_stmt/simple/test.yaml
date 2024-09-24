@@ -1,0 +1,11 @@
+description: IfStmt formatting with partial selection.
+driver: partial_gnatformat
+args:
+  [
+    "main.adb",
+    "-SL 4",
+    "-SC 8",
+    "-EL 5",
+    "-EC 7",
+  ]
+status_code: 1

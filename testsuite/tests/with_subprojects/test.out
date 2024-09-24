@@ -1,0 +1,13 @@
+--  test_a.adb
+with Test_A_Dep;
+
+procedure Test_A is
+begin
+   null;
+end Test_A;
+
+--  test_a_dep.ads
+package Test_A_Dep is
+   A : constant Integer := 1;
+end Test_A_Dep;
+

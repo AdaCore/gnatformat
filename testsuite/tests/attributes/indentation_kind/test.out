@@ -1,0 +1,14 @@
+--  test.adb
+with Test_Dep;
+
+procedure Main is
+	A : Integer;
+begin
+	null;
+end Main;
+
+--  test_dep.ads
+package Test_Dep is
+   A : constant Integer := 1;
+end Test_Dep;
+

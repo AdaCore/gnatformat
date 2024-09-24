@@ -1,0 +1,9 @@
+<CompilationUnit main.adb:1:1-10:10>
+main.adb(<DeclBlock main.adb:4:4-8:11>) - 4:1-8:11
+^
+   declare
+      A : Integer;
+   begin
+      null;
+   end;$
+

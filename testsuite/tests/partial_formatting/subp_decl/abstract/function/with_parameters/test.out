@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:20:1-32:37>
+test.ads(<AbstractSubpDecl ["Intersection"] test.ads:27:5-27:69>) - 27:1-27:69
+^
+   function Intersection (Left, Right : Set) return Set is abstract;$
+

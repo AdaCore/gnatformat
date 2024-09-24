@@ -1,0 +1,9 @@
+description: SubpRenamingDecl formatting for line selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 32",
+    "-EL 33",
+  ]
+status_code: 1

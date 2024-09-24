@@ -1,0 +1,11 @@
+description: SubpSpec formatting with the selection of an abstract procedure.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 4",
+    "-SC 5",
+    "-EL 4",
+    "-EC 10",
+  ]
+status_code: 1

@@ -1,0 +1,11 @@
+description: SubpSpec formatting with partial selection of a procedure from a SubpBody.
+driver: partial_gnatformat
+args:
+  [
+    "test.adb",
+    "-SC 4",
+    "-SL 2",
+    "-EL 4",
+    "-EC 13",
+  ]
+status_code: 1

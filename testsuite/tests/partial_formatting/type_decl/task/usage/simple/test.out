@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:27:1-149:23>
+test.ads(<ObjectDecl ["Agent"] test.ads:141:4-141:22>) - 141:1-141:22
+^
+   Agent : Server;$
+

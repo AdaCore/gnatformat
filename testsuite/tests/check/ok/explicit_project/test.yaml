@@ -1,0 +1,4 @@
+description:
+  Test that gnatformat is able to check that a project is correctly formatted
+driver: gnatformat
+args: ["-P", "test.gpr", "--check"]

@@ -1,0 +1,4 @@
+description: Test the -P switch by confirming that project sources are found
+driver: gnatformat
+args:
+  ["-P", "test/test.gpr", "-Xmode_1=test_2", "-X", "mode_2=test_1", "--pipe"]

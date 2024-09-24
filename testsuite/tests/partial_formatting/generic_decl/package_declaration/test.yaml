@@ -1,0 +1,10 @@
+description: GenericPackageDecl formatting from partial selection.
+driver: partial_gnatformat
+args:
+  [
+    "test.ads",
+    "-SL 20",
+    "-EL 31",
+    "-EC 33",
+  ]
+status_code: 1

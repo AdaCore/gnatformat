@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["A_String"] test.ads:84:4-84:39>) - 84:1-84:39
+^
+   A_String : constant String := "A";$
+

@@ -1,0 +1,5 @@
+<CompilationUnit test.adb:1:1-18:10>
+test.adb(<UseTypeClause test.adb:5:4-6:24>) - 5:1-6:24
+^
+   use type Ada.Text_IO.Count;$
+

@@ -1,0 +1,5 @@
+<CompilationUnit test.ads:26:1-87:25>
+test.ads(<ObjectDecl ["Count", "Sum"] test.ads:63:4-63:26>) - 63:1-63:26
+^
+   Count, Sum : Integer;$
+
