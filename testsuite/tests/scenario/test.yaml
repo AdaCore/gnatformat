@@ -1,4 +1,6 @@
-description: Test the -P switch by confirming that project sources are found
+description: |
+  Test that the -X swich can be provided multiple times and that it can be
+  followed or not by a whitespace.
 driver: gnatformat
 args:
   ["-P", "test/test.gpr", "-Xmode_1=test_2", "-X", "mode_2=test_1", "--pipe"]
