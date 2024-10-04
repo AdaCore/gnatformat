@@ -436,6 +436,7 @@ package body Gnatformat.Configuration is
    begin
       Target.Width := Source.Width or @;
       Target.Indentation := Source.Indentation or @;
+      Target.Indentation_Continuation := Source.Indentation_Continuation or @;
       Target.Indentation_Kind := Source.Indentation_Kind or @;
       Target.End_Of_Line := Source.End_Of_Line or @;
       Target.Charset := Source.Charset or @;
@@ -636,6 +637,12 @@ package body Gnatformat.Configuration is
                return
                  (Kind        => Indentation,
                   Indentation => Positive'Value (Raw_Attribute_Value));
+
+            elsif Q_Attribute_Id = Q_Indentation_Continuation_Attribute_Id then
+               return
+                 (Kind                     => Indentation_Continuation,
+                  Indentation_Continuation =>
+                    Positive'Value (Raw_Attribute_Value));
 
             elsif Q_Attribute_Id = Q_Indentation_Kind_Attribute_Id then
                return
