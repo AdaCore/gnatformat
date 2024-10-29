@@ -1,3 +1,6 @@
+variables:
+  EXTRA_ANOD_TEST_ARGS: ""
+
 workflow:
   rules:
     # Run the generic CI on merge requests only
@@ -6,6 +9,7 @@ workflow:
 stages:
   - check
   - build
+  - coverage
 
 issue-check:
   stage: check
@@ -21,6 +25,8 @@ issue-check:
 build_and_test:
   stage: build
   interruptible: true
+  needs:
+    - issue-check
   services:
     - image:pe-base
     - cpu:8
@@ -28,8 +34,64 @@ build_and_test:
   script:
     - generic_anod_ci
     - . /tmp/ci_env.sh
-    - anod test gnatformat $ACI_TRACK_QUALIFIER
+    - anod test gnatformat $ACI_TRACK_QUALIFIER $EXTRA_ANOD_TEST_ARGS
     - testsuite_reports
   artifacts:
     reports:
       junit: xunit-*.xml
+
+coverage-run:
+  extends: build_and_test
+  stage: coverage
+  variables:
+    EXTRA_ANOD_TEST_ARGS: "-Q coverage"
+  script:
+    - !reference [build_and_test, script]
+    - GNATFORMAT_BUILD_SPACE=$(anod info test gnatformat $ACI_TRACK_QUALIFIER -Q coverage --show working_dir)
+    - RESULTS_DIR=$GNATFORMAT_BUILD_SPACE/results/new
+    # Save coverage results
+    - mkdir -v $CI_PROJECT_DIR/coverage
+    - cp -rv $RESULTS_DIR/coverage-cobertura $CI_PROJECT_DIR/coverage/
+    - cp -rv $RESULTS_DIR/coverage-xml $CI_PROJECT_DIR/coverage/
+    # Export to gitlab pages
+    - |
+      if [[ $CI_PIPELINE_SOURCE = "merge_request_event" ]]; then
+        target_subdir=MRs/$CI_MERGE_REQUEST_IID
+      else
+        target_subdir=$CI_COMMIT_BRANCH
+      fi
+    - target_subdir=$target_subdir/ada-coverage
+    - publish-pages $RESULTS_DIR/coverage-dhtml/ --target-subdir $target_subdir --expires 30
+    - >
+      echo "Coverage report: https://pages.gitlab.adacore-it.com/$CI_PROJECT_PATH/$target_subdir/index.html"
+  artifacts:
+    when: always # Upload on errors too
+    reports:
+      junit: xunit-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/coverage-cobertura/cobertura.xml
+    paths:
+      - coverage/
+
+coverage-report-statement:
+  stage: coverage
+  interruptible: true
+  services:
+    - image:pe-base
+  needs:
+    - coverage-run
+  script:
+    - echo_coverage_stats --coverage-file $CI_PROJECT_DIR/coverage/coverage-xml/index.xml
+  coverage: '/^Stmt Coverage:\s+(\d+\.\d+\%) \(\d+ \/ \d+\)$/'
+
+coverage-report-decision:
+  stage: coverage
+  interruptible: true
+  services:
+    - image:pe-base
+  needs:
+    - coverage-run
+  script:
+    - echo_coverage_stats --coverage-file $CI_PROJECT_DIR/coverage/coverage-xml/index.xml
+  coverage: '/^Decision Coverage:\s+(\d+\.\d+\%) \(\d+ \/ \d+\)$/'

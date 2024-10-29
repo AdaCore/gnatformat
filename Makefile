@@ -1,15 +1,51 @@
+ROOT_DIR=$(shell pwd)
+
 BUILD_MODE ?= dev
 LIBRARY_TYPE ?= static
 PROCESSORS ?= 0
 
 ALL_LIBRARY_TYPES = static static-pic relocatable
-ALL_BUILD_MODES = dev prod
 
 LIB_PROJECT = gnat/gnatformat.gpr
 
 BIN_PROJECT = gnat/gnatformat_driver.gpr
 
 TEST_PROGRAMS = testsuite/test_programs/partial_gnatformat.gpr
+
+COVERAGE ?=
+COVERAGE_BUILD_FLAGS = --implicit-with=gnatcov_rts \
+	--src-subdirs=gnatcov-instr \
+	-gnatyN
+
+.PHONY: coverage-setup
+coverage-setup:
+ifneq ($(COVERAGE),)
+	gnatcov setup --prefix gnatcov_rts_prefix
+endif
+
+.PHONY: coverage-instrumentation
+coverage-instrumentation:
+ifneq ($(COVERAGE),)
+	rm -rf obj/*gnatcov-instr
+	rm -rf obj/*/*gnatcov-instr
+	gnatcov \
+		instrument \
+		--level=stmt+decision \
+		--dump-trigger=atexit \
+		--no-subprojects \
+		-P$(BIN_PROJECT) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		--projects=gnatformat \
+		--projects=gnatformat_driver;
+endif
+
+.PHONY: coverage-run
+coverage-run: bin test-programs
+ifneq ($(COVERAGE),)
+	python testsuite/testsuite.py --gnatcov lib/$(LIBRARY_TYPE).$(BUILD_MODE) obj/$(LIBRARY_TYPE).$(BUILD_MODE) --gnatcov-source-root $(ROOT_DIR)
+endif
 
 .PHONY: all
 all: lib bin test-programs
@@ -29,7 +65,8 @@ lib:
 	done;
 
 .PHONY: bin
-bin:
+bin: coverage-instrumentation
+ifeq ($(COVERAGE),)
 	gprbuild \
 		-v \
 		-k \
@@ -39,12 +76,26 @@ bin:
 		-P$(BIN_PROJECT) \
 		-p \
 		-j$(PROCESSORS);
+else
+	gprbuild \
+		-v \
+		-k \
+		-XGNATFORMAT_LIBRARY_TYPE=static \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		-P$(BIN_PROJECT) \
+		-p \
+		$(COVERAGE_BUILD_FLAGS) \
+		-j$(PROCESSORS);
+endif
 
 .PHONY: clean
 clean:
 	rm -rf bin;
 	rm -rf lib;
 	rm -rf obj;
+	rm -rf testsuite/test_programs/obj;
+	rm -rf testsuite/test_programs/bin;
 
 .PHONY: install
 install: install-lib install-bin
@@ -75,6 +126,11 @@ install-bin:
 		-P $(BIN_PROJECT) \
 		-p \
 		-f ;
+ifneq ($(COVERAGE),)
+	mkdir -p $(PREFIX)/share/gnatformat/sids || true
+	cp obj/*.sid $(PREFIX)/share/gnatformat/sids/
+	cp obj/*/*.sid $(PREFIX)/share/gnatformat/sids/
+endif
 
 .PHONY: test-programs
 test-programs:
