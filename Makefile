@@ -6,16 +6,39 @@ PROCESSORS ?= 0
 
 ALL_LIBRARY_TYPES = static static-pic relocatable
 
-LIB_PROJECT = gnat/gnatformat.gpr
+GNATFORMAT_LIBRARY_PROJECT = gnat/gnatformat.gpr
 
-BIN_PROJECT = gnat/gnatformat_driver.gpr
+GNATFORMAT_DRIVER_PROJECT = gnat/gnatformat_driver.gpr
 
-TEST_PROGRAMS = testsuite/test_programs/partial_gnatformat.gpr
+PARTIAL_GNATFORMAT_DRIVER_PROJECT = testsuite/partial_gnatformat/partial_gnatformat.gpr
 
 COVERAGE ?=
-COVERAGE_BUILD_FLAGS = --implicit-with=gnatcov_rts \
+COVERAGE_BUILD_FLAGS = \
+	--implicit-with=gnatcov_rts \
 	--src-subdirs=gnatcov-instr \
 	-gnatyN
+BASE_BUILD_FLAGS = \
+	-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+	-v \
+	-k \
+	-p \
+	-j$(PROCESSORS)
+ifeq ($(COVERAGE),)
+	COMMON_BUILD_FLAGS = \
+		$(BASE_BUILD_FLAGS)
+else
+	COMMON_BUILD_FLAGS = \
+		$(BASE_BUILD_FLAGS) \
+		$(COVERAGE_BUILD_FLAGS)
+endif
+COMMON_INSTRUMENT_FLAGS = \
+	--level=stmt+decision \
+	--dump-trigger=atexit \
+	--no-subprojects \
+	-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+	-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+	-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+	--projects=gnatformat
 
 .PHONY: coverage-setup
 coverage-setup:
@@ -30,72 +53,49 @@ ifneq ($(COVERAGE),)
 	rm -rf obj/*/*gnatcov-instr
 	gnatcov \
 		instrument \
-		--level=stmt+decision \
-		--dump-trigger=atexit \
-		--no-subprojects \
-		-P$(BIN_PROJECT) \
-		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		--projects=gnatformat \
-		--projects=gnatformat_driver;
+		-P $(GNATFORMAT_DRIVER_PROJECT) \
+		$(COMMON_INSTRUMENT_FLAGS) \
+		--projects=gnatformat_driver ;
+endif
+
+.PHONY: partial-gnatformat-coverage-instrumentation
+partial-gnatformat-coverage-instrumentation:
+ifneq ($(COVERAGE),)
+	rm -rf testsuite/partial_gnatformat/obj/*gnatcov-instr
+	rm -rf testsuite/partial_gnatformat/obj/*/*gnatcov-instr
+	gnatcov \
+		instrument \
+		-P $(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
+		$(COMMON_INSTRUMENT_FLAGS) \
+		--projects=partial_gnatformat ;
 endif
 
 .PHONY: coverage-run
-coverage-run: bin test-programs
+coverage-run: bin partial-gnatformat
 ifneq ($(COVERAGE),)
-	python testsuite/testsuite.py --gnatcov lib/$(LIBRARY_TYPE).$(BUILD_MODE) obj/$(LIBRARY_TYPE).$(BUILD_MODE) --gnatcov-source-root $(ROOT_DIR)
+	python testsuite/testsuite.py --gnatcov obj/ obj/$(LIBRARY_TYPE).$(BUILD_MODE) testsuite/partial_gnatformat/obj --gnatcov-source-root $(ROOT_DIR)
 endif
 
 .PHONY: all
-all: lib bin test-programs
+all: lib bin partial-gnatformat
 
 .PHONY: lib
 lib:
 	for library_type in $(ALL_LIBRARY_TYPES) ; do \
 		gprbuild \
-			-v \
-			-k \
+			-P $(GNATFORMAT_LIBRARY_PROJECT) \
 			-XGNATFORMAT_LIBRARY_TYPE=$$library_type \
 			-XLIBRARY_TYPE=$$library_type \
-			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-			-P $(LIB_PROJECT) \
-			-p \
-			-j$(PROCESSORS) ; \
-	done;
+			$(COMMON_BUILD_FLAGS) ; \
+	done ;
 
 .PHONY: bin
 bin: coverage-instrumentation
-ifeq ($(COVERAGE),)
 	gprbuild \
-		-v \
-		-k \
+		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		-P$(BIN_PROJECT) \
-		-p \
-		-j$(PROCESSORS);
-else
-	gprbuild \
-		-v \
-		-k \
-		-XGNATFORMAT_LIBRARY_TYPE=static \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		-P$(BIN_PROJECT) \
-		-p \
-		$(COVERAGE_BUILD_FLAGS) \
-		-j$(PROCESSORS);
-endif
-
-.PHONY: clean
-clean:
-	rm -rf bin;
-	rm -rf lib;
-	rm -rf obj;
-	rm -rf testsuite/test_programs/obj;
-	rm -rf testsuite/test_programs/bin;
+		$(COMMON_BUILD_FLAGS) ;
 
 .PHONY: install
 install: install-lib install-bin
@@ -109,10 +109,12 @@ install-lib:
 			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 			--install-name=gnatformat \
 			--prefix="$(PREFIX)" \
-			--sources-subdir=include/lal-refactor \
+			--sources-subdir=include/gnatformat \
 			--build-name=$$library_type \
 			--build-var=LIBRARY_TYPE \
-			-P $(LIB_PROJECT) -p -f ; \
+			-P $(GNATFORMAT_LIBRARY_PROJECT) \
+			-p \
+			-f ; \
 	done ;
 
 .PHONY: install-bin
@@ -121,9 +123,9 @@ install-bin:
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
-		--install-name=gnatformat_driver \
+		--install-name=gnatformat \
 		--prefix="$(PREFIX)" \
-		-P $(BIN_PROJECT) \
+		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
 ifneq ($(COVERAGE),)
@@ -132,33 +134,39 @@ ifneq ($(COVERAGE),)
 	cp obj/*/*.sid $(PREFIX)/share/gnatformat/sids/
 endif
 
-.PHONY: test-programs
-test-programs:
-	for proj in $(TEST_PROGRAMS) ; do \
-		gprbuild \
-			-v \
-			-k \
-			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-			-P $$proj \
-			-p \
-			-j$(PROCESSORS) ; \
-	done;
+.PHONY: partial-gnatformat
+partial-gnatformat: partial-gnatformat-coverage-instrumentation
+	gprbuild \
+		-P$(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		$(COMMON_BUILD_FLAGS) ;
 
-.PHONY: install-test-programs
-install-test-programs:
-	for proj in $(TEST_PROGRAMS) ; do \
-		gprinstall \
-			-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-			-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-			-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-			--prefix="$(PREFIX)" \
-			--install-name=test_programs \
-			--mode=usage \
-			-P $$proj -p -f ; \
-	done ;
+.PHONY: install-partial-gnatformat
+install-partial-gnatformat:
+	gprinstall \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		--prefix="$(PREFIX)" \
+		--install-name=partial_gnatformat \
+		--mode=usage \
+		-P$(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
+		-p \
+		-f ;
+ifneq ($(COVERAGE),)
+	mkdir -p $(PREFIX)/share/gnatformat/sids || true
+	cp testsuite/partial_gnatformat/obj/*.sid $(PREFIX)/share/gnatformat/sids/
+endif
 
 .PHONY: test
 test:
 	python testsuite/testsuite.py
+
+.PHONY: clean
+clean:
+	rm -rf bin;
+	rm -rf lib;
+	rm -rf obj;
+	rm -rf testsuite/partial_gnatformat/obj;
+	rm -rf testsuite/partial_gnatformat/bin;

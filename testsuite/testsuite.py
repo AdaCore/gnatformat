@@ -120,7 +120,13 @@ class PartialGNATformat(DiffTestDriver):
         # Run the "gnatformat" program...
         argv = ["partial_gnatformat"] + self.test_env.get("args")
         # ... on the input Ada source code file
-        self.shell(valgrind_wrap(self.env, argv))
+        self.shell(valgrind_wrap(self.env, argv), catch_error=False)
+
+    def shell(self, *args, **kwargs) -> ProcessResult:
+        if self.env.gnatcov:
+            return self.env.gnatcov.decorate_run(super().shell, self, *args, **kwargs)
+        else:
+            return super().shell(*args, **kwargs)
 
 
 class GNATformatTestsuite(Testsuite):
