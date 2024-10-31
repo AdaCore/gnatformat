@@ -352,6 +352,7 @@ begin
          General_Failed : Boolean := False;
 
          Print_Source_Simple_Name : Boolean := True;
+         Print_New_Line           : Boolean := False;
 
          function Format_Source
            (Path : GPR2.Path_Name.Object;
@@ -437,15 +438,18 @@ begin
             View : GPR2.Project.View.Object) is
          begin
             if Gnatformat.Command_Line.Pipe.Get then
-               begin
-                  if Print_Source_Simple_Name then
-                     Ada.Text_IO.Put_Line ("--  " & String (Path.Simple_Name));
-                  end if;
-
-                  Ada.Strings.Unbounded.Text_IO.Put
-                    (Format_Source (Path, View));
+               if Print_New_Line then
                   Ada.Text_IO.New_Line;
-               end;
+               else
+                  Print_New_Line := True;
+               end if;
+
+               if Print_Source_Simple_Name then
+                  Ada.Text_IO.Put_Line ("--  " & String (Path.Simple_Name));
+               end if;
+
+               Ada.Strings.Unbounded.Text_IO.Put
+                 (Format_Source (Path, View));
 
             else
                declare
@@ -547,6 +551,12 @@ begin
 
          begin
             if Gnatformat.Command_Line.Pipe.Get then
+               if Print_New_Line then
+                  Ada.Text_IO.New_Line;
+               else
+                  Print_New_Line := True;
+               end if;
+
                if Print_Source_Simple_Name then
                   Ada.Text_IO.Put_Line ("--  " & Source.Display_Base_Name);
                end if;
@@ -557,7 +567,6 @@ begin
                      Format_Options =>
                        Gnatformat.Configuration.Default_Format_Options,
                      Configuration  => Unparsing_Configuration));
-               Ada.Text_IO.New_Line;
 
             else
                declare
