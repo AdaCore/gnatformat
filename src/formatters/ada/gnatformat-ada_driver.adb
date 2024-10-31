@@ -142,7 +142,7 @@ is
 
       if not Project_Tree.Load
         (Options,
-         Reporter         => Console.Create (No_Warnings),
+         Reporter         => Console.Create,
          Absent_Dir_Error => GPR2.No_Error)
       then
          Ada.Text_IO.Put_Line

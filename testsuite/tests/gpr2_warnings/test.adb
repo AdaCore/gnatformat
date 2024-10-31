@@ -1,6 +1,7 @@
 with Test_Dep;
 
-procedure Test is
+procedure
+   Test is
 begin
-  null;
+   null;
 end Test;

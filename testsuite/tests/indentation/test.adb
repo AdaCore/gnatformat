@@ -1,6 +1,6 @@
-procedure Main
+procedure Test
 is
   A : Integer := 1111111111111111111111111111111111111111111111111111111111111111;
 begin
   null;
-end Main;
+end Test;
