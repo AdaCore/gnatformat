@@ -14,13 +14,14 @@ import e3.env
 import e3.testsuite
 import e3.testsuite.driver
 from e3.testsuite import Testsuite
-from e3.testsuite.driver.classic import TestAbortWithFailure
+from e3.testsuite.driver.classic import ProcessResult, TestAbortWithFailure
 from e3.testsuite.driver.diff import (
     DiffTestDriver,
     PatternSubstitute,
     RefiningChain,
     ReplacePath,
 )
+from gnatcov import GNATcov
 
 
 class ReplaceBuildVersionAndDate(RefiningChain[str]):
@@ -74,6 +75,12 @@ class GNATformatDriver(DiffTestDriver):
             self.shell(valgrind_wrap(self.env, argv), catch_error=False)
         )
 
+    def shell(self, *args, **kwargs) -> ProcessResult:
+        if self.env.gnatcov:
+            return self.env.gnatcov.decorate_run(super().shell, self, *args, **kwargs)
+        else:
+            return super().shell(*args, **kwargs)
+
     def validate_status_code(self, result):
         expected_status_code = self.test_env.get("status_code", 0)
         if expected_status_code != result.status:
@@ -113,7 +120,13 @@ class PartialGNATformat(DiffTestDriver):
         # Run the "gnatformat" program...
         argv = ["partial_gnatformat"] + self.test_env.get("args")
         # ... on the input Ada source code file
-        self.shell(valgrind_wrap(self.env, argv))
+        self.shell(valgrind_wrap(self.env, argv), catch_error=False)
+
+    def shell(self, *args, **kwargs) -> ProcessResult:
+        if self.env.gnatcov:
+            return self.env.gnatcov.decorate_run(super().shell, self, *args, **kwargs)
+        else:
+            return super().shell(*args, **kwargs)
 
 
 class GNATformatTestsuite(Testsuite):
@@ -135,10 +148,31 @@ class GNATformatTestsuite(Testsuite):
             action="store_true",
             help="Rewrite test baselines according to current output.",
         )
+        parser.add_argument(
+            "--gnatcov",
+            nargs="+",
+            help="If provided, compute the source code coverage of testcases"
+            " on GNATformat. This requires GNATcoverage working with"
+            " instrumentation. The argument passed must be a list of"
+            " directories that contains all SID files.",
+        )
+        parser.add_argument(
+            "--gnatcov-source-root",
+            help="If provided, this will be used as the --source-root gnatcov"
+            " CLI argument for producing a Cobertura report with"
+            " relative source paths.",
+        )
 
     def set_up(self):
         args = self.main.args
         self.env.rewrite_baselines = args.rewrite
+        self.env.gnatcov = GNATcov(self) if self.env.options.gnatcov else None
+
+    def tear_down(self) -> None:
+        if self.env.gnatcov:
+            self.env.gnatcov.report()
+
+        return super().tear_down()
 
 
 if __name__ == "__main__":
