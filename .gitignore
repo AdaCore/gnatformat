@@ -17,6 +17,7 @@ testsuite/out
 
 # VSCode settings, possible modified by ancr
 .vscode/settings.json
+testsuite/test_programs/.vscode/settings.json
 
 # GNATCoverage artifacts
 gnatcov_rts*
