@@ -4,4 +4,4 @@ driver: gnatformat
 args: ["-P", "test/test.gpr", "--pipe"]
 strict_line_endings: True
 control:
-  - ["SKIP", 'env.build.os.name != "linux"', "Test output as mixed EOL characters - test.out specific for each platform is needed"]
+  - ["SKIP", 'env.build.os.name != "linux"', "Test output has mixed EOL characters - test.out specific for each platform is needed"]
