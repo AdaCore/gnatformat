@@ -5,6 +5,7 @@
 
 with Ada.Containers;
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Containers.Vectors;
 with Ada.Directories;
 with Ada.Exceptions;
 with Ada.Streams.Stream_IO;
@@ -39,17 +40,35 @@ with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
 
-procedure Gnatformat.Ada_Driver
-is
+procedure Gnatformat.Ada_Driver is
+
+   General_Failed : Boolean := False;
+
    package Langkit_Support_Unparsing
      renames Langkit_Support.Generic_API.Unparsing;
 
-   package Source_List is new Ada.Containers.Doubly_Linked_Lists
+   package Source_Lists is new Ada.Containers.Doubly_Linked_Lists
      (Element_Type => GPR2.Build.Source.Object);
 
+   subtype Source_List is Source_Lists.List;
+
+   package Unbounded_String_Vectors is new
+     Ada.Containers.Vectors
+       (Index_Type   => Positive,
+        Element_Type => Ada.Strings.Unbounded.Unbounded_String,
+        "="          => Ada.Strings.Unbounded."=");
+
+   subtype Unbounded_String_Vector is Unbounded_String_Vectors.Vector;
+
    function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object; Failed : out Boolean)
-      return Source_List.List;
+     (Project_Tree : GPR2.Project.Tree.Object)
+      return Source_List;
+   --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
+   --  an GPR2.Project.Source.Set.Object.
+
+   function Get_Project_Sources
+     (Project_Tree : GPR2.Project.Tree.Object)
+      return Source_List;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
    --  an GPR2.Project.Source.Set.Object.
 
@@ -70,15 +89,13 @@ is
    ------------------------------
 
    function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object; Failed : out Boolean)
-      return Source_List.List
+     (Project_Tree : GPR2.Project.Tree.Object)
+      return Source_List
    is
-      Sources : Source_List.List;
+      Sources : Source_List;
 
    begin
       Gnatformat_Trace.Trace ("Getting command line sources");
-
-      Failed := False;
 
       Project_Tree.Update_Sources;
 
@@ -91,14 +108,15 @@ is
 
          begin
             if Resolved_Source = GPR2.Build.Source.Undefined then
-               Failed := True;
-
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
                   "Failed to resolve " & Source.Display_Base_Name);
+
                if not Gnatformat.Command_Line.Keep_Going.Get then
                   GNAT.OS_Lib.OS_Exit (1);
                end if;
+
+               General_Failed := True;
 
             else
                Sources.Append (Resolved_Source);
@@ -108,6 +126,84 @@ is
 
       return Sources;
    end Get_Command_Line_Sources;
+
+   -------------------------
+   -- Get_Project_Sources --
+   -------------------------
+
+   function Get_Project_Sources
+     (Project_Tree : GPR2.Project.Tree.Object)
+      return Source_List
+   is
+      Sources : Source_List;
+
+      procedure Process_Part
+        (Kind     : GPR2.Unit_Kind;
+         View     : GPR2.Project.View.Object;
+         Path     : GPR2.Path_Name.Object;
+         Index    : GPR2.Unit_Index;
+         Sep_Name : GPR2.Optional_Name_Type);
+      --  Create a source from View and Path and add to Sources.
+      --  If the source cannot be resolved, then exit with error code 1 if the
+      --  `--keep-going` switch was not provided. Otherwise, set General_Failed
+      --  to True.
+
+      procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object);
+      --  Call Process_Part for all parts of this unit
+
+      ------------------
+      -- Process_Part --
+      ------------------
+
+      procedure Process_Part
+        (Kind     : GPR2.Unit_Kind;
+         View     : GPR2.Project.View.Object;
+         Path     : GPR2.Path_Name.Object;
+         Index    : GPR2.Unit_Index;
+         Sep_Name : GPR2.Optional_Name_Type)
+      is
+         pragma Unreferenced (Kind, Index, Sep_Name);
+
+         Resolved_Source : constant GPR2.Build.Source.Object :=
+           View.Source (Path.Simple_Name);
+
+      begin
+         if Resolved_Source = GPR2.Build.Source.Undefined then
+            Ada.Text_IO.Put_Line
+              (Ada.Text_IO.Standard_Error,
+               "Failed to resolve " & String (Path.Simple_Name));
+
+            if not Gnatformat.Command_Line.Keep_Going.Get then
+               GNAT.OS_Lib.OS_Exit (1);
+            end if;
+
+            General_Failed := True;
+
+         else
+            Sources.Append (Resolved_Source);
+         end if;
+      end Process_Part;
+
+      ------------------
+      -- Process_Unit --
+      ------------------
+
+      procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object) is
+      begin
+         Unit.For_All_Part (Process_Part'Access);
+      end Process_Unit;
+
+   begin
+      Project_Tree.For_Each_Ada_Closure
+        (Action            => Process_Unit'Access,
+         All_Sources       =>
+           Gnatformat.Command_Line.All_Sources.Get,
+         Root_Project_Only =>
+           Gnatformat.Command_Line.Root_Project_Only.Get,
+         Externally_Built  => False);
+
+      return Sources;
+   end Get_Project_Sources;
 
    ------------------
    -- Load_Project --
@@ -310,7 +406,7 @@ begin
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
             "Either a project or sources must be provided.");
-         Ada.Text_IO.New_Line;
+         Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
             GNATCOLL.Opt_Parse.Help (Gnatformat.Command_Line.Parser));
@@ -349,43 +445,39 @@ begin
                .Configuration
                .Create_Project_Format_Options_Cache;
 
-         General_Failed : Boolean := False;
-
          Print_Source_Simple_Name : Boolean := True;
          Print_New_Line           : Boolean := False;
+
+         type Format_Source_Result (Success : Boolean) is record
+            case Success is
+               when True =>
+                  Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
+               when False =>
+                  Diagnostics : Unbounded_String_Vector;
+            end case;
+         end record;
 
          function Format_Source
            (Path : GPR2.Path_Name.Object;
             View : GPR2.Project.View.Object)
-            return Ada.Strings.Unbounded.Unbounded_String;
+            return Format_Source_Result;
          --  Resolves the right format options for Path and formats it.
          --  View is the owning view of the source.
 
-         procedure Process_Part
-           (Kind     : GPR2.Unit_Kind;
-            View     : GPR2.Project.View.Object;
-            Path     : GPR2.Path_Name.Object;
-            Index    : GPR2.Unit_Index;
-            Sep_Name : GPR2.Optional_Name_Type);
-         --  Process one Part (ie, one source) by calling Process_Source with
-         --  Path and View. Kind, Index and Sep_Name are not used.
-
-         procedure Process_Source
-           (Path : GPR2.Path_Name.Object;
-            View : GPR2.Project.View.Object);
+         function Process_Project_Source
+           (Source : GPR2.Build.Source.Object)
+            return Boolean;
          --  Formats the source defined by Path.
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
 
-         procedure Process_Source
-           (Source  : GNATCOLL.VFS.Virtual_File; Charset : String);
+         function Process_Standalone_Source
+           (Source   : GNATCOLL.VFS.Virtual_File;
+            Charset  : String)
+            return Boolean;
          --  Formats the source defined by Source.
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
-
-         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object);
-         --  Process one compilation unit by calling Process_Part for each
-         --  Unit's part.
 
          -------------------
          -- Format_Source --
@@ -394,11 +486,12 @@ begin
          function Format_Source
            (Path : GPR2.Path_Name.Object;
             View : GPR2.Project.View.Object)
-            return Ada.Strings.Unbounded.Unbounded_String
+            return Format_Source_Result
          is
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type :=
                 Project_Format_Options_Cache.Get (View);
+
          begin
             --  TODO: Cache the override
             Project_Formatting_Config.Overwrite (CLI_Formatting_Config);
@@ -410,146 +503,212 @@ begin
                       .Get_Charset (String (Path.Simple_Name)));
                Unit    : constant Libadalang.Analysis.Analysis_Unit :=
                  LAL_Context.Get_From_File (String (Path.Value), Charset);
+
             begin
+               if Unit.Has_Diagnostics then
+                  declare
+                     Diagnostics : constant Unbounded_String_Vector :=
+                       [for Diagnotic of Unit.Diagnostics =>
+                        Ada.Strings.Unbounded.To_Unbounded_String
+                          (Langkit_Support.Diagnostics.To_Pretty_String
+                             (Diagnotic))];
+
+                  begin
+                     return
+                       Format_Source_Result'
+                         (Success => False, Diagnostics => Diagnostics);
+                  end;
+               end if;
+
                return
-                 Gnatformat.Formatting.Format
-                   (Unit           => Unit,
-                    Format_Options => Project_Formatting_Config,
-                    Configuration  => Unparsing_Configuration);
+                  Format_Source_Result'
+                    (Success          => True,
+                     Formatted_Source =>
+                       Gnatformat.Formatting.Format
+                         (Unit           => Unit,
+                          Format_Options => Project_Formatting_Config,
+                          Configuration  => Unparsing_Configuration));
             end;
          end Format_Source;
-
-         ------------------
-         -- Process_Unit --
-         ------------------
-
-         procedure Process_Unit (Unit : GPR2.Build.Compilation_Unit.Object)
-         is
-         begin
-            Unit.For_All_Part (Process_Part'Access);
-         end Process_Unit;
 
          --------------------
          -- Process_Source --
          --------------------
 
-         procedure Process_Source
-           (Path : GPR2.Path_Name.Object;
-            View : GPR2.Project.View.Object) is
+         function Process_Project_Source
+           (Source : GPR2.Build.Source.Object)
+            return Boolean is
          begin
-            if Gnatformat.Command_Line.Pipe.Get then
-               if Print_New_Line then
-                  Ada.Text_IO.New_Line;
+            declare
+               Result : constant Format_Source_Result :=
+                 Format_Source (Source.Path_Name, Source.Owning_View);
+
+            begin
+               if Gnatformat.Command_Line.Pipe.Get then
+                  case Result.Success is
+                     when True =>
+                        if Print_New_Line then
+                           Ada.Text_IO.New_Line;
+                        else
+                           Print_New_Line := True;
+                        end if;
+
+                        if Print_Source_Simple_Name then
+                           Ada.Text_IO.Put_Line
+                             ("--  " & String (Source.Path_Name.Simple_Name));
+                        end if;
+
+                        Ada.Strings.Unbounded.Text_IO.Put
+                          (Result.Formatted_Source);
+
+                     when False =>
+                        General_Failed := True;
+
+                        if Print_New_Line then
+                           Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+                        else
+                           Print_New_Line := True;
+                        end if;
+
+                        Ada.Text_IO.Put_Line
+                          (Ada.Text_IO.Standard_Error,
+                           "--  "
+                           & String (Source.Path_Name.Simple_Name)
+                           & " failed to format");
+                        for Diagnostic of Result.Diagnostics loop
+                           Ada.Strings.Unbounded.Text_IO.Put_Line
+                             (Ada.Text_IO.Standard_Error,
+                              Diagnostic);
+                        end loop;
+
+                        return False;
+                  end case;
+
                else
-                  Print_New_Line := True;
-               end if;
+                  declare
+                     Formatted_Source_Access :
+                       Ada.Strings.Unbounded.Aux.Big_String_Access;
+                     Formatted_Source_Length : Natural;
 
-               if Print_Source_Simple_Name then
-                  Ada.Text_IO.Put_Line ("--  " & String (Path.Simple_Name));
-               end if;
+                     Source_File   : Ada.Streams.Stream_IO.File_Type;
+                     Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
 
-               Ada.Strings.Unbounded.Text_IO.Put
-                 (Format_Source (Path, View));
+                  begin
+                     if Gnatformat.Command_Line.Check.Get then
+                        declare
+                           Original_Source_Size :
+                             constant Ada.Directories.File_Size :=
+                               Ada.Directories.Size
+                                 (String (Source.Path_Name.Value));
+                           Original_Source      :
+                             Ada.Strings.Unbounded.String_Access :=
+                               new String
+                                     (1 .. Integer (Original_Source_Size));
 
-            else
-               declare
-                  Formatted_Source        :
-                    constant Ada.Strings.Unbounded.Unbounded_String :=
-                      Format_Source (Path, View);
-                  Formatted_Source_Access :
-                    Ada.Strings.Unbounded.Aux.Big_String_Access;
-                  Formatted_Source_Length : Natural;
+                           use type Ada.Strings.Unbounded.Unbounded_String;
 
-                  Source_File   : Ada.Streams.Stream_IO.File_Type;
-                  Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
+                        begin
+                           Ada.Streams.Stream_IO.Open
+                             (File => Source_File,
+                              Mode => Ada.Streams.Stream_IO.In_File,
+                              Name => String (Source.Path_Name.Value));
 
-               begin
-                  if Gnatformat.Command_Line.Check.Get then
-                     declare
-                        Original_Source_Size :
-                          constant Ada.Directories.File_Size :=
-                            Ada.Directories.Size (String (Path.Value));
-                        Original_Source      :
-                          Ada.Strings.Unbounded.String_Access :=
-                            new String (1 .. Integer (Original_Source_Size));
+                           Source_Stream :=
+                             Ada.Streams.Stream_IO.Stream (Source_File);
 
-                        use type Ada.Strings.Unbounded.Unbounded_String;
+                           String'Read (Source_Stream, Original_Source.all);
 
-                     begin
-                        Ada.Streams.Stream_IO.Open
+                           Ada.Streams.Stream_IO.Close (Source_File);
+
+                           if Original_Source.all
+                             /= Result.Formatted_Source
+                           then
+                              General_Failed := True;
+                              Ada.Text_IO.Put_Line
+                                (Ada.Text_IO.Standard_Error,
+                                 String (Source.Path_Name.Simple_Name)
+                                 & " is not correctly formatted");
+                              Ada.Text_IO.New_Line
+                                (Ada.Text_IO.Standard_Error);
+                           end if;
+
+                           Ada.Strings.Unbounded.Free (Original_Source);
+                        end;
+
+                     else
+                        Ada.Strings.Unbounded.Aux.Get_String
+                          (Result.Formatted_Source,
+                           Formatted_Source_Access,
+                           Formatted_Source_Length);
+
+                        Ada.Streams.Stream_IO.Create
                           (File => Source_File,
-                           Mode => Ada.Streams.Stream_IO.In_File,
-                           Name => String (Path.Value));
+                           Mode => Ada.Streams.Stream_IO.Out_File,
+                           Name => String (Source.Path_Name.Value));
 
                         Source_Stream :=
                           Ada.Streams.Stream_IO.Stream (Source_File);
 
-                        String'Read (Source_Stream, Original_Source.all);
+                        String'Write
+                          (Source_Stream,
+                           Formatted_Source_Access.all
+                             (1 .. Formatted_Source_Length));
 
                         Ada.Streams.Stream_IO.Close (Source_File);
+                     end if;
+                  end;
+               end if;
 
-                        if Original_Source.all /= Formatted_Source then
-                           General_Failed := True;
-                           Ada.Text_IO.Put_Line
-                             (Ada.Text_IO.Standard_Error,
-                              String (Path.Simple_Name)
-                              & " is not correctly formatted");
-                        end if;
+               return True;
+            end;
 
-                        Ada.Strings.Unbounded.Free (Original_Source);
-                     end;
-
-                  else
-                     Ada.Strings.Unbounded.Aux.Get_String
-                       (Formatted_Source,
-                        Formatted_Source_Access,
-                        Formatted_Source_Length);
-
-                     Ada.Streams.Stream_IO.Create
-                       (File => Source_File,
-                        Mode => Ada.Streams.Stream_IO.Out_File,
-                        Name => String (Path.Value));
-
-                     Source_Stream :=
-                       Ada.Streams.Stream_IO.Stream (Source_File);
-
-                     String'Write
-                       (Source_Stream,
-                        Formatted_Source_Access.all
-                          (1 .. Formatted_Source_Length));
-
-                     Ada.Streams.Stream_IO.Close (Source_File);
-                  end if;
-               end;
-            end if;
          exception
             when E : others =>
                General_Failed := True;
 
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
-                  "Failed to format " & String (Path.Value));
+                  "Failed to format " & String (Source.Path_Name.Value));
+               Gnatformat_Trace.Trace
+                 (Ada.Exceptions.Exception_Information (E));
+               Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
 
-               if Gnatformat.Command_Line.Keep_Going.Get then
-                  Gnatformat_Trace.Trace
-                    (Ada.Exceptions.Exception_Information (E));
+               return False;
+         end Process_Project_Source;
 
-               else
-                  Ada.Exceptions.Reraise_Occurrence (E);
-               end if;
-         end Process_Source;
+         -------------------------------
+         -- Process_Standalone_Source --
+         -------------------------------
 
-         --------------------
-         -- Process_Source --
-         --------------------
-
-         procedure Process_Source
-           (Source  : GNATCOLL.VFS.Virtual_File; Charset : String)
+         function Process_Standalone_Source
+           (Source   : GNATCOLL.VFS.Virtual_File;
+            Charset  : String)
+            return Boolean
          is
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
               LAL_Context.Get_From_File (Source.Display_Full_Name, Charset);
 
          begin
+            if Unit.Has_Diagnostics then
+               General_Failed := True;
+
+               if Print_New_Line then
+                  Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+               else
+                  Print_New_Line := True;
+               end if;
+
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  "--  " & Source.Display_Full_Name & " failed to format");
+               for Diagnostic of Unit.Diagnostics loop
+                  Ada.Text_IO.Put_Line
+                    (Ada.Text_IO.Standard_Error, Diagnostic.To_Pretty_String);
+               end loop;
+
+               return False;
+            end if;
+
             if Gnatformat.Command_Line.Pipe.Get then
                if Print_New_Line then
                   Ada.Text_IO.New_Line;
@@ -644,38 +803,26 @@ begin
                end;
             end if;
 
+            return True;
+
          exception
             when E : others =>
                General_Failed := True;
 
+               if Print_New_Line then
+                  Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+               else
+                  Print_New_Line := True;
+               end if;
+
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
                   "Failed to format " & Source.Display_Full_Name);
+               Gnatformat_Trace.Trace
+                 (Ada.Exceptions.Exception_Information (E));
 
-               if Gnatformat.Command_Line.Keep_Going.Get then
-                  Gnatformat_Trace.Trace
-                    (Ada.Exceptions.Exception_Information (E));
-
-               else
-                  Ada.Exceptions.Reraise_Occurrence (E);
-               end if;
-         end Process_Source;
-
-         ------------------
-         -- Process_Part --
-         ------------------
-
-         procedure Process_Part
-           (Kind     : GPR2.Unit_Kind;
-            View     : GPR2.Project.View.Object;
-            Path     : GPR2.Path_Name.Object;
-            Index    : GPR2.Unit_Index;
-            Sep_Name : GPR2.Optional_Name_Type)
-         is
-            pragma Unreferenced (Kind, Index, Sep_Name);
-         begin
-            Process_Source (Path, View);
-         end Process_Part;
+               return False;
+         end Process_Standalone_Source;
 
       begin
          if Gnatformat.Command_Line.Sources.Get'Length > 0 then
@@ -687,45 +834,60 @@ begin
 
             if Project_Tree.Is_Defined then
                declare
-                  Command_Line_Sources : constant Source_List.List :=
-                    Get_Command_Line_Sources (Project_Tree, General_Failed);
+                  Command_Line_Sources : constant Source_List :=
+                    Get_Command_Line_Sources (Project_Tree);
 
                begin
                   for Source of Command_Line_Sources loop
-                     Process_Source (Source.Path_Name, Source.Owning_View);
+                     exit when
+                       not Process_Project_Source (Source)
+                       and not Gnatformat.Command_Line.Keep_Going.Get;
                   end loop;
                end;
+
             else
-               for Source of Gnatformat.Command_Line.Sources.Get loop
-                  declare
-                     Charset :
-                       constant Gnatformat
-                                  .Configuration
-                                  .Optional_Unbounded_String :=
-                         Gnatformat.Command_Line.Charset.Get;
-                  begin
-                     Process_Source
-                       (Source,
-                        (if Charset.Is_Set
-                         then Ada.Strings.Unbounded.To_String (Charset.Value)
-                         else Gnatformat.Configuration.Default_Charset));
-                  end;
-               end loop;
+               declare
+                  Charset :
+                    constant Gnatformat
+                               .Configuration
+                               .Optional_Unbounded_String :=
+                      Gnatformat.Command_Line.Charset.Get;
+               begin
+                  for Source of Gnatformat.Command_Line.Sources.Get loop
+                     exit when
+                        not Process_Standalone_Source
+                              (Source,
+                               (if Charset.Is_Set
+                                then
+                                  Ada
+                                    .Strings
+                                    .Unbounded
+                                    .To_String (Charset.Value)
+                                else
+                                  Gnatformat.Configuration.Default_Charset))
+                        and not Gnatformat.Command_Line.Keep_Going.Get;
+                  end loop;
+               end;
             end if;
 
          else
-            Project_Tree.For_Each_Ada_Closure
-              (Action            => Process_Unit'Access,
-               All_Sources       =>
-                 Gnatformat.Command_Line.All_Sources.Get,
-               Root_Project_Only =>
-                 Gnatformat.Command_Line.Root_Project_Only.Get,
-               Externally_Built  => False);
+            declare
+               Command_Line_Sources : constant Source_List :=
+                 Get_Project_Sources (Project_Tree);
+
+            begin
+               for Source of Command_Line_Sources loop
+                  exit when
+                    not Process_Project_Source (Source)
+                    and not Gnatformat.Command_Line.Keep_Going.Get;
+               end loop;
+            end;
          end if;
 
          if General_Failed then
             GNAT.OS_Lib.OS_Exit (1);
          end if;
       end;
+
    end;
 end Gnatformat.Ada_Driver;

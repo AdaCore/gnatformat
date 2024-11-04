@@ -1,0 +1,5 @@
+description:
+  Test that syntax errors are greacefully handled with the `--keep-going` switch
+driver: gnatformat
+args: ["--pipe", "--keep-going", "test.adb", "test_a.ads", "test_dep.ads"]
+status_code: 1
