@@ -1,0 +1,18 @@
+--  test.adb
+with Test_A;
+with Test_Dep;
+
+procedure Main is
+begin
+   null;
+end Main;
+
+--  test_a.ads failed to format
+2:4: Cannot parse <sub_object_decl>
+2:61: Expected ';', got ')'
+2:61: Skipped token )
+2:62: Skipped token ;
+3:5: Missing ';'
+3:5: Skipped token package
+3:13: Skipped token Test_A
+3:19: Skipped token ;

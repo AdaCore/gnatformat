@@ -1,0 +1,5 @@
+description:
+  Test that syntax errors are greacefully handled
+driver: gnatformat
+args: ["--pipe", "test.adb", "test_a.ads", "test_dep.ads"]
+status_code: 1
