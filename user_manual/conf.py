@@ -55,9 +55,9 @@ copyright = get_copyright()
 
 
 def get_version():
-    version_file = "../VERSION"
+    version_file = "VERSION.txt"
     if os.path.exists(version_file):
-        for line in open("VERSION").readlines():
+        for line in open(version_file).readlines():
             return line.strip()
 
     # If there is no VERSION file, get the current date
