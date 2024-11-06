@@ -1,7 +1,7 @@
 with Test_A;
 with Test_Dep;
 
-procedure Main is
+procedure Test is
 begin
    null;
-end Main;
+end Test;
