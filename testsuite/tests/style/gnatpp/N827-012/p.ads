@@ -1,0 +1,17 @@
+with Ada.Characters.Latin_1;
+
+package P is
+
+   Data_Link_Escape      : Character renames Ada.Characters.Latin_1.DLE;
+   Start_Of_Transmission : Character renames Ada.Characters.Latin_1.STX;
+   Carriage_Return       : Character renames Ada.Characters.Latin_1.CR;
+   Line_Feed             : Character renames Ada.Characters.Latin_1.LF;
+   End_Of_Transmission   : Character renames Ada.Characters.Latin_1.ETX;
+
+   Data_Link_Escape_Substitution      : constant Character := 'D';
+   Start_Of_Transmission_Substitution : constant Character := 'S';
+   Carriage_Return_Substitution       : constant Character := 'R';
+   Line_Feed_Substitution             : constant Character := 'L';
+   End_Of_Transmission_Substitution   : constant Character := 'E';
+
+end P;

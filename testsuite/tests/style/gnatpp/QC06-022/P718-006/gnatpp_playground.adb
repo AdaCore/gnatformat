@@ -1,0 +1,36 @@
+procedure Gnatpp_Playground
+is
+
+   type Enumerated_Type is
+      (Enum_01,
+       Enum_02,
+       Enum_03,
+       Enum_04,
+       Enum_05,
+       Enum_06,
+       Enum_07,
+       Enum_08,
+       Enum_09,
+       Enum_10);
+   for Enumerated_Type use
+      (Enum_01 => 5,
+       Enum_02 => 10,
+       Enum_03 => 15,
+       Enum_04 => 50,
+       Enum_05 => 1_234,
+       Enum_06 => 4_567,
+       Enum_07 => 7_890,
+       Enum_08 => 12_345,
+       Enum_09 => 56_789,
+       Enum_10 => 987_654);
+
+   type Short is
+      (Enum_01,
+       Enum_02);
+   for Short use
+      (Enum_01 => 5,
+       Enum_02 => 10);
+
+begin
+   null;
+end Gnatpp_Playground;

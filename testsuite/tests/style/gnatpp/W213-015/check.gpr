@@ -1,0 +1,9 @@
+project Check is
+   for Source_Dirs use (".");
+
+   package Format is
+     for Indentation ("Ada") use "3";
+     for Indentation_Continuation ("Ada") use "2";    
+     for Width ("Ada") use "99";
+   end Format;
+end Check;

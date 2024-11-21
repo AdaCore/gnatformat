@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "-P",
+       "pretty.gpr",
+       "Pretty.adb",
+       "--pipe"
+      ]

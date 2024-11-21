@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "records.ada",
+       "--indentation=2",
+       "--pipe"
+      ]

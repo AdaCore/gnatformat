@@ -1,0 +1,9 @@
+--  test.ads
+package Test is new G (A, B, C, D, E, F);
+
+--  test1.ads
+package Test1 is new G (V1 => A, V2 => B, C, D);
+
+--  test2.ads
+package Test2 is new G (V1 => A, V2 => B, V3 => C, V4 => D, V5 => E, V6 => F);
+

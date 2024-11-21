@@ -1,0 +1,11 @@
+description: |  
+  Imported GNATpp test
+  The equivalent of gnatpp PP OFF/ON regions not supported in gnatformat
+  yet. This part is commented in the source code. 
+driver: gnatformat
+args: [
+       "-P",
+       "Debug.gpr",
+       "test_main.adb",
+       "--pipe"
+      ]

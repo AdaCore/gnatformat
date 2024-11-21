@@ -1,0 +1,11 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "loop_then.adb",
+       "--width=40",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True",
+   "erroneous width after formatting: see bug eng/ide/gnatformat#117"]

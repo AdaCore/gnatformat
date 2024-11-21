@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "indent.ads",
+       "--width", "99",
+       "--indentation", "3",
+       "--indentation-continuation","2",
+       "--pipe"
+      ]

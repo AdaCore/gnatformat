@@ -1,0 +1,15 @@
+--  test.ads
+package Test is
+   X : Integer;
+   Z : Integer renames X;
+   Y renames X;
+end Test;
+
+--  main.adb
+procedure Main is
+   X : Integer;
+   Y renames X;
+begin
+   null;
+end Main;
+

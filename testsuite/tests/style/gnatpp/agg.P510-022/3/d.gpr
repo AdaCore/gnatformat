@@ -1,0 +1,7 @@
+project D is
+   for source_dirs use ("src_d");
+
+   package Format is
+      for Indentation ("Ada") use "2";
+   end Format;
+end D;

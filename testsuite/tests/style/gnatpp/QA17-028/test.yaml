@@ -1,0 +1,7 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "pp_reproducer.2.ada",
+       "--pipe"
+      ]

@@ -1,0 +1,13 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "split_lines_before_vertical_bars.adb",
+       "--width=132",
+       "--indentation-continuation=3",
+       "--end-of-line=lf",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True", "erroneous indentation continuation: see issue eng/ide/gnatformat#112"]
+

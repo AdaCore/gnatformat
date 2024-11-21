@@ -1,0 +1,7 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "left_hand_side.adb",
+       "--pipe"
+      ]

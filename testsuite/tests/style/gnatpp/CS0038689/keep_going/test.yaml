@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "-P",
+       "test.gpr",
+       "--keep-going",
+       "--pipe"
+      ]
