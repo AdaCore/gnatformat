@@ -1,1 +1,1 @@
-with Test_Dep; procedure Main is begin Fooooooooooooooo (Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar, Baaaaaaaaaaaaaaaaaz); end Main;
+with Test_Dep; procedure Test is begin Fooooooooooooooo (Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaar, Baaaaaaaaaaaaaaaaaz); end Test;

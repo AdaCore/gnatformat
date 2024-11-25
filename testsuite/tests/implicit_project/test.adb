@@ -1,1 +1,1 @@
-with Test_Dep; procedure Main is begin null; end Main;
+with Test_Dep; procedure Test is begin null; end Test;

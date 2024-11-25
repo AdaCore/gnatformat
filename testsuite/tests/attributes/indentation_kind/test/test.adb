@@ -1,8 +1,8 @@
 with Test_Dep;
 
-procedure Main
+procedure Test
 is
   A : Integer;
 begin
   null;
-end Main;
+end Test;

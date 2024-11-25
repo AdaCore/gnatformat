@@ -7,11 +7,10 @@ with Ada.Strings.Unbounded;
 
 with Gnatformat.Configuration;
 
+with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Analysis;
 with Langkit_Support.Generic_API.Unparsing;
 with Langkit_Support.Slocs;
-
-with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 
 with Libadalang.Analysis;
 

@@ -12,7 +12,9 @@ with GNATCOLL.VFS;
 with GPR2.Project.View;
 with GPR2.Project.Attribute;
 
+with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
+
 with Prettier_Ada.Documents;
 
 private with Ada.Containers.Hashed_Maps;
@@ -22,8 +24,6 @@ private with Ada.Strings.Hash;
 private with GPR2.View_Ids;
 
 private with Libadalang.Generic_API;
-
-with Langkit_Support.Diagnostics;
 
 package Gnatformat.Configuration is
 

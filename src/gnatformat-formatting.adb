@@ -54,8 +54,6 @@ package body Gnatformat.Formatting is
       return Prettier_Ada.Documents.Format (Document, Format_Options);
    end Format;
 
-   ------------------------------------------------------------------------
-
    function Format_Unit
      (Unit                  : Libadalang.Analysis.Analysis_Unit;
       Options               : Gnatformat.Configuration.Format_Options_Type;
