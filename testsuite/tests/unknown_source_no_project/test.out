@@ -1,0 +1,6 @@
+Failed to find test_dep.adb
+
+--  test_dep.ads
+package Test_Dep is
+   A : constant Integer := 1;
+end Test_Dep;

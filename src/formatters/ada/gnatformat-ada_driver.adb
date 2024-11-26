@@ -111,7 +111,7 @@ procedure Gnatformat.Ada_Driver is
             if Resolved_Source = GPR2.Build.Source.Undefined then
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
-                  "Failed to resolve " & Source.Display_Base_Name);
+                  "Failed to find " & Source.Display_Base_Name);
 
                if not Gnatformat.Command_Line.Keep_Going.Get then
                   GNAT.OS_Lib.OS_Exit (1);
@@ -853,18 +853,37 @@ begin
                       Gnatformat.Command_Line.Charset.Get;
                begin
                   for Source of Gnatformat.Command_Line.Sources.Get loop
-                     exit when
-                        not Process_Standalone_Source
-                              (Source,
-                               (if Charset.Is_Set
-                                then
-                                  Ada
-                                    .Strings
-                                    .Unbounded
-                                    .To_String (Charset.Value)
-                                else
-                                  Gnatformat.Configuration.Default_Charset))
-                        and not Gnatformat.Command_Line.Keep_Going.Get;
+                     if not Source.Is_Regular_File then
+                        General_Failed := True;
+
+                        if Print_New_Line then
+                           Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+                        else
+                           Print_New_Line := True;
+                        end if;
+
+                        Ada.Text_IO.Put_Line
+                          (Ada.Text_IO.Standard_Error,
+                           "Failed to find " & Source.Display_Base_Name);
+
+                        if not Gnatformat.Command_Line.Keep_Going.Get then
+                           exit;
+                        end if;
+
+                     else
+                        exit when
+                           not Process_Standalone_Source
+                                 (Source,
+                                  (if Charset.Is_Set
+                                   then
+                                     Ada
+                                       .Strings
+                                       .Unbounded
+                                       .To_String (Charset.Value)
+                                   else
+                                     Gnatformat.Configuration.Default_Charset))
+                           and not Gnatformat.Command_Line.Keep_Going.Get;
+                     end if;
                   end loop;
                end;
             end if;
