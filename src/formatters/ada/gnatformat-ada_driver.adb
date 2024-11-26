@@ -723,7 +723,7 @@ begin
                  (Gnatformat.Formatting.Format
                     (Unit           => Unit,
                      Format_Options =>
-                       Gnatformat.Configuration.Default_Format_Options,
+                       Gnatformat.Command_Line.Configuration.Get,
                      Configuration  => Unparsing_Configuration));
 
             else
@@ -733,7 +733,7 @@ begin
                       Gnatformat.Formatting.Format
                         (Unit           => Unit,
                          Format_Options =>
-                           Gnatformat.Configuration.Default_Format_Options,
+                           Gnatformat.Command_Line.Configuration.Get,
                          Configuration  => Unparsing_Configuration);
                   Formatted_Source_Access :
                     Ada.Strings.Unbounded.Aux.Big_String_Access;
