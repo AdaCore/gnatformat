@@ -1,0 +1,5 @@
+project Test is
+   package Compiler is
+      for Default_Switches ("Ada") use ("-gnatep=preprocessor_data");
+   end Compiler;
+end Test;
