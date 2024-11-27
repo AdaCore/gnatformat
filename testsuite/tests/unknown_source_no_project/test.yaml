@@ -1,0 +1,6 @@
+description: With no project loaded project, test that unknown sources are
+  not resolved correctly and that GNATformat exits with the correct status
+  code.
+driver: gnatformat
+args: ["test_dep.adb", "test_dep.ads", "--keep-going", "--pipe"]
+status_code: 1
