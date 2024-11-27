@@ -1,0 +1,2 @@
+"test_dep_1.ads" -DVERSION="TEST"
+"test_dep_2.ads" -DDEBUG=True

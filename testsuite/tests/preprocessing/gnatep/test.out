@@ -1,0 +1,12 @@
+--  test.adb
+with Test_Dep_1;
+with Test_Dep_2;
+
+procedure Test is
+begin
+   null;
+end Test;
+
+--  test_dep_1.ads was skipped because it requires preprocessing
+
+--  test_dep_2.ads was skipped because it requires preprocessing

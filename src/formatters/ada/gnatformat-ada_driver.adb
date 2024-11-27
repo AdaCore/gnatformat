@@ -37,9 +37,11 @@ with GPR2.Project.View;
 with GPR2.Reporter.Console;
 
 with Langkit_Support.Diagnostics;
+with Langkit_Support.File_Readers;
 with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
+with Libadalang.Preprocessing;
 
 procedure Gnatformat.Ada_Driver is
 
@@ -52,6 +54,13 @@ procedure Gnatformat.Ada_Driver is
      (Element_Type => GPR2.Build.Source.Object);
 
    subtype Source_List is Source_Lists.List;
+
+   type Preprocessor_Data_Record is record
+      Preprocessor_Data : Libadalang.Preprocessing.Preprocessor_Data;
+      Default_Config    : Libadalang.Preprocessing.File_Config;
+      File_Configs      : Libadalang.Preprocessing.File_Config_Maps.Map;
+      File_Reader       : Langkit_Support.File_Readers.File_Reader_Reference;
+   end record;
 
    package Unbounded_String_Vectors is new
      Ada.Containers.Vectors
@@ -239,7 +248,8 @@ procedure Gnatformat.Ada_Driver is
       if not Project_Tree.Load
         (Options,
          Reporter         => Console.Create,
-         Absent_Dir_Error => GPR2.No_Error)
+         Absent_Dir_Error => GPR2.No_Error,
+         With_Runtime     => True)
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -434,9 +444,54 @@ begin
       Load_Project (Project_Tree, Project_File);
 
       declare
-         LAL_Context :
-           constant Libadalang.Analysis.Analysis_Context :=
-             Libadalang.Analysis.Create_Context;
+         function Get_Preprocessor_Data return Preprocessor_Data_Record;
+         --  Gets all the data needed for preprocessing
+
+         ----------------------
+         -- Get_Preprocessor --
+         ----------------------
+
+         function Get_Preprocessor_Data return Preprocessor_Data_Record is
+            Result : Preprocessor_Data_Record;
+
+         begin
+            if Project_Tree.Is_Defined then
+               Result.Preprocessor_Data :=
+                 Libadalang
+                   .Preprocessing
+                   .Extract_Preprocessor_Data_From_Project (Project_Tree);
+               Result.Default_Config :=
+                 Libadalang.Preprocessing.Default_Config
+                   (Result.Preprocessor_Data);
+               Result.File_Configs :=
+                 Libadalang.Preprocessing.File_Configs
+                   (Result.Preprocessor_Data);
+               Result.File_Reader :=
+                 Libadalang.Preprocessing.Create_Preprocessor
+                   (Result.Default_Config, Result.File_Configs);
+
+               --  The call above to Create_Preprocessor consumes
+               --  Result.Default_Config and Result.File_Configs. However,
+               --  these data strctures are useful to have. Therefore,
+               --  recompute them.
+
+               Result.Default_Config :=
+                 Libadalang.Preprocessing.Default_Config
+                   (Result.Preprocessor_Data);
+               Result.File_Configs :=
+                 Libadalang.Preprocessing.File_Configs
+                   (Result.Preprocessor_Data);
+            end if;
+
+            return Result;
+         end Get_Preprocessor_Data;
+
+         Preprocessor_Data : constant Preprocessor_Data_Record :=
+           Get_Preprocessor_Data;
+
+         LAL_Context : constant Libadalang.Analysis.Analysis_Context :=
+           Libadalang.Analysis.Create_Context
+             (File_Reader => Preprocessor_Data.File_Reader);
 
          Project_Format_Options_Cache :
            Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
@@ -538,6 +593,24 @@ begin
            (Source : GPR2.Build.Source.Object)
             return Boolean is
          begin
+            if Libadalang.Preprocessing.Needs_Preprocessing
+                 (Preprocessor_Data.Preprocessor_Data,
+                  String (Source.Path_Name.Name))
+            then
+               if Print_New_Line then
+                  Ada.Text_IO.New_Line;
+               else
+                  Print_New_Line := True;
+               end if;
+
+               Ada.Text_IO.Put_Line
+                 ("--  "
+                  & String (Source.Path_Name.Simple_Name)
+                  & " was skipped because it requires preprocessing");
+
+               return True;
+            end if;
+
             declare
                Result : constant Format_Source_Result :=
                  Format_Source (Source.Path_Name, Source.Owning_View);
@@ -824,7 +897,24 @@ begin
          end Process_Standalone_Source;
 
       begin
-         if Gnatformat.Command_Line.Sources.Get'Length > 0 then
+         if Preprocessor_Data.Default_Config.Enabled then
+            --  If Preprocessor_Data.Default_Config is enabled, then all
+            --  sources need to be preprocessed by Libadalang, even if they do
+            --  not have preprocessing directives.
+            --  Libadalang.Preprocessing.Needs_Preprocessing will return
+            --  True for any source, therefore, we cannot differentiate
+            --  between sources that require preprocessing and not.
+            --  Therefore, do not format anything and suggest the usage of
+            --  '-gnatep'
+
+            Ada.Text_IO.Put_Line
+              (Ada.Text_IO.Standard_Error,
+               "Projects with global preprocessor symbols are not "
+               & "supported. Please use the -gnatep switch with a "
+               & "proprocessor data file.");
+            General_Failed := True;
+
+         elsif Gnatformat.Command_Line.Sources.Get'Length > 0 then
             --  Only print the source simple name as a comment if there's
             --- more than one source to format.
 

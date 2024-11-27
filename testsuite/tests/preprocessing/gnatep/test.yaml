@@ -1,0 +1,4 @@
+description:
+  Test that sources that contain preprocessing directives are ignored
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]
