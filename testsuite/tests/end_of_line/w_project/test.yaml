@@ -1,0 +1,10 @@
+description: Test the --end-of-line switch
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--end-of-line",
+    "crlf"
+  ]
+strict_line_endings: True

@@ -1,0 +1,9 @@
+description: Test the --width switch
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--width",
+    "1"
+  ]

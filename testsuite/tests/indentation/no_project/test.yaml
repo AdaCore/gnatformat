@@ -1,0 +1,13 @@
+description: Test the --indentation, --indentation-continuation and --indentation-kind switches
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--indentation",
+    "5",
+    "--indentation-continuation",
+    "4",
+    "--indentation-kind",
+    "tabs"
+  ]
