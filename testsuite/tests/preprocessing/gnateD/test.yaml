@@ -1,0 +1,6 @@
+description: |
+  Test that no sources are formatted since the project has global preprocessing
+  directives.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]
+status_code: 1

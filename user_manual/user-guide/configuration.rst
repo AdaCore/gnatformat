@@ -14,7 +14,7 @@ The command line arguments
 
 The formatting of your sources can be customized by the following options:
 
-* ``--width`` to be used if the maximum line length in your sources needs to be specified. 
+* ``--width`` to be used if the maximum line length in your sources needs to be specified.
   If not defined, the default value is set to ``79``.
 * ``--indentation`` is an option allowing to specify the line's indentation size if needed.
   By default its value is set to ``3``.
@@ -26,7 +26,7 @@ The formatting of your sources can be customized by the following options:
 * ``--end-of-line`` is an option allowing to choose the end of line sequence in your file
   (i.e., ``lf`` or ``crlf``). By default, this value is set to ``lf``.
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
-  
+
 The tool allows as well the usage of a custom unparsing configuration file. This file can be
 specified instead of the default one using the ``--unparsing-configuration`` switch taking as
 argument the custom configuration file name. However, for the moment this is only an internal
@@ -43,10 +43,10 @@ In this package all the attributes corresponding to the command line arguments c
 a one to one correspondence between the command line arguments and project file attributes.
 
 The attribute has the same functionality as its associated command line argument and can be customized
-in order to comply with a specific source code formatting use case. 
+in order to comply with a specific source code formatting use case.
 
 The lines below shows the implementation of the ``Format`` package as part of the project file :file:`.gpr`::
-  
+
   package Format is
 
     for Indentation ("Ada") use "3"; -- this is the default
@@ -71,3 +71,16 @@ The lines below shows the implementation of the ``Format`` package as part of th
 
   end Format;
 
+
+Preprocessing
+-------------
+
+The current support for preprocessing is minimal. Sources that require preprocessing are skipped.
+
+GNATformat automatically detects the ``-gnatep`` and ``-gnateD`` switches present in the project
+file, however, the ``-gnateD`` switch is not supported.
+
+Sources found in the preprocessor data file provided by the ``-gnatep`` switch are skipped. Symbols
+provided by the ``-gnateD`` switch are applied globally and currently GNATformat is not able to
+detect which sources need preprocessing apriori, therefore, the switch is not supported. As a
+workaround, use a preprocessor data file with the ``-gnatep`` switch.

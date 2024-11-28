@@ -22,3 +22,6 @@ testsuite/test_programs/.vscode/settings.json
 # GNATCoverage artifacts
 gnatcov_rts*
 *.srctrace
+
+# Documentation artifacts
+user_manual/_build
