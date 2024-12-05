@@ -6,15 +6,12 @@
 
 with Ada.Characters.Latin_1;
 with Ada.Directories;
-with Ada.Text_IO;
-with Ada.Text_IO.Unbounded_IO;
 
 with Libadalang.Generic_API;
 with Langkit_Support.Text;
 with Libadalang.Common;
 
 with Prettier_Ada.Documents; use Prettier_Ada.Documents;
-with Prettier_Ada.Documents.Json;
 
 package body Gnatformat.Formatting is
 
