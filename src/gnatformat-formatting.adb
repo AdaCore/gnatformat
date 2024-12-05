@@ -828,17 +828,6 @@ package body Gnatformat.Formatting is
             Text_Edit_Sloc.Start_Column := 1;
          end if;
 
-         --  Create the doc.json file to dump the generated document
-         declare
-            use Ada.Text_IO;
-            F  : File_Type;
-         begin
-            Create (F, Name => "doc.json");
-            Ada.Text_IO.Unbounded_IO.Put_Line
-              (F, Prettier_Ada.Documents.Json.Serialize (Document));
-            Close (F);
-         end;
-
          return Formatted_Edits'
            (Unit => Unit,
             Edit =>
