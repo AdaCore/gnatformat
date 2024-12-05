@@ -1,0 +1,4 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: ["foo.adb", "--pipe"]

@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "wrong_indent.adb",
+       "--indentation-continuation", "3",
+       "--pipe"
+      ]

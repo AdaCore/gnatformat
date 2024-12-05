@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+  Different layouts not available yet
+driver: gnatformat
+args: [
+       "main.adb",
+       "--pipe"
+      ]

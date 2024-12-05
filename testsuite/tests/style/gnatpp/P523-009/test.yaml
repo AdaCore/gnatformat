@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "b__test069.2.ads","b__test070.2.ads",
+       "b__test069.2.adb","b__test070.2.adb",
+       "test070.1.ada","test070.2.ada","test_gnatpp.1.ada",
+       "--pipe"
+      ]

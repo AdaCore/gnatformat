@@ -1,0 +1,7 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "-P", "check.gpr",
+       "--pipe"
+      ]

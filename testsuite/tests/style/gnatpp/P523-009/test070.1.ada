@@ -1,0 +1,1 @@
+PROCEDURE Test070;

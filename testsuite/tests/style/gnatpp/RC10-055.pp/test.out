@@ -1,0 +1,30 @@
+--  lf.ads
+--  This file has LF line endings.
+
+package LF is
+
+   procedure P;
+   procedure Q;
+
+end LF;
+
+--  crlf.ads
+--  This file has CRLF line endings.
+
+package CRLF is
+
+   procedure P;
+   procedure Q;
+
+end CRLF;
+
+--  mixed.ads
+--  This file has mixed line endings.
+
+package Mixed is
+
+   procedure P;
+   procedure Q;
+
+end Mixed;
+

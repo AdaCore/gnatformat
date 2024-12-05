@@ -1,0 +1,73 @@
+--  for_loop_spec.adb
+procedure for_loop_spec is
+
+  type Index is new Integer range 1 .. 10;
+
+begin
+  for I in Index'Range loop
+    null;
+  end loop;
+
+  for I in Index'Range when I > 3 loop
+    null;
+  end loop;
+
+end for_loop_spec;
+
+--  test_comment.adb
+procedure test_comment is
+
+  t_var  : array (1 .. 5) of boolean :=
+    (1      => True,
+     -- whole line comment 1
+     2
+     | 4    => False,
+     -- whole line comment 2
+     others => True);
+  t_var2 : array (1 .. 5) of boolean :=
+    (1      => True,
+     2
+     | 4    => False,
+     -- whole line comment 2
+     others => True);
+
+  procedure A (X : Integer; Y, Z : Boolean);
+
+  procedure A (X : Integer; Y, Z : Boolean) is
+  begin
+    null;
+  end A;
+
+begin
+
+  A
+    (X => 1,
+     --  whole line comment
+     Y => False,
+     Z => True);
+
+  A
+    (X => 1,
+     --  whole line comment
+     False,
+     Z => True);
+
+  A
+    (1,
+     --  whole line comment
+     Y => False,
+     Z => True);
+
+  A
+    (1,
+     False,
+     --  whole line comment
+     Z => True);
+
+  A
+    (X => 1, --  EOL comment
+     Y => False,
+     Z => True);
+
+end test_comment;
+

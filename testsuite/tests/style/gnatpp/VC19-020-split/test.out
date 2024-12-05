@@ -1,0 +1,53 @@
+procedure Main is
+   type My_Range is range 1 .. 100;
+   subtype First_Dozen is My_Range
+   with
+     Static_Predicate =>
+       First_Dozen in
+         1 .. 2
+         | 3
+         | 4
+         | 5 .. 6
+         | 7 .. 8
+         | 9 .. 10
+         | 11 .. 12
+         | 13 .. 14;
+
+   function Valid_Response_Code
+     (Val : RFLX.RFLX_Types.Base_Integer) return Boolean
+   is (Val in
+         16#1#
+         | 16#2#
+         | 16#3#
+         | 16#4#
+         | 16#60#
+         | 16#61#
+         | 16#63#
+         | 16#64#
+         | 16#65#
+         | 16#66#
+         | 16#67#
+         | 16#68#
+         | 16#69#
+         | 16#6A#
+         | 16#6B#
+         | 16#6C#
+         | 16#7E#
+         | 16#7F#);
+
+   A, B, C, D, E, F, G : Boolean := False;
+
+begin
+
+   if (A and (B or C)) and then D or else (E and C in A | G) then
+      null;
+   end if;
+
+   if A and B and C then
+      null;
+   end if;
+
+   G := A and B or C and then D;
+
+end Main;
+

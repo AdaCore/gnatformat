@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test.ads",
+       "--indentation=2",
+       "--indentation-continuation=4",
+       "--width=79",
+       "--pipe"]

@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "gnatpp_array_formatting.adb",
+       "gnatpp_exdentation.adb",
+       "test.ada",
+       "--pipe"]

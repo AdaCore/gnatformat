@@ -1,0 +1,14 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "preserve_existing_continuation_lines.adb",
+       "--width=132",
+       "--indentation-continuation=3",
+       "--end-of-line=lf",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True", "erroneous indentation continuation: see issue eng/ide/gnatformat#112"]
+
+

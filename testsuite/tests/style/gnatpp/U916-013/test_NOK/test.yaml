@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test_NOK.adb",
+       "--pipe"
+      ]
+status_code: 1

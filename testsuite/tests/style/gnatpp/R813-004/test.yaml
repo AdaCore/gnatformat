@@ -1,0 +1,12 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "p.ada",
+       "--pipe",
+       "--width=160",
+       "--indentation", "2",
+       "--indentation-continuation", "1"
+      ]
+control:
+- [XFAIL, "True", "erroneous indentation and indentation continuation: issue eng/ide/gnatformat#112"]

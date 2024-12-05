@@ -1,0 +1,5 @@
+--  a1.ads
+package a1 is
+     I : Integer;
+end a1;
+

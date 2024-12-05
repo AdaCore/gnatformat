@@ -1,0 +1,15 @@
+project A is
+   type T is ("a_val", "b_val");
+   T_Var : T := external ("T");
+
+   case T_Var is
+      when "a_val" =>
+        for source_dirs use ("src_a");
+      when "b_val" =>
+        for source_dirs use ("src_a1");
+   end case;
+
+   package Format is
+      for Indentation ("Ada") use "5";
+   end Format;
+end A;

@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test_bis.adb",
+       "--indentation-kind=spaces",
+       "--pipe"
+      ]

@@ -1,0 +1,76 @@
+--  gnatpp_array_formatting.adb
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
+procedure Gnatpp_Array_Formatting is
+   type Rec_T is record
+      S : Unbounded_String;
+      B : Boolean;
+   end record;
+
+   A_String           : Unbounded_String := To_Unbounded_String ("a string");
+   Another_String     : Unbounded_String :=
+     To_Unbounded_String ("another string");
+   Yet_Another_String : Unbounded_String :=
+     To_Unbounded_String ("yet another string");
+
+   Arr : constant array (1 .. 3) of Rec_T :=
+     ((A_String, True), (Another_String, False), (Yet_Another_String, False));
+
+   A : constant Rec_T := Rec_T'(A_String, True);
+   B : constant Rec_T := Rec_T'(Another_String, False);
+   C : Rec_T := Rec_T'(Yet_Another_String, False);
+
+   pragma Unreferenced (Arr, A, B, C);
+begin
+   null;
+end Gnatpp_Array_Formatting;
+
+--  gnatpp_exdentation.adb
+with Ada.Text_IO;
+
+procedure Gnatpp_Exdentation is
+   A_String_1   : constant String := "abc";
+   A_String_2   : constant String := "def";
+   A_String_3   : constant String := "uvw";
+   A_String_4   : constant String := "xyz";
+   An_Integer_1 : constant Integer := 1;
+   An_Integer_2 : constant Integer := 2;
+   An_Integer_3 : constant Integer := 3;
+   An_Integer_4 : constant Integer := 4;
+begin
+   Ada.Text_IO.Put
+     ("String concatenation:"
+      & Ascii.LF
+      & "1&2: "
+      & A_String_1
+      & A_String_2
+      & Ascii.LF
+      & "3&4: "
+      & A_String_3
+      & A_String_4
+      & Ascii.LF);
+   if An_Integer_1 /= An_Integer_2
+     and then An_Integer_3 /= An_Integer_4
+     and then An_Integer_1 = An_Integer_3
+   then
+      Ada.Text_IO.Put
+        ("Computing addition: "
+         & Ascii.LF
+         & "1+2"
+         & Integer'Image (An_Integer_1 + An_Integer_2)
+         & Ascii.LF
+         & "3+4"
+         & Integer'Image (An_Integer_3 + An_Integer_4)
+         & Ascii.LF);
+   end if;
+end Gnatpp_Exdentation;
+
+--  test.ada
+procedure Junk is
+begin
+   Test
+     ("C24203B",
+      "CHECK THAT BASED REAL LITERALS WITH BASES "
+      & "2 THROUGH 16 ALL YIELD CORRECT VALUES");
+end Junk;
+

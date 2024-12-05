@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "-P", "./project/default.gpr",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True",
+   "only the main project seems to be analyzed: see eng/ide/gnatformat#121"]

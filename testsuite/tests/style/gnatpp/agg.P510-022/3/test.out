@@ -1,0 +1,32 @@
+--  d.ads
+package D is
+  I : Integer;
+  F : Float;
+end D;
+
+--  dd.ads
+package DD is
+  I : Integer;
+  F : Float;
+
+  A : array (1 .. 10) of Integer;
+end DD;
+
+--  c.ads
+package C is
+     D : Boolean;
+     S : String := "ololo";
+
+     I : Integer;
+end C;
+
+--  cc.ads
+package CC is
+     D : Boolean;
+     S : String := "ololo";
+
+     I : Integer;
+
+     A : array (1 .. 10) of Integer;
+end CC;
+

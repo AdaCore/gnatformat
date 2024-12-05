@@ -1,0 +1,8 @@
+project C is
+   for source_dirs use ("src_c");
+
+
+   package Format is
+      for Indentation ("Ada") use "5";
+   end Format;
+end C;

@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test.ads",
+       "main.adb",
+       "--pipe"
+      ]
