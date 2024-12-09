@@ -8,3 +8,6 @@ args: [
        "--width", "99",
        "--pipe"
       ]
+control:
+- [XFAIL, "True",
+   "wrong comment indent before return: see bug eng/ide/gnatformat#131"]

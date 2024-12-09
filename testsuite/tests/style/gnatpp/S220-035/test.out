@@ -276,8 +276,7 @@ package body Pp.Formatting is
       Append
         (All_LB,
          Line_Break'
-           (Tok
-            | Tokn_Val                 => <>,
+           (Tok | Tokn_Val             => <>,
             -- Initial value not used
             Hard                       => True,
             Affects_Comments           => False,
@@ -320,7 +319,8 @@ package body Pp.Formatting is
                 (S1,
                  Max_Line_Length =>
                    Arg (Cmd, Max_Line_Length)
-                   - (Cur_Indentation + String'("--")'Length
+                   - (Cur_Indentation
+                      + String'("--")'Length
                       + Leading_Blanks)));
       begin
          return From_UTF8 (S2);
@@ -909,13 +909,13 @@ package body Pp.Formatting is
       subtype Q is Opt_Token_Kind
       with
         Predicate =>
-          Q in
-            Nil
-            | Spaces
-            | Start_Of_Input
-            | End_Of_Input
-            | EOL_Token
-            | Line_Break_Token;
+          Q
+          in Nil
+           | Spaces
+           | Start_Of_Input
+           | End_Of_Input
+           | EOL_Token
+           | Line_Break_Token;
 
       function Txt (Tok : Tokn_Cursor) return String
       is (if Kind (Tok) in Q then "``" & Str (Text (Tok)).S & "''"
@@ -2180,10 +2180,8 @@ package body Pp.Formatting is
                   pragma
                     Assert
                       (Disable_Final_Check
-                         or else Kind (Src_Tok) in
-                                   ';'
-                                   | EOL_Token
-                                   | Comment_Kind);
+                         or else Kind (Src_Tok)
+                                 in ';' | EOL_Token | Comment_Kind);
 
                   --  Check for "end Some_Name;" --> "end;" case. This only happens
                   --  when the --no-end-id switch was given. Here, the name was
@@ -2206,10 +2204,8 @@ package body Pp.Formatting is
                   pragma
                     Assert
                       (Disable_Final_Check
-                         or else Kind (Src_Tok) in
-                                   ';'
-                                   | EOL_Token
-                                   | Comment_Kind);
+                         or else Kind (Src_Tok)
+                                 in ';' | EOL_Token | Comment_Kind);
 
                   --  Check for "private end" --> "end" case, with a possible
                   --  comment between "private" and "end".
@@ -2228,7 +2224,7 @@ package body Pp.Formatting is
                elsif Kind (Src_Tok) = '('
                  and then Kind (Prev_Lexeme (Src_Tok))
                           = '('
-                            --???Also check that the one before that is a tick!
+                           --???Also check that the one before that is a tick!
                then
                   Qual_Nesting := Qual_Nesting + 1;
                   Next_ss (Src_Tok);
@@ -2522,7 +2518,8 @@ package body Pp.Formatting is
                Push
                  (Paren_Stack,
                   (Indent =>
-                     Sloc (New_Tok).First - Sloc (New_Line_Start_Out).First
+                     Sloc (New_Tok).First
+                     - Sloc (New_Line_Start_Out).First
                      + 1));
 
             elsif Kind (New_Tok) = ')' then
@@ -2613,8 +2610,8 @@ package body Pp.Formatting is
                then
                   pragma
                     Assert
-                      (Kind (Last (New_Tokns'Access)) not in
-                         Disabled_LB_Token);
+                      (Kind (Last (New_Tokns'Access))
+                       not in Disabled_LB_Token);
                   if Kind (Prev (Last (New_Tokns'Access))) in Comment_Kind
                     and then not Arg (Cmd, Source_Line_Breaks)
                   then
@@ -2841,11 +2838,8 @@ package body Pp.Formatting is
 
                --  Should the following list include "exception"???
                return
-                 Kind (New_Tok) not in
-                   Res_Begin
-                   | Res_Else
-                   | Res_Elsif
-                   | Res_When;
+                 Kind (New_Tok)
+                 not in Res_Begin | Res_Else | Res_Elsif | Res_When;
             end Look_Before;
 
             Indentation : Natural;
@@ -2974,10 +2968,8 @@ package body Pp.Formatting is
                   declare
                      P : Tokn_Cursor := Last (New_Tokns'Access);
                   begin
-                     while Kind (P) in
-                             Line_Break_Token
-                             | End_Of_Line_Comment
-                             | Spaces
+                     while Kind (P)
+                           in Line_Break_Token | End_Of_Line_Comment | Spaces
                      loop
                         Prev (P);
                      end loop;
@@ -3003,10 +2995,10 @@ package body Pp.Formatting is
                Next_ss (Src_Tok);
 
                exit when
-                 Kind (Src_Tok) not in
-                   Special_Comment
-                   | Fillable_Comment
-                   | Other_Whole_Line_Comment;
+                 Kind (Src_Tok)
+                 not in Special_Comment
+                      | Fillable_Comment
+                      | Other_Whole_Line_Comment;
 
                Set_Cur_Indent;
                Append_Temp_Line_Break
@@ -3240,10 +3232,8 @@ package body Pp.Formatting is
                   pragma
                     Assert
                       (Disable_Final_Check
-                         or else Kind (Src_Tok) in
-                                   ';'
-                                   | EOL_Token
-                                   | Comment_Kind);
+                         or else Kind (Src_Tok)
+                                 in ';' | EOL_Token | Comment_Kind);
 
                   --  Check for "end Some_Name;" --> "end;" case. This only happens
                   --  when the --no-end-id switch was given. Here, the name was
@@ -3286,7 +3276,7 @@ package body Pp.Formatting is
                elsif Kind (Src_Tok) = '('
                  and then Kind (Prev_Lexeme (Src_Tok))
                           = '('
-                            --???Also check that the one before that is a tick!
+                           --???Also check that the one before that is a tick!
                then
                   Qual_Nesting := Qual_Nesting + 1;
                   Append_Tokn (New_Tokns, Src_Tok);
@@ -4131,9 +4121,8 @@ package body Pp.Formatting is
                      loop
                         Next (Next_Line_Break);
                         exit when
-                          Kind (Next_Line_Break) in
-                            Enabled_LB_Token
-                            | End_Of_Input;
+                          Kind (Next_Line_Break)
+                          in Enabled_LB_Token | End_Of_Input;
                      end loop;
 
                   when Tab_Token =>
