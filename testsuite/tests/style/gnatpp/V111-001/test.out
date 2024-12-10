@@ -20,14 +20,12 @@ procedure test_comment is
   t_var  : array (1 .. 5) of boolean :=
     (1      => True,
      -- whole line comment 1
-     2
-     | 4    => False,
+     2 | 4  => False,
      -- whole line comment 2
      others => True);
   t_var2 : array (1 .. 5) of boolean :=
     (1      => True,
-     2
-     | 4    => False,
+     2 | 4  => False,
      -- whole line comment 2
      others => True);
 
