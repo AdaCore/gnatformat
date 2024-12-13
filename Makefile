@@ -40,42 +40,6 @@ COMMON_INSTRUMENT_FLAGS = \
 	-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
 	--projects=gnatformat
 
-.PHONY: coverage-setup
-coverage-setup:
-ifneq ($(COVERAGE),)
-	gnatcov setup --prefix gnatcov_rts_prefix
-endif
-
-.PHONY: coverage-instrumentation
-coverage-instrumentation:
-ifneq ($(COVERAGE),)
-	rm -rf obj/*gnatcov-instr
-	rm -rf obj/*/*gnatcov-instr
-	gnatcov \
-		instrument \
-		-P $(GNATFORMAT_DRIVER_PROJECT) \
-		$(COMMON_INSTRUMENT_FLAGS) \
-		--projects=gnatformat_driver ;
-endif
-
-.PHONY: partial-gnatformat-coverage-instrumentation
-partial-gnatformat-coverage-instrumentation:
-ifneq ($(COVERAGE),)
-	rm -rf testsuite/partial_gnatformat/obj/*gnatcov-instr
-	rm -rf testsuite/partial_gnatformat/obj/*/*gnatcov-instr
-	gnatcov \
-		instrument \
-		-P $(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
-		$(COMMON_INSTRUMENT_FLAGS) \
-		--projects=partial_gnatformat ;
-endif
-
-.PHONY: coverage-run
-coverage-run: bin partial-gnatformat
-ifneq ($(COVERAGE),)
-	python testsuite/testsuite.py --gnatcov obj/ obj/$(LIBRARY_TYPE).$(BUILD_MODE) testsuite/partial_gnatformat/obj --gnatcov-source-root $(ROOT_DIR)
-endif
-
 .PHONY: all
 all: lib bin partial-gnatformat
 
@@ -134,6 +98,21 @@ ifneq ($(COVERAGE),)
 	cp obj/*/*.sid $(PREFIX)/share/gnatformat/sids/
 endif
 
+.PHONY: install-bin-stripped
+install-bin-stripped:
+	gprinstall \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XBUILD_MODE=$(BUILD_MODE) \
+		--install-name=gnatformat \
+		--prefix="$(PREFIX)" \
+		-P $(GNATFORMAT_DRIVER_PROJECT) \
+		-p \
+		-f ;
+ifneq ($(BUILD_MODE),dev)
+	strip $(PREFIX)/bin/gnatformat
+endif
+
 .PHONY: partial-gnatformat
 partial-gnatformat: partial-gnatformat-coverage-instrumentation
 	gprbuild \
@@ -170,3 +149,39 @@ clean:
 	rm -rf obj;
 	rm -rf testsuite/partial_gnatformat/obj;
 	rm -rf testsuite/partial_gnatformat/bin;
+
+.PHONY: coverage-setup
+coverage-setup:
+ifneq ($(COVERAGE),)
+	gnatcov setup --prefix gnatcov_rts_prefix
+endif
+
+.PHONY: coverage-instrumentation
+coverage-instrumentation:
+ifneq ($(COVERAGE),)
+	rm -rf obj/*gnatcov-instr
+	rm -rf obj/*/*gnatcov-instr
+	gnatcov \
+		instrument \
+		-P $(GNATFORMAT_DRIVER_PROJECT) \
+		$(COMMON_INSTRUMENT_FLAGS) \
+		--projects=gnatformat_driver ;
+endif
+
+.PHONY: partial-gnatformat-coverage-instrumentation
+partial-gnatformat-coverage-instrumentation:
+ifneq ($(COVERAGE),)
+	rm -rf testsuite/partial_gnatformat/obj/*gnatcov-instr
+	rm -rf testsuite/partial_gnatformat/obj/*/*gnatcov-instr
+	gnatcov \
+		instrument \
+		-P $(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
+		$(COMMON_INSTRUMENT_FLAGS) \
+		--projects=partial_gnatformat ;
+endif
+
+.PHONY: coverage-run
+coverage-run: bin partial-gnatformat
+ifneq ($(COVERAGE),)
+	python testsuite/testsuite.py --gnatcov obj/ obj/$(LIBRARY_TYPE).$(BUILD_MODE) testsuite/partial_gnatformat/obj --gnatcov-source-root $(ROOT_DIR)
+endif
