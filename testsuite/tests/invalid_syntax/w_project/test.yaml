@@ -1,0 +1,5 @@
+description:
+   Test that syntax errors are greacefully handled
+driver: gnatformat
+args: ["-P", "test.gpr", "--pipe"]
+status_code: 1

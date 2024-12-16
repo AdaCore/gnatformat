@@ -1,5 +1,4 @@
-Failed to resolve test_dep.adb
---  test.adb
+with Test_A;
 with Test_Dep;
 
 procedure Main is
