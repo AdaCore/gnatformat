@@ -76,6 +76,21 @@ install-bin:
 		-p \
 		-f ;
 
+.PHONY: install-bin-stripped
+install-bin-stripped:
+	gprinstall \
+		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
+		-XBUILD_MODE=$(BUILD_MODE) \
+		--install-name=gnatformat_driver \
+		--prefix="$(PREFIX)" \
+		-P $(BIN_PROJECT) \
+		-p \
+		-f ;
+ifneq ($(BUILD_MODE),dev)
+	strip "$(PREFIX)/bin/"*
+endif
+
 .PHONY: test-programs
 test-programs:
 	for proj in $(TEST_PROGRAMS) ; do \
