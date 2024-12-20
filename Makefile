@@ -110,7 +110,7 @@ install-bin-stripped:
 		-p \
 		-f ;
 ifneq ($(BUILD_MODE),dev)
-	strip $(PREFIX)/bin/gnatformat
+	strip "$(PREFIX)/bin/"*
 endif
 
 .PHONY: partial-gnatformat
