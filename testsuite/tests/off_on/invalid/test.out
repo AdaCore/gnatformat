@@ -1,0 +1,2 @@
+Failed to format test.adb
+On / Off marker section mismatch, expected "--!pp on", found "--!format off"

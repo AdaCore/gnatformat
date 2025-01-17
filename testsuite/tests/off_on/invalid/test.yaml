@@ -1,0 +1,4 @@
+description: Test the '--!pp off' section at the end of the source
+driver: gnatformat
+args: ["--pipe", "test.adb"]
+status_code: 1

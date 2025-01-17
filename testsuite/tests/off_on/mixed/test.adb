@@ -1,0 +1,17 @@
+procedure Test is
+   --  begin read only
+   A :
+   constant B
+   := C;
+   --  end read only
+   D :
+   constant E
+   := F;
+   --!format off
+   G :
+   constant H
+   := I;
+   --!format on
+   begin
+   null;
+end Test;

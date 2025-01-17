@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -19,6 +19,9 @@ with Prettier_Ada.Documents;
 --  Package with the public API for formatting units of the supported languages
 
 package Gnatformat.Formatting is
+
+   Internal_Error_Off_On_Invalid_Marker : exception;
+   Off_On_Invalid_Marker : exception;
 
    function Format
      (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
@@ -44,19 +47,17 @@ package Gnatformat.Formatting is
    --            Ada Language Server API to integrate in the IDE's           --
    ----------------------------------------------------------------------------
 
-   type Text_Edit is
-      record
-         Location : Langkit_Support.Slocs.Source_Location_Range;
-         Text     : Ada.Strings.Unbounded.Unbounded_String;
-      end record;
+   type Text_Edit is record
+      Location : Langkit_Support.Slocs.Source_Location_Range;
+      Text     : Ada.Strings.Unbounded.Unbounded_String;
+   end record;
 
-   type Formatted_Edits is
-      record
-         Unit        : Libadalang.Analysis.Analysis_Unit;
-         Edit        : Text_Edit;
-         Formatted   : Libadalang.Analysis.Ada_Node;
-         Diagnostics : Diagnostics_Vectors.Vector;
-      end record;
+   type Formatted_Edits is record
+      Unit        : Libadalang.Analysis.Analysis_Unit;
+      Edit        : Text_Edit;
+      Formatted   : Libadalang.Analysis.Ada_Node;
+      Diagnostics : Diagnostics_Vectors.Vector;
+   end record;
 
    function Image (Edit : Formatted_Edits) return String;
 
@@ -66,7 +67,7 @@ package Gnatformat.Formatting is
       Options               : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Config      :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Default_Unparsing_Configuration)
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Formatted_Edits;
    --  Gnatformat library entry point for range formatting of a given Unit
 
