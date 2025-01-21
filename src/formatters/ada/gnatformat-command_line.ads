@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -179,6 +179,15 @@ package Gnatformat.Command_Line is
       Long        => "--charset",
       Help        =>
         "Charset to use for source decoding (default value = iso-8859-1)",
+      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+      Convert     => To_Optional_Unbounded_String,
+      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
+
+   package Ignore is new Parse_Option
+     (Parser      => Parser,
+      Long        => "--ignore",
+      Help        =>
+        "Ignore file with the sources that will be ignored",
       Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
       Convert     => To_Optional_Unbounded_String,
       Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);

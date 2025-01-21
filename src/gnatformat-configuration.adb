@@ -1,7 +1,13 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
+
+with Ada.Exceptions;
+with Ada.Text_IO.Unbounded_IO;
+
+with GNAT;
+with GNAT.Traceback.Symbolic;
 
 with GPR2;
 with GPR2.Project.Attribute_Index;
@@ -23,8 +29,11 @@ package body Gnatformat.Configuration is
    -- Create_Format_Options_Builder --
    -----------------------------------
 
-   function Create_Format_Options_Builder return Format_Options_Builder_Type is
-     (Format_Options_Builder_Type'(Format_Options => <>));
+   function Create_Format_Options_Builder
+     (Project : Optional_GPR2_Project_View := (Is_Set => False))
+      return Format_Options_Builder_Type
+   is (Format_Options_Builder_Type'
+         (Project => Project, Format_Options => <>));
 
    -----------------------------------------
    -- Create_Project_Format_Options_Cache --
@@ -113,6 +122,16 @@ package body Gnatformat.Configuration is
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Charset_Attribute_Id, "Charset to use for source decoding");
 
+      GPR2.Project.Registry.Attribute.Add
+        (Name                  => Q_Ignore_Attribute_Id,
+         Index_Type            => GPR2.Project.Registry.Attribute.No_Index,
+         Value                 => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive  => False,
+         Is_Allowed_In         =>
+           GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Charset_Attribute_Id, "Ignore file with the sources to ignore");
+
    end Elaborate_GPR2;
 
    -----------------
@@ -124,7 +143,7 @@ package body Gnatformat.Configuration is
       return Format_Options_Type
    is
       Format_Options_Builder : Format_Options_Builder_Type :=
-        Create_Format_Options_Builder;
+        Create_Format_Options_Builder ((Is_Set => True, Value => Project));
 
    begin
       if Project.Has_Package (Package_Id) then
@@ -205,6 +224,15 @@ package body Gnatformat.Configuration is
         Into (Self,  Source_Filename, Language_Fallback).End_Of_Line
         or Default_Basic_Format_Options.End_Of_Line.Value;
    end Get_End_Of_Line;
+
+   ----------------
+   -- Get_Ignore --
+   ----------------
+
+   function Get_Ignore (Self : Format_Options_Type) return String_Hashed_Set
+   is (if Self.Ignored_Sources.Is_Set
+       then Self.Ignored_Sources.Value
+       else String_Hashed_Sets.Empty_Set);
 
    ---------------------
    -- Get_Indentation --
@@ -475,6 +503,10 @@ package body Gnatformat.Configuration is
 
          Next (Source_Cursor);
       end loop;
+
+      if Source.Ignored_Sources.Is_Set then
+         Target.Ignored_Sources := Source.Ignored_Sources;
+      end if;
    end Overwrite;
 
    ------------------
@@ -579,6 +611,7 @@ package body Gnatformat.Configuration is
          type Format_Option_Kind is
            (Charset,
             End_Of_Line,
+            Ignore,
             Indentation,
             Indentation_Kind,
             Indentation_Continuation,
@@ -592,6 +625,8 @@ package body Gnatformat.Configuration is
                  Charset : Ada.Strings.Unbounded.Unbounded_String;
                when End_Of_Line =>
                  End_Of_Line : End_Of_Line_Kind;
+               when Ignore =>
+                 Ignore : Ada.Strings.Unbounded.Unbounded_String;
                when Indentation =>
                  Indentation : Positive;
                when Indentation_Continuation =>
@@ -613,8 +648,7 @@ package body Gnatformat.Configuration is
          -- Get_Attribute_Value --
          -------------------------
 
-         function Parse_Attribute_Value return Attribute_Value_Type
-         is
+         function Parse_Attribute_Value return Attribute_Value_Type is
             Q_Attribute_Id : constant GPR2.Q_Optional_Attribute_Id :=
               Attribute.Name.Id;
 
@@ -649,12 +683,19 @@ package body Gnatformat.Configuration is
                  (Kind             => Indentation_Kind,
                   Indentation_Kind =>
                     Gnatformat.Configuration.Indentation_Kind'Value
-                       (Raw_Attribute_Value));
+                      (Raw_Attribute_Value));
 
             elsif Q_Attribute_Id = Q_End_Of_Line_Attribute_Id then
                return
                  (Kind        => End_Of_Line,
                   End_Of_Line => End_Of_Line_Kind'Value (Raw_Attribute_Value));
+
+            elsif Q_Attribute_Id = Q_Ignore_Attribute_Id then
+               return
+                 (Kind   => Ignore,
+                  Ignore =>
+                    Ada.Strings.Unbounded.To_Unbounded_String
+                      (Raw_Attribute_Value));
 
             else
                return (Kind => Unknown);
@@ -670,7 +711,29 @@ package body Gnatformat.Configuration is
            Parse_Attribute_Value;
 
       begin
-         if Attribute.Index = Ada_Attribute_Index then
+         if not Attribute.Index.Is_Defined then
+            case Attribute_Value.Kind is
+               when Ignore =>
+                  Gnatformat_Trace.Trace
+                    (Ignore'Image
+                     & " = "
+                     & Ada.Strings.Unbounded.To_String
+                         (Attribute_Value.Ignore));
+                  Self.With_Ignore
+                    (GNATCOLL.VFS.Create_From_UTF8
+                       (Ada.Strings.Unbounded.To_String
+                          (Attribute_Value.Ignore)));
+
+               when Unknown =>
+                  Gnatformat_Trace.Trace ("Unknown attribute");
+
+               when others =>
+                  Gnatformat_Trace.Trace
+                    (Attribute_Value.Kind'Image
+                     & " attribute must have an index");
+            end case;
+
+         elsif Attribute.Index = Ada_Attribute_Index then
             Gnatformat_Trace.Trace ("Ada attribute " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
@@ -721,6 +784,11 @@ package body Gnatformat.Configuration is
                      & Attribute_Value.Width'Image);
                   Self.With_Width
                     (Attribute_Value.Width, Ada_Language);
+
+               when Ignore =>
+                  Gnatformat_Trace.Trace
+                    (Ignore'Image
+                     & " attribute must not have an index");
 
                when Unknown =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
@@ -775,11 +843,13 @@ package body Gnatformat.Configuration is
 
                when Width =>
                   Gnatformat_Trace.Trace
-                    (Width'Image
-                     & " = "
-                     & Attribute_Value.Width'Image);
+                    (Width'Image & " = " & Attribute_Value.Width'Image);
                   Self.With_Width
                     (Attribute_Value.Width, Attribute.Index.Text);
+
+               when Ignore =>
+                  Gnatformat_Trace.Trace
+                    (Ignore'Image & " attribute must not have an index");
 
                when Unknown =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
@@ -802,9 +872,66 @@ package body Gnatformat.Configuration is
          end case;
 
       else
-         Gnatformat_Trace.Trace ("Invalid attribute");
+         Parse_Attribute (Attribute);
       end if;
    end With_From_Attribute;
+
+   -----------------
+   -- With_Ignore --
+   -----------------
+
+   procedure With_Ignore
+     (Self   : in out Format_Options_Builder_Type;
+      Ignore : GNATCOLL.VFS.Virtual_File) is
+   begin
+      declare
+         Resolved_Ignore : constant GNATCOLL.VFS.Virtual_File :=
+           (if Self.Project.Is_Set
+            then
+              (declare
+                 Project_File : constant GNATCOLL.VFS.Virtual_File :=
+                   GNATCOLL.VFS.Create_From_UTF8
+                     (Self.Project.Value.Path_Name.String_Value);
+               begin
+                 GNATCOLL.VFS.Join (Project_File.Dir, Ignore))
+            else Ignore);
+
+      begin
+         Self.Format_Options.Ignored_Sources :=
+           (Is_Set => True, Value => String_Hashed_Sets.Empty_Set);
+
+         if not Resolved_Ignore.Is_Regular_File then
+            return;
+         end if;
+
+         declare
+            Ignore_File : Ada.Text_IO.File_Type;
+
+         begin
+            Ada.Text_IO.Open
+              (File => Ignore_File,
+               Mode => Ada.Text_IO.In_File,
+               Name => Resolved_Ignore.Display_Full_Name);
+
+            while not Ada.Text_IO.End_Of_File (Ignore_File) loop
+               Self.Format_Options.Ignored_Sources.Value.Include
+                 (Ada.Strings.Unbounded.To_String
+                    (Ada.Text_IO.Unbounded_IO.Get_Line (Ignore_File)));
+            end loop;
+
+            Ada.Text_IO.Close (Ignore_File);
+         end;
+      end;
+
+   exception
+      when E : others =>
+         Gnatformat_Trace.Trace (Ada.Exceptions.Exception_Information (E));
+         Gnatformat_Trace.Trace
+           (GNAT.Traceback.Symbolic.Symbolic_Traceback (E));
+
+         Self.Format_Options.Ignored_Sources :=
+           (Is_Set => True, Value => String_Hashed_Sets.Empty_Set);
+   end With_Ignore;
 
    ----------------------
    -- With_Indentation --
