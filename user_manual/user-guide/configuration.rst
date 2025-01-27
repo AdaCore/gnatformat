@@ -26,6 +26,8 @@ The formatting of your sources can be customized by the following options:
 * ``--end-of-line`` is an option allowing to choose the end of line sequence in your file
   (i.e., ``lf`` or ``crlf``). By default, this value is set to ``lf``.
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
+* ``--ignore`` is an option allowing to specify a file with the source file names that must not be
+  formatted.
 
 The tool allows as well the usage of a custom unparsing configuration file. This file can be
 specified instead of the default one using the ``--unparsing-configuration`` switch taking as
@@ -68,6 +70,8 @@ The lines below shows the implementation of the ``Format`` package as part of th
     for Charset ("Ada") use "iso-8869-1"; -- this is the default
 
     for Charset ("some_source.ads") use "utf-8";
+
+    for Ignore use "ignore.txt"; -- by default this attribute has no value
 
   end Format;
 
