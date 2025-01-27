@@ -374,7 +374,11 @@ begin
 
    if Gnatformat.Command_Line.Version.Get then
       Ada.Text_IO.Put_Line
-        ("GNATformat " & Gnatformat.Version & " " & Gnatformat.Build_Date);
+        ("GNATformat "
+         & Gnatformat.Version
+         & " ("
+         & Gnatformat.Build_Date
+         & ")");
       return;
    end if;
 
