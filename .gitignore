@@ -25,3 +25,6 @@ gnatcov_rts*
 
 # Documentation artifacts
 user_manual/_build
+
+# Internal testsuite
+testsuite/tests/internal

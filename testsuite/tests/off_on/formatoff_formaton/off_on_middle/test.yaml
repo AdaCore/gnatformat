@@ -1,0 +1,5 @@
+description: |4
+    Test the '--!format off' / '--!format on' section in the middle of the
+    source
+driver: gnatformat
+args: ["--pipe", "test.adb"]

@@ -1,0 +1,5 @@
+description: |4
+    Test the '--  begin read only' / '--  begin read only' section at
+    the end of a source
+driver: gnatformat
+args: ["--pipe", "test.adb"]
