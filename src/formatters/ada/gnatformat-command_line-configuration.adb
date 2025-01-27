@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -9,46 +9,43 @@ package body Gnatformat.Command_Line.Configuration is
    -- Get --
    ---------
 
-   function Get return Gnatformat.Configuration.Format_Options_Type
-   is
+   function Get return Gnatformat.Configuration.Format_Options_Type is
       Format_Options_Builder :
-        Gnatformat.Configuration.Format_Options_Builder_Type
-          := Gnatformat.Configuration.Create_Format_Options_Builder;
+        Gnatformat.Configuration.Format_Options_Builder_Type :=
+          Gnatformat.Configuration.Create_Format_Options_Builder;
 
       Charset_Value                  :
         constant Gnatformat.Configuration.Optional_Unbounded_String :=
           Charset.Get;
       Width_Value                    :
-        constant Gnatformat.Configuration.Optional_Positive         :=
-          Width.Get;
+        constant Gnatformat.Configuration.Optional_Positive := Width.Get;
       Indentation_Value              :
-        constant Gnatformat.Configuration.Optional_Positive         :=
-          Indentation.Get;
+        constant Gnatformat.Configuration.Optional_Positive := Indentation.Get;
       Indentation_Kind_Value         :
         constant Gnatformat.Configuration.Optional_Indentation_Kind :=
           Indentation_Kind.Get;
       Indentation_Continuation_Value :
-        constant Gnatformat.Configuration.Optional_Positive         :=
+        constant Gnatformat.Configuration.Optional_Positive :=
           Indentation_Continuation.Get;
       End_Of_Line_Value              :
         constant Gnatformat.Configuration.Optional_End_Of_Line_Kind :=
           End_Of_Line.Get;
+      Ignore_Value                   :
+        constant Gnatformat.Configuration.Optional_Unbounded_String :=
+          Ignore.Get;
 
    begin
       if Charset_Value.Is_Set then
          Format_Options_Builder.With_Charset
-           (Charset  => Charset_Value.Value,
-            Language => Ada_Language);
+           (Charset => Charset_Value.Value, Language => Ada_Language);
       end if;
       if Width_Value.Is_Set then
          Format_Options_Builder.With_Width
-           (Width    => Width_Value.Value,
-            Language => Ada_Language);
+           (Width => Width_Value.Value, Language => Ada_Language);
       end if;
       if Indentation_Value.Is_Set then
          Format_Options_Builder.With_Indentation
-           (Indentation => Indentation_Value.Value,
-            Language    => Ada_Language);
+           (Indentation => Indentation_Value.Value, Language => Ada_Language);
       end if;
       if Indentation_Kind_Value.Is_Set then
          Format_Options_Builder.With_Indentation_Kind
@@ -62,8 +59,12 @@ package body Gnatformat.Command_Line.Configuration is
       end if;
       if End_Of_Line_Value.Is_Set then
          Format_Options_Builder.With_End_Of_Line
-           (End_Of_Line => End_Of_Line_Value.Value,
-            Language    => Ada_Language);
+           (End_Of_Line => End_Of_Line_Value.Value, Language => Ada_Language);
+      end if;
+      if Ignore_Value.Is_Set then
+         Format_Options_Builder.With_Ignore
+           (GNATCOLL.VFS.Create_From_UTF8
+              (Ada.Strings.Unbounded.To_String (Ignore_Value.Value)));
       end if;
 
       return Format_Options_Builder.Build;
