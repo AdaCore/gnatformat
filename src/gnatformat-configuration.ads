@@ -1,8 +1,10 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Containers.Indefinite_Hashed_Sets;
+with Ada.Strings.Hash;
 with Ada.Strings.Unbounded;
 
 with Gnatformat.Utils;
@@ -19,7 +21,6 @@ with Prettier_Ada.Documents;
 
 private with Ada.Containers.Hashed_Maps;
 private with Ada.Containers.Indefinite_Hashed_Maps;
-private with Ada.Strings.Hash;
 
 private with GPR2.View_Ids;
 
@@ -35,8 +36,9 @@ package Gnatformat.Configuration is
    --  Updates the GPR2 registry with the following:
    --
    --     - package Format
-   --     - atribute Width, Indentation, Indentation_Kind and End_Of_Line
-   --     indexed by language or source.
+   --     - atribute Width, Indentation, Indentation_Kind,
+   --       Indentation_Continuation, End_Of_Line and Charset
+   --       indexed by language or source.
 
    type Indentation_Kind is (Spaces, Tabs);
    type End_Of_Line_Kind is (LF, CRLF);
@@ -58,6 +60,17 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (Ada.Strings.Unbounded.Unbounded_String);
    subtype Optional_Unbounded_String is
      Optional_Unbounded_Strings.Optional_Type;
+
+   package String_Hashed_Sets is new
+     Ada.Containers.Indefinite_Hashed_Sets
+       (String, Ada.Strings.Hash, "=");
+
+   subtype String_Hashed_Set is String_Hashed_Sets.Set;
+
+   package Optional_String_Hashed_Sets is new
+     Gnatformat.Utils.Optional (String_Hashed_Set);
+   subtype Optional_String_Hashed_Set is
+     Optional_String_Hashed_Sets.Optional_Type;
 
    type Format_Options_Type is private;
 
@@ -89,6 +102,14 @@ package Gnatformat.Configuration is
    --  Language_Fallback option is available, the function returns the default
    --  end-of-line value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Ignore
+     (Self : Format_Options_Type)
+      return String_Hashed_Set;
+   --  Retrieves the already resolved ignore option, i.e., the contents (list
+   --  of sources to be ignored) of the file used to build the ignore option.
+   --  Defaults to an empty String_Hashed_Set is Format_Options_Type was not
+   --  built with an ignore option.
 
    function Get_Indentation
      (Self              : Format_Options_Type;
@@ -206,8 +227,18 @@ package Gnatformat.Configuration is
    --  if existent. Otherwise the format options are computed.
 
    type Format_Options_Builder_Type is private;
+   --  Note: this is not a lazy builder. Each With_<Option> method will
+   --  actively build the inner Format_Options_Type.
 
-   function Create_Format_Options_Builder return Format_Options_Builder_Type;
+   package Optional_GPR2_Project_Views is new
+     Gnatformat.Utils.Optional (GPR2.Project.View.Object);
+
+   subtype Optional_GPR2_Project_View is
+     Optional_GPR2_Project_Views.Optional_Type;
+
+   function Create_Format_Options_Builder
+     (Project : Optional_GPR2_Project_View := (Is_Set => False))
+      return Format_Options_Builder_Type;
    --  Format_Options_Builder_Type constructor.
    --
    --  A builder of Format_Options_Type.
@@ -246,6 +277,11 @@ package Gnatformat.Configuration is
       Attribute : GPR2.Project.Attribute.Object);
    --  Parses Attribute and sets a format option according to the Attribute id
    --  and value. If the Attribute id is unknown, then it's ignored.
+
+   procedure With_Ignore
+     (Self     : in out Format_Options_Builder_Type;
+      Ignore   : GNATCOLL.VFS.Virtual_File);
+   --  Sets the Ignore option
 
    procedure With_Indentation
      (Self        : in out Format_Options_Builder_Type;
@@ -315,6 +351,11 @@ private
      GPR2."+" ("width");
    Q_Width_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Width_Attribute_Id);
+
+   Ignore_Attribute_Id   : constant GPR2.Attribute_Id   :=
+     GPR2."+" ("ignore");
+   Q_Ignore_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Ignore_Attribute_Id);
 
    Indentation_Attribute_Id   : constant GPR2.Attribute_Id   :=
      GPR2."+" ("indentation");
@@ -403,17 +444,18 @@ private
    type Supported_Languages_Format_Options_Type is
      array (Supported_Languages) of Basic_Format_Options_Type;
 
-   type Format_Options_Type is
-     record
-       Language : Supported_Languages_Format_Options_Type :=
-         [others => Undefined_Basic_Format_Options];
-       Sources  : String_To_Basic_Format_Options_Hash_Map :=
-         String_To_Basic_Format_Options_Hash_Maps.Empty_Map;
-     end record;
+   type Format_Options_Type is record
+      Language        : Supported_Languages_Format_Options_Type :=
+        [others => Undefined_Basic_Format_Options];
+      Sources         : String_To_Basic_Format_Options_Hash_Map :=
+        String_To_Basic_Format_Options_Hash_Maps.Empty_Map;
+      Ignored_Sources : Optional_String_Hashed_Set := (Is_Set => False);
+   end record;
 
    Default_Format_Options : constant Format_Options_Type :=
      (Language => [others => Default_Basic_Format_Options],
-      Sources  => String_To_Basic_Format_Options_Hash_Maps.Empty_Map);
+      Sources  => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
+      Ignored_Sources => (Is_Set => False));
 
    package View_Ids_To_Format_Options_Hashed_Maps is new
      Ada.Containers.Hashed_Maps
@@ -432,6 +474,7 @@ private
 
    type Format_Options_Builder_Type is tagged
      record
+       Project        : Optional_GPR2_Project_View;
        Format_Options : Format_Options_Type;
      end record;
 

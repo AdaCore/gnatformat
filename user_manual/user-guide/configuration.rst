@@ -26,6 +26,8 @@ The formatting of your sources can be customized by the following options:
 * ``--end-of-line`` is an option allowing to choose the end of line sequence in your file
   (i.e., ``lf`` or ``crlf``). By default, this value is set to ``lf``.
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
+* ``--ignore`` is an option allowing to specify a file with the source file names that must not be
+  formatted.
 
 The tool allows as well the usage of a custom unparsing configuration file. This file can be
 specified instead of the default one using the ``--unparsing-configuration`` switch taking as
@@ -69,6 +71,8 @@ The lines below shows the implementation of the ``Format`` package as part of th
 
     for Charset ("some_source.ads") use "utf-8";
 
+    for Ignore use "ignore.txt"; -- by default this attribute has no value
+
   end Format;
 
 
@@ -84,3 +88,17 @@ Sources found in the preprocessor data file provided by the ``-gnatep`` switch a
 provided by the ``-gnateD`` switch are applied globally and currently GNATformat is not able to
 detect which sources need preprocessing apriori, therefore, the switch is not supported. As a
 workaround, use a preprocessor data file with the ``-gnatep`` switch.
+
+
+Formatting Control Regions
+--------------------------
+
+GNATformat allows the user to specify regions of the source code which should not be formatted.
+These regions are delimited by the following pairs of whole line comments:
+
+* ``--format off`` / ``--format on``
+* ``--begin read only`` / ``--end read only``, for GNATtest users
+* ``--pp off`` / ``--pp on``, for GNATpp users
+
+Additionally, the user is allowed to specify just the "off" comment (e.g., ``--format off``), in
+which case the rest of the file will not be formatted.

@@ -1,10 +1,11 @@
-
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
 with Ada.Characters.Latin_1;
+with Ada.Containers;
+with Ada.Containers.Vectors;
 with Ada.Directories;
 
 with Libadalang.Generic_API;
@@ -13,7 +14,21 @@ with Libadalang.Common;
 
 with Prettier_Ada.Documents; use Prettier_Ada.Documents;
 
+with Gnatformat.Helpers;
+
 package body Gnatformat.Formatting is
+
+   function Restore_Off_On_Sections
+     (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      return Ada.Strings.Unbounded.Unbounded_String;
+   --  Restores sections of the formatted source code that are delimitted by
+   --  the off/on markers by copying them from the original source code.
+   --
+   --  The current markers are:
+   --  '--!format off' and '--!format on'
+   --  '--!pp off' and '--!pp on'
+   --  '--  begin read only' and '--  end read only'
 
    ------------
    -- Format --
@@ -32,6 +47,528 @@ package body Gnatformat.Formatting is
             (Ada.Directories.Simple_Name (Unit.Get_Filename), Ada_Language),
           Configuration));
 
+   -----------------------------
+   -- Restore_Off_On_Sections --
+   -----------------------------
+
+   function Restore_Off_On_Sections
+     (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      return Ada.Strings.Unbounded.Unbounded_String
+   is
+      use type Ada.Containers.Count_Type;
+
+      function "+"
+        (Source : String) return Ada.Strings.Unbounded.Unbounded_String
+      renames Ada.Strings.Unbounded.To_Unbounded_String;
+
+      type Marker_Kind is (Off, On);
+      --  A marker can indicate either the start or the end of an On / Off
+      --  section.
+
+      function "<" (Left, Right : Marker_Kind) return Boolean
+      is (if Left = Right then False else Left = Off and Right = On);
+      --  The Off marker is always expected before the On marker
+
+      type On_Off_Section_Marker is
+        array (Marker_Kind) of Ada.Strings.Unbounded.Unbounded_String;
+
+      type On_Off_Section_Marker_Index is new Positive;
+
+      type On_Off_Section_Marker_Array is
+        array (On_Off_Section_Marker_Index range <>) of On_Off_Section_Marker;
+
+      On_Off_Section_Markers : constant On_Off_Section_Marker_Array :=
+        [[+"--!format off", +"--!format on"],
+         [+"--!pp off", +"--!pp on"],
+         [+"--  begin read only", +"--  end read only"]];
+
+      type Marker_Information_Record is record
+         Index_On_String : Positive;
+         --  The character (byte) index of the String where this marker starts
+
+         Marker_Index    : On_Off_Section_Marker_Index;
+         --  The index (identifier) of this marker on the markers list
+         --  On_Off_Section_Markers.
+
+         Kind            : Marker_Kind;
+      end record;
+
+      function "<" (Left, Right : Marker_Information_Record) return Boolean
+      is (case Left.Index_On_String = Right.Index_On_String is
+            when True =>
+              (case Left.Marker_Index = Right.Marker_Index is
+                 when True => Left.Kind < Right.Kind,
+                 when False => Left.Marker_Index < Right.Marker_Index),
+            when False => Left.Index_On_String < Right.Index_On_String);
+      --  Markers are sorted on the following order:
+      --  1) The character (byte) index of the String where the marker starts
+      --  2) Their kind (Off marker is expected before than On marker)
+      --  3) The index (identifier) of this marker on the markers list
+      --     On_Off_Section_Markers.
+
+      package Marker_Information_Vectors is new
+        Ada.Containers.Vectors (Positive, Marker_Information_Record);
+      subtype Marker_Information_Vector is Marker_Information_Vectors.Vector;
+      package Marker_Info_Vector_Sorting is new
+        Marker_Information_Vectors.Generic_Sorting ("<");
+
+      function Find_Markers_Information
+        (Source : Ada.Strings.Unbounded.Unbounded_String)
+         return Marker_Information_Vector;
+      --  Finds all markers in Source and computed their
+      --  Marker_Information_Record. Returns a Marker_Information_Vector with
+      --  all the found markers.
+      --
+      --  This function assumes that On_Off_Section_Markers is composed by
+      --  ISO 8859-1 (Latin-1) characters.
+
+      function Restore_Off_On_Sections
+        (Original_Source          : Ada.Strings.Unbounded.Unbounded_String;
+         Original_Source_Markers  : Marker_Information_Vector;
+         Formatted_Source         : Ada.Strings.Unbounded.Unbounded_String;
+         Formatted_Source_Markers : Marker_Information_Vector)
+         return Ada.Strings.Unbounded.Unbounded_String;
+      --  Restores sections of the Formatted_Source code that are delimitted by
+      --  Formatted_Source_Markers, by copying them from Original_Source.
+      --  Original_Source_Markers are the markers equivalent to
+      --  Formatted_Source_Markers but in the Original_Source.
+      --
+      --  This function assumes that On_Off_Section_Markers is composed by
+      --  ISO 8859-1 (Latin-1) characters.
+
+      procedure Validate_Markers
+        (Markers_Information : Marker_Information_Vector);
+      --  Validates Markers_Information by checking that:
+      --  Groups of two markers are of the same kind, for example,
+      --  '--!format off' and '--!format on'.
+      --  The last marker is allowed to not be in a group of two, as long as it
+      --  is an off marker.
+      --
+      --  Throws Internal_Error_Off_On_Invalid_Marker or Off_On_Invalid_Marker
+      --  if Markers_Information is not in a good state.
+
+      procedure Validate_Markers
+        (Left : Marker_Information_Vector; Right : Marker_Information_Vector);
+      --  Validades Left and Right by checking that they match each other.
+      --  Two Marker_Information_Vector match if their zip result in a tuple of
+      --  equivalent markers.
+      --
+      --  Throws Internal_Error_Off_On_Invalid_Marker if Left and Right are
+      --  not equivalent.
+
+      ------------------------------
+      -- Find_Markers_Information --
+      ------------------------------
+
+      function Find_Markers_Information
+        (Source : Ada.Strings.Unbounded.Unbounded_String)
+         return Marker_Information_Vector
+      is
+         function Is_Whole_Line
+           (Marker_Start, Marker_End : Positive) return Boolean;
+         --  Checks if the marker delimited by Marker_Start and Marker_End is
+         --  in a whole line, i.e., if after skipping leading and trailing
+         --  spaces, the marker is preceded and succeded by LF or the CR LF
+         --  sequence.
+
+         -------------------
+         -- Is_Whole_Line --
+         -------------------
+
+         function Is_Whole_Line
+           (Marker_Start, Marker_End : Positive) return Boolean
+         is
+            Source_Length : constant Natural :=
+              Ada.Strings.Unbounded.Length (Source);
+
+            Next_Must_Be_LF : Boolean := False;
+
+         begin
+            --  Check that after skipping leading spaces, we find LF.
+
+            if Marker_Start /= 1 then
+               for J in reverse 1 .. Marker_Start - 1 loop
+                  if Ada.Strings.Unbounded.Element (Source, J)
+                    = Ada.Characters.Latin_1.Space
+                  then
+                     null;
+                  elsif Ada.Strings.Unbounded.Element (Source, J)
+                    = Ada.Characters.Latin_1.LF
+                  then
+                     exit;
+                  else
+                     return False;
+                  end if;
+               end loop;
+            end if;
+
+            --  Check that after skipping trailing spaces, we find LF or the
+            --  CR LF sequence.
+
+            if Marker_End /= Source_Length then
+               for J in Marker_End + 1 .. Source_Length loop
+                  if Ada.Strings.Unbounded.Element (Source, J) = ' ' then
+                     if Next_Must_Be_LF then
+                        return False;
+                     end if;
+
+                  elsif Ada.Strings.Unbounded.Element (Source, J)
+                    = Ada.Characters.Latin_1.LF
+                  then
+                     exit;
+
+                  elsif Ada.Strings.Unbounded.Element (Source, J)
+                    = Ada.Characters.Latin_1.CR
+                  then
+                     --  FIXME:
+                     --  Uncomment the following if when
+                     --  eng/libadalang/langkit#887 is resolved.
+                     --  When the end of line is set to CRLF, the unparsing
+                     --  engine adds a CR after the comment, leading to the
+                     --  sequence CR CR LF.
+
+                     --  if Next_Must_Be_LF then
+                     --     return False;
+                     --  end if;
+
+                     Next_Must_Be_LF := True;
+
+                  else
+                     return False;
+                  end if;
+               end loop;
+            end if;
+
+            return True;
+         end Is_Whole_Line;
+
+         Markers_Information : Marker_Information_Vector := [];
+
+      begin
+         for On_Off_Section_Marker_Index in On_Off_Section_Markers'Range loop
+            declare
+               From : Natural := 1;
+               --  The index from where the string search starts
+
+               Current_Marker : Marker_Kind := Off;
+               --  The current marker we're looking. Starts with Off. Any On
+               --  markers that come before the first Off marker are simply
+               --  ignored.
+
+            begin
+               while From < Ada.Strings.Unbounded.Length (Source) loop
+                  From :=
+                    Ada.Strings.Unbounded.Index
+                      (Source,
+                       Ada.Strings.Unbounded.To_String
+                         (On_Off_Section_Markers (On_Off_Section_Marker_Index)
+                            (Current_Marker)),
+                       From);
+
+                  --  If the marker was not found, exit
+
+                  if From = 0 then
+                     exit;
+                  end if;
+
+                  --  Only consider this marker if it's a whole line comment
+
+                  if Is_Whole_Line
+                       (From,
+                        From
+                        + Ada.Strings.Unbounded.Length
+                            (On_Off_Section_Markers
+                               (On_Off_Section_Marker_Index)
+                                  (Current_Marker))
+                        - 1)
+                  then
+                     Markers_Information.Append
+                       (Marker_Information_Record'
+                          (Positive (From),
+                           On_Off_Section_Marker_Index,
+                           Current_Marker));
+
+                     --  Flip the marker we're looking for
+
+                     Current_Marker :=
+                       (case Current_Marker is
+                          when On => Off,
+                          when Off => On);
+                  end if;
+
+                  --  Next search starts after the marker that was just found
+
+                  From :=
+                    @
+                    + Ada.Strings.Unbounded.Length
+                        (On_Off_Section_Markers (On_Off_Section_Marker_Index)
+                           (Current_Marker));
+               end loop;
+            end;
+
+         end loop;
+
+         Marker_Info_Vector_Sorting.Sort (Markers_Information);
+
+         return Markers_Information;
+      end Find_Markers_Information;
+
+      -----------------------------
+      -- Restore_Off_On_Sections --
+      -----------------------------
+
+      function Restore_Off_On_Sections
+        (Original_Source          : Ada.Strings.Unbounded.Unbounded_String;
+         Original_Source_Markers  : Marker_Information_Vector;
+         Formatted_Source         : Ada.Strings.Unbounded.Unbounded_String;
+         Formatted_Source_Markers : Marker_Information_Vector)
+         return Ada.Strings.Unbounded.Unbounded_String
+      is
+         Marker_Index  : Positive := 1;
+         Markers_Count : constant Positive :=
+           Positive (Original_Source_Markers.Length);
+
+         Result : Ada.Strings.Unbounded.Unbounded_String :=
+           Ada.Strings.Unbounded.Null_Unbounded_String;
+
+      begin
+         --  Copy the formatted section before the first Off marker
+
+         Ada.Strings.Unbounded.Append
+           (Result,
+            Ada.Strings.Unbounded.Slice
+              (Formatted_Source,
+               1,
+               Formatted_Source_Markers (Marker_Index).Index_On_String - 1));
+
+         while Marker_Index <= Markers_Count loop
+            if Marker_Index + 1 > Markers_Count then
+               --  This is the last marker, and if an Off marker
+
+               --  Restore until the end of the source
+
+               Ada.Strings.Unbounded.Append
+                 (Result,
+                  Ada.Strings.Unbounded.Slice
+                    (Original_Source,
+                     Original_Source_Markers (Marker_Index).Index_On_String,
+                     Ada.Strings.Unbounded.Length (Original_Source)));
+
+            else
+               --  This is not the last marker, so it's an off marker with a
+               --  corresponding on marker.
+
+               --  Restore the Off section up until, but not including, the On
+               --  marker.
+
+               Ada.Strings.Unbounded.Append
+                 (Result,
+                  Ada.Strings.Unbounded.Slice
+                    (Original_Source,
+                     Original_Source_Markers (Marker_Index).Index_On_String,
+                     Original_Source_Markers (Marker_Index + 1).Index_On_String
+                     - 1));
+
+               if Marker_Index + 2 > Markers_Count then
+                  --  'Marker_Index + 1' is the last marker and it is an On
+                  --  marker. Copy the rest of the formatted source, including
+                  --  the marker.
+
+                  Ada.Strings.Unbounded.Append
+                    (Result,
+                     Ada.Strings.Unbounded.Slice
+                       (Formatted_Source,
+                        Formatted_Source_Markers (Marker_Index + 1)
+                          .Index_On_String,
+                        Ada.Strings.Unbounded.Length (Formatted_Source)));
+
+               else
+                  --  There is at least one more Off marker. Copy from this On
+                  --  marker until, but not including, the next Off marker.
+
+                  Ada.Strings.Unbounded.Append
+                    (Result,
+                     Ada.Strings.Unbounded.Slice
+                       (Formatted_Source,
+                        Formatted_Source_Markers (Marker_Index + 1)
+                          .Index_On_String,
+                        Formatted_Source_Markers (Marker_Index + 2)
+                          .Index_On_String
+                        - 1));
+               end if;
+            end if;
+
+            Marker_Index := @ + 2;
+         end loop;
+
+         return Result;
+      end Restore_Off_On_Sections;
+
+      ----------------------
+      -- Validate_Markers --
+      ----------------------
+
+      procedure Validate_Markers
+        (Markers_Information : Marker_Information_Vector) is
+      begin
+         if Markers_Information.Is_Empty then
+            return;
+         end if;
+
+         declare
+            Marker_Index  : Positive := 1;
+            Markers_Count : constant Positive :=
+              Positive (Markers_Information.Length);
+
+         begin
+            while Marker_Index <= Markers_Count loop
+               if Markers_Information.Constant_Reference (Marker_Index).Kind
+                 /= Off
+               then
+                  raise Internal_Error_Off_On_Invalid_Marker
+                    with
+                      f"On / Off marker section mismatch, expected an off "
+                      & "marker, found "
+                      & f"{On_Off_Section_Markers
+                             (Markers_Information.Constant_Reference
+                                (Marker_Index)
+                                .Marker_Index)
+                                (On)}";
+               end if;
+
+               if Marker_Index + 1 > Markers_Count then
+                  exit;
+               end if;
+
+               if Markers_Information.Constant_Reference (Marker_Index + 1)
+                    .Kind
+                 /= On
+               then
+                  raise Off_On_Invalid_Marker
+                    with
+                      f"On / Off marker section mismatch, expected "
+                      & f"{On_Off_Section_Markers
+                              (Markers_Information.Constant_Reference
+                                 (Marker_Index)
+                                 .Marker_Index)
+                                 (On)}"
+                      & ", found "
+                      & f"{On_Off_Section_Markers
+                              (Markers_Information.Constant_Reference
+                                 (Marker_Index + 1)
+                                 .Marker_Index)
+                                 (Off)}";
+               end if;
+
+               if Markers_Information.Constant_Reference (Marker_Index)
+                    .Marker_Index
+                 /= Markers_Information.Constant_Reference (Marker_Index + 1)
+                      .Marker_Index
+               then
+                  raise Internal_Error_Off_On_Invalid_Marker
+                    with
+                      f"Invalid On / Off section, marker "
+                      & f"{On_Off_Section_Markers
+                              (Markers_Information.Constant_Reference
+                                 (Marker_Index)
+                                 .Marker_Index)
+                                 (Off)}"
+                      & ", followed by "
+                      & f"{On_Off_Section_Markers
+                              (Markers_Information.Constant_Reference
+                                 (Marker_Index + 1)
+                                 .Marker_Index)
+                                 (On)}";
+               end if;
+
+               Marker_Index := @ + 2;
+            end loop;
+         end;
+      end Validate_Markers;
+
+      ----------------------
+      -- Validate_Markers --
+      ----------------------
+
+      procedure Validate_Markers
+        (Left : Marker_Information_Vector; Right : Marker_Information_Vector)
+      is
+      begin
+         if Left.Length /= Right.Length then
+            raise Internal_Error_Off_On_Invalid_Marker
+              with
+                "Original source does not contain the same amount of markers "
+                & "as the formatted source";
+         end if;
+
+         if Left.Is_Empty then
+            return;
+         end if;
+
+         declare
+            Marker_Index  : Positive := 1;
+            Markers_Count : constant Positive := Positive (Left.Length);
+
+         begin
+            while Marker_Index <= Markers_Count loop
+               if Left.Constant_Reference (Marker_Index).Marker_Index
+                 /= Right.Constant_Reference (Marker_Index).Marker_Index
+               then
+                  raise Internal_Error_Off_On_Invalid_Marker
+                    with
+                      "Original source does not contain the same markers "
+                      & "sequence as the formatted source";
+               end if;
+
+               Marker_Index := @ + 1;
+            end loop;
+         end;
+      end Validate_Markers;
+
+   begin
+      --  Start by finding the Off / On markers in the original source
+
+      Original_Source_Markers : constant Marker_Information_Vector :=
+        Find_Markers_Information (Original_Source);
+
+      --  If no markers are found in the original source, then there's nothing
+      --  to restore. Return the formatted source.
+
+      if Original_Source_Markers.Length = 0 then
+         return Formatted_Source;
+      end if;
+
+      --  Validate the the markers found in the original source are in a good
+      --  state.
+
+      Validate_Markers (Original_Source_Markers);
+
+      --  Find the Off / On markers in the formatted source
+
+      Formatted_Source_Markers : constant Marker_Information_Vector :=
+        Find_Markers_Information (Formatted_Source);
+
+      --  Validate the the markers found in the formatted source are in a good
+      --  state.
+
+      Validate_Markers (Formatted_Source_Markers);
+
+      --  Validate the markers found in the original and formatted sources
+      --  match each other.
+
+      Validate_Markers (Original_Source_Markers, Formatted_Source_Markers);
+
+      --  Finally restore the Off / On regions based on the markers
+
+      return
+        Restore_Off_On_Sections
+          (Original_Source,
+           Original_Source_Markers,
+           Formatted_Source,
+           Formatted_Source_Markers);
+   end Restore_Off_On_Sections;
+
    ------------
    -- Format --
    ------------
@@ -47,8 +584,14 @@ package body Gnatformat.Formatting is
       Document : constant Prettier_Ada.Documents.Document_Type :=
         Langkit_Support.Generic_API.Unparsing.Unparse_To_Prettier
           (Unit.Root, Configuration);
+
+      Original_Source  : constant Ada.Strings.Unbounded.Unbounded_String :=
+        Gnatformat.Helpers.Read_To_Unbounded_String (Unit.Filename);
+      Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
+        Prettier_Ada.Documents.Format (Document, Format_Options);
+
    begin
-      return Prettier_Ada.Documents.Format (Document, Format_Options);
+      return Restore_Off_On_Sections (Original_Source, Formatted_Source);
    end Format;
 
    function Format_Unit

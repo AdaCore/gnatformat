@@ -5,8 +5,8 @@ usage: gnatformat [--help|-h] [--project|-P PROJECT] [-X KEY=VALUE
                  [--width|-w WIDTH] [--indentation|-i INDENTATION] 
                  [--indentation-kind INDENTATION-KIND] 
                  [--indentation-continuation INDENTATION-CONTINUATION] 
-                 [--end-of-line END-OF-LINE] [--charset CHARSET] SOURCE [SOURCE 
-                 ...] 
+                 [--end-of-line END-OF-LINE] [--charset CHARSET] [--ignore 
+                 IGNORE] SOURCE [SOURCE ...] 
 
 GNATformat test (test) - Format Ada code
 
@@ -43,5 +43,6 @@ optional arguments:
                                lf)
    --charset                   Charset to use for source decoding (default value
                                 = iso-8859-1)
+   --ignore                    Ignore file with the sources that will be ignored
    
 
