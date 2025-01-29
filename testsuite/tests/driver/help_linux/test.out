@@ -1,5 +1,5 @@
-usage: gnatformat [--help|-h] [--project|-P PROJECT] [-X KEY=VALUE 
-                 [KEY=VALUE...]] [--no-subprojects] [-U] [--verbose] 
+usage: gnatformat [--help|-h] [--json-help] [--project|-P PROJECT] [-X KEY=VALUE
+                  [KEY=VALUE...]] [--no-subprojects] [-U] [--verbose] 
                  [--version|-v] [--check] [--pipe|-p] [--keep-going|-k] 
                  [--unparsing-configuration UNPARSING_CONFIGURATION_FILE] 
                  [--width|-w WIDTH] [--indentation|-i INDENTATION] 
@@ -15,6 +15,8 @@ positional arguments:
    
 optional arguments:
    --help, -h                  Show this help message
+   --json-help                 Output the help for this command as JSON, and 
+                               exit
    --project, -P               Specify the project file to load; the .gpr 
                                extension can be omitted  if the file is in the 
                                current directory
