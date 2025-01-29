@@ -2,6 +2,6 @@ project Test is
    for Source_Dirs use (".");
 
    package Format is
-     for Ignore use "ignore_2.txt";
+     for Ignore use "ignore_1.txt";
    end Format;
 end Test;

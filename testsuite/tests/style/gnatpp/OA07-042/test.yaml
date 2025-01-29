@@ -1,9 +1,7 @@
-description: |  
-  Imported GNATpp test
+description: Imported GNATpp test
 driver: gnatformat
-args: [
-       "align_test.ads",
-       "--pipe"
-      ]
-control:
-- [XFAIL, "True", "alignment of `:` in two blocks: see issue eng/ide/gnatformat#114"]
+args:
+  [
+    "align_test.ads",
+    "--pipe"
+  ]

@@ -34,7 +34,7 @@ package ada_main is
       return Integer;
    pragma Export (C, main, "main");
 
-   type Version_32 is mod 2 ** 32;
+   type Version_32 is mod 2**32;
    u00001 : constant Version_32 := 16#f2b138d6#;
    pragma Export (C, u00001, "test069B");
    u00002 : constant Version_32 := 16#93738ab9#;
@@ -466,7 +466,7 @@ package ada_main is
       return Integer;
    pragma Export (C, main, "main");
 
-   type Version_32 is mod 2 ** 32;
+   type Version_32 is mod 2**32;
    u00001 : constant Version_32 := 16#cc8aed28#;
    pragma Export (C, u00001, "test070B");
    u00002 : constant Version_32 := 16#241ed653#;
