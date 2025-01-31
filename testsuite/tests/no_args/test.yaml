@@ -1,0 +1,5 @@
+description: |
+  Test that GNATformat detects that neither a project nor sources were provided.
+driver: gnatformat
+args: []
+status_code: 1

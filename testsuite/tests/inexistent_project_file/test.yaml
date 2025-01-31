@@ -1,0 +1,5 @@
+description: |
+  Test that gnatformat is detects when the provided project does not exist.
+driver: gnatformat
+args: ["-P", "project.gpr"]
+status_code: 1

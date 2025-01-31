@@ -326,8 +326,12 @@ procedure Gnatformat.Ada_Driver is
          return Result;
       end Find_Implicit_Project_File;
 
-      Explicit_Project : constant GNATCOLL.VFS.Virtual_File :=
-        GPR_Options.Project_File.Virtual_File;
+      Explicit_Project : GNATCOLL.VFS.Virtual_File :=
+        (if GPR_Options.Project_File.Is_Defined
+         then
+           GNATCOLL.VFS.Create_From_UTF8
+             (String (GPR_Options.Project_File.Name))
+         else No_File);
 
    begin
       Gnatformat_Trace.Trace ("Resolving project file");
@@ -441,6 +445,17 @@ begin
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
             GNATCOLL.Opt_Parse.Help (Gnatformat.Command_Line.Parser));
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+
+      if Project_File /= GNATCOLL.VFS.No_File
+         and not GNATCOLL.VFS.Is_Regular_File (Project_File)
+      then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Provided project file """
+            & Project_File.Display_Full_Name
+            & """ does not exit.");
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
