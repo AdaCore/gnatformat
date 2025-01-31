@@ -9,6 +9,7 @@ with GNATCOLL.Opt_Parse; use GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS;
 
 with Gnatformat.Configuration;
+with GPR2.Options;
 
 --  Gnatformat command line utilities
 
@@ -99,6 +100,11 @@ package Gnatformat.Command_Line is
       Short  => "-v",
       Long   => "--version",
       Help   => "Show the version");
+
+   package Print_GPR_Registry is new Parse_Flag
+     (Parser => Parser,
+      Long   => GPR2.Options.Print_GPR_Registry_Option,
+      Help   => "Print the GPR registered packages and attributes");
 
    package Check is new Parse_Flag
      (Parser => Parser,

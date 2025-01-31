@@ -34,6 +34,8 @@ with GPR2.Build.Source;      use GPR2.Build.Source;
 with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
 with GPR2.Options;
 with GPR2.Path_Name;
+with GPR2.Project.Registry;
+with GPR2.Project.Registry.Exchange;
 with GPR2.Project.Tree;
 with GPR2.Project.View;
 with GPR2.Reporter.Console;
@@ -381,6 +383,12 @@ begin
          & " ("
          & Gnatformat.Build_Date
          & ")");
+      return;
+   end if;
+
+   if Gnatformat.Command_Line.Print_GPR_Registry.Get then
+      Gnatformat.Configuration.Elaborate_GPR2;
+      GPR2.Project.Registry.Exchange.Export;
       return;
    end if;
 
