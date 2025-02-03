@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "par_threshold_is.adb",
+       "--width", "99",
+       "--indentation", "3",
+       "--indentation-continuation", "2",
+       "--pipe"
+      ]

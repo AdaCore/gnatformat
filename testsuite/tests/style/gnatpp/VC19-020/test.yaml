@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "-P", "default.gpr",
+       "main.adb",
+       "--pipe"
+      ]

@@ -1,0 +1,9 @@
+project Default is
+
+  package Format is
+    for Indentation ("Ada") use "3";
+    for Indentation_Continuation ("Ada") use "2";    
+    for Width ("Ada") use "120";
+  end Format;
+   
+end Default;

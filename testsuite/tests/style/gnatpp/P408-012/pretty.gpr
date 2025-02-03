@@ -1,0 +1,17 @@
+project Pretty is
+
+   for Languages use ("Ada");
+
+   package Naming is
+      for Casing use "lowercase";
+   end Naming;
+
+   package Format is
+      for Width ("Ada") use "105";
+      for Indentation ("Ada") use "4";
+      for Indentation_Continuation ("Ada") use "2";
+      for  End_Of_Line ("Ada") use "crlf";
+      for Charset ("Ada") use "utf-8";
+   end Format;
+
+end Pretty;

@@ -1,0 +1,21 @@
+description: Imported GNATpp test
+driver: gnatformat
+args:
+  [
+    "b__test069.2.adb",
+    "b__test069.2.ads",
+    "b__test070.2.adb",
+    "b__test070.2.ads",
+    "csc_channel-version_handling.ads",
+    "gnatpp_array_formatting.adb",
+    "gnatpp_exdentation.adb",
+    "loop_then.adb",
+    "ors.adb",
+    "Pretty.adb",
+    "separate_thens.adb",
+    "test070.1.ada",
+    "test070.2.ada",
+    "test.ada",
+    "test_gnatpp.1.ada",
+    "--pipe"
+  ]

@@ -1,0 +1,14 @@
+with Ada.Containers.Indefinite_Ordered_Maps;
+
+package Test is
+   package Source_Expected_Map is new Ada.Containers.Indefinite_Ordered_Maps
+     (Key_Type     => String,
+      Element_Type => Integer,
+      "="          => "=");
+
+  Map :
+   Source_Expected_Map.Map :=
+    ["d.",
+      1];
+
+end Test;

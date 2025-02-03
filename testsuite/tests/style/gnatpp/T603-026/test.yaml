@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "preserve_line_breaks.adb",
+       "--width", "132",
+       "--indentation", "3",
+       "--indentation-continuation", "2",
+       "--pipe"
+      ]

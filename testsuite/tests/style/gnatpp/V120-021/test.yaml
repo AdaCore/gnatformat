@@ -1,0 +1,12 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test.adb",
+       "--indentation", "2",
+       "--width", "80",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True",
+   "erroneous indentation-continuation: see bug eng/ide/gnatformat#124"]

@@ -1,0 +1,42 @@
+procedure Main is
+   type Forward_Variance_Result is record
+      A      : NNN :=
+        0.0;               -- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      BBB    : NNN := Uninitialized_NNN; -- aaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      CC     : NNN := Uninitialized_NNN; -- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      DDDDDD : NNN := Uninitialized_NNN; -- aaaaaaaaaaaaaaaaaaaaaaaaa
+      EEEEEE : NNN := Uninitialized_NNN; -- aaaaaaaaaaaaaaaaaaaaaaaaa
+
+      Piiiiiiiiii   : TT := 0; -- aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      Sssssss       : Hhhh_Vvvvvv;
+      Bbb_Ccc_Ppppp : Hhhh_Vvvvvv;
+      Aaa_Ccc_Ppppp : Hhhh_Vvvvvv;
+      Bbb_Ppp_Ppppp : Hhhh_Vvvvvv;
+      Aaa_Ppp_Ppppp : Hhhh_Vvvvvv;
+      Bbb_llll_Vvv  : Hhhh_Vvvvvv;
+      Aaa_llll_Vvv  : Hhhh_Vvvvvv;
+      Bbb_Ppp_Vvv   : Hhhh_Vvvvvv;
+      Aaa_Ppp_Vvv   : Hhhh_Vvvvvv;
+   end record;
+
+   type Foo is record
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA : Integer;
+      BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB    : Float;
+   end record;
+
+   type Bar is record
+      CCC : Foo;
+      D   : Foo;
+   end record;
+
+   B : Bar :=
+     (CCC =>
+        (AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA => 1,
+         BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB    => 2),
+      D   =>
+        (AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA => 1,
+         BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB    => 2));
+begin
+   null;
+end Main;
+

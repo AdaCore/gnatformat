@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "cvt_example.ada",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True", "extra blank line added: see bug eng/ide/gnatformat#120"]
+

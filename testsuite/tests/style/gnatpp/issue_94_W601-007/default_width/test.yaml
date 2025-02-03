@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+  No equivalent gnatpp grouping (--decimal-grouping or --based-grouping)
+  option available in gnatformat
+driver: gnatformat
+args: [
+       "test.ads",       
+       "--pipe"
+      ]
