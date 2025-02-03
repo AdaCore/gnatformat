@@ -1,0 +1,4 @@
+project Q is
+   for Source_Dirs use ("q");
+   for Externally_Built use "True";
+end Q;

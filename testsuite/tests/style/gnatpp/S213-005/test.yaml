@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "source.ada",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True",
+   "preprocessor directive not handled: see bug eng/ide/gnatformat#119"]

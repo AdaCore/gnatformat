@@ -1,0 +1,20 @@
+--  test_1.ads
+package Test_1 is
+   type Foo;
+end Test_1;
+
+--  test_2.ads
+package Test_2 is
+   type Foo;
+end Test_2;
+
+--  test_3.ads
+package Test_3 is
+   type Foo;
+end Test_3;
+
+--  test_4.ads
+package Test_4 is
+   type Foo;
+end Test_4;
+

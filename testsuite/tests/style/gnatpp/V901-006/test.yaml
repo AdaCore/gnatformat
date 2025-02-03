@@ -1,0 +1,9 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "test.ads",
+       "test1.ads",
+       "test2.ads",
+       "--pipe"
+      ]

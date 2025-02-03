@@ -1,0 +1,10 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "example_with_comments.ads",
+       "new_example_with_comments.ads",
+       "--pipe"
+      ]
+control:
+- [XFAIL, "True", "erroneous EOL comment placement: see issue eng/ide/gnatformat#113"]

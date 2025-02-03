@@ -1,0 +1,53 @@
+
+procedure Named_Aggregate_Affectation
+is
+
+   type Enum_1_Type is (Enum_1_Red, Enum_1_Green);
+
+   type Enum_2_Type is (Enum_2_Red, Enum_2_Green);
+
+   type Enum_3_Type is (Enum_3_Red, Enum_3_Green);
+
+   type Array_A1_Type is array (Enum_1_Type) of Boolean;
+
+   type Array_A2_Type is array (Enum_2_Type) of Array_A1_Type;
+
+   type Array_A3_Type is array (Enum_3_Type) of Array_A2_Type;
+
+   type Record_Type is record
+      Int : Integer;
+      F   : Float;
+   end record;
+
+   type Array_B1_Type is array (Enum_1_Type) of Record_Type;
+
+   type Array_B2_Type is array (Enum_2_Type) of Array_B1_Type;
+
+   type Array_B3_Type is array (Enum_3_Type) of Array_B2_Type;
+   A_Values : constant Array_A3_Type :=
+      (Enum_3_Red   =>
+         (Enum_2_Red   => (Enum_1_Red => True, Enum_1_Green => True),
+          Enum_2_Green => (Enum_1_Red => True, Enum_1_Green => True)),
+       Enum_3_Green =>
+         (Enum_2_Red   => (Enum_1_Red => True, Enum_1_Green => True),
+          Enum_2_Green => (Enum_1_Red => True, Enum_1_Green => True)));
+   B_Values : constant Array_B3_Type :=
+      (Enum_3_Red   =>
+         (Enum_2_Red   =>
+            (Enum_1_Red   => (Int => 0, F => 0.0),
+             Enum_1_Green => (Int => 0, F => 0.0)),
+          Enum_2_Green =>
+            (Enum_1_Red   => (Int => 0, F => 0.0),
+             Enum_1_Green => (Int => 0, F => 0.0))),
+       Enum_3_Green =>
+         (Enum_2_Red   =>
+            (Enum_1_Red   => (Int => 0, F => 0.0),
+             Enum_1_Green => (Int => 0, F => 0.0)),
+          Enum_2_Green =>
+            (Enum_1_Red   => (Int => 0, F => 0.0),
+             Enum_1_Green => (Int => 0, F => 0.0))));
+
+begin
+   null;
+end Named_Aggregate_Affectation;
+

@@ -1,0 +1,11 @@
+library project Docs is
+   for Languages use ("Ada", "Python");
+   for Library_Name use "Docs";
+   for Source_Dirs use ("docs1", "docs2");
+   for Library_Dir use "lib";
+   for Library_Kind use "Static";
+
+   package Naming is
+      for Implementation_Suffix ("Python") use ".py";
+   end Naming;
+end Docs;

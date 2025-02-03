@@ -1,0 +1,8 @@
+description: |  
+  Imported GNATpp test
+  Comments switch overwrite is not present in gnatformat
+driver: gnatformat
+args: [
+       "test.ads",
+       "--pipe"
+      ]

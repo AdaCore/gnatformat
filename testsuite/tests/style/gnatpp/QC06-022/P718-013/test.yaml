@@ -1,0 +1,11 @@
+description: |  
+  Imported GNATpp test
+driver: gnatformat
+args: [
+       "blank_lines_insertion.adb",
+       "--width=132",
+       "--indentation-continuation=3",
+       "--end-of-line=lf",
+       "--pipe"
+      ]
+

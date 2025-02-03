@@ -1,0 +1,5 @@
+description: |
+  Imported GNATpp test
+  This test is adapted from the tests for N117-026 in ASIS-testsuite
+driver: gnatformat
+args: ["-P", "agg.gpr", "--pipe"]

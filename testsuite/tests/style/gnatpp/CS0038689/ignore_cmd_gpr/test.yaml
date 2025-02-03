@@ -1,0 +1,10 @@
+description: Imported GNATpp test
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test.gpr",
+    "--ignore",
+    "ignore_1.txt",
+    "--pipe"
+  ]
