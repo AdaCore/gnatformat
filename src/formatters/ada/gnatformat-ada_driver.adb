@@ -34,8 +34,6 @@ with GPR2.Build.Source;      use GPR2.Build.Source;
 with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
 with GPR2.Options;
 with GPR2.Path_Name;
-with GPR2.Project.Registry;
-with GPR2.Project.Registry.Exchange;
 with GPR2.Project.Tree;
 with GPR2.Project.View;
 with GPR2.Reporter.Console;
@@ -48,6 +46,8 @@ with Libadalang.Analysis;
 with Libadalang.Preprocessing;
 
 procedure Gnatformat.Ada_Driver is
+
+   GPR_Options : GPR2.Options.Object;
 
    General_Failed : Boolean := False;
 
@@ -227,31 +227,15 @@ procedure Gnatformat.Ada_Driver is
      (Project_Tree : in out GPR2.Project.Tree.Object;
       Project_File : GNATCOLL.VFS.Virtual_File)
    is
-      Options : GPR2.Options.Object;
       use GPR2.Reporter;
+      Reporter : Console.Object := Console.Create;
 
    begin
-      Gnatformat.Configuration.Elaborate_GPR2;
-
-      if Project_File /= GNATCOLL.VFS.No_File then
-         Project_File.Normalize_Path;
-
-         Options.Add_Switch
-           (GPR2.Options.P, GNATCOLL.VFS."+" (Project_File.Full_Name));
-
-      else
-         return;
-      end if;
-
-      for Scenario_Variable of Gnatformat.Command_Line.Scenario.Get loop
-         Options.Add_Switch
-           (GPR2.Options.X,
-            Ada.Strings.Unbounded.To_String (Scenario_Variable));
-      end loop;
+      Console.Set_User_Verbosity (Reporter, Important_Only);
 
       if not Project_Tree.Load
-        (Options,
-         Reporter         => Console.Create,
+        (Options          => GPR_Options,
+         Reporter         => Reporter,
          Absent_Dir_Error => GPR2.No_Error,
          With_Runtime     => True)
       then
@@ -343,12 +327,14 @@ procedure Gnatformat.Ada_Driver is
       end Find_Implicit_Project_File;
 
       Explicit_Project : constant GNATCOLL.VFS.Virtual_File :=
-        Gnatformat.Command_Line.Project.Get;
+        GPR_Options.Project_File.Virtual_File;
 
    begin
       Gnatformat_Trace.Trace ("Resolving project file");
 
-      if Explicit_Project = GNATCOLL.VFS.No_File then
+      if Explicit_Project = GNATCOLL.VFS.No_File
+         or Explicit_Project.Display_Full_Name = ""
+      then
          Gnatformat_Trace.Trace ("No explicit project was provided");
 
          return Find_Implicit_Project_File;
@@ -372,6 +358,30 @@ procedure Gnatformat.Ada_Driver is
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
+   declare
+      Unparsed_Arguments : GNATCOLL.Opt_Parse.XString_Vector;
+
+   begin
+      if not Gnatformat.Command_Line.Parser.Parse
+               (Unknown_Arguments => Unparsed_Arguments)
+      then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Failed to parse CLI arguments");
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+
+      if not Gnatformat.Command_Line.GPR_Args.Parse_GPR2_Options
+        (Arguments => Unparsed_Arguments,
+         Options   => GPR_Options)
+      then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            "Failed to parse CLI GPR arguments");
+         GNAT.OS_Lib.OS_Exit (1);
+      end if;
+   end;
+
    if not Gnatformat.Command_Line.Parser.Parse then
       GNAT.OS_Lib.OS_Exit (1);
    end if;
@@ -386,18 +396,16 @@ begin
       return;
    end if;
 
-   if Gnatformat.Command_Line.Print_GPR_Registry.Get then
-      Gnatformat.Configuration.Elaborate_GPR2;
-      GPR2.Project.Registry.Exchange.Export;
-      return;
-   end if;
-
    if Gnatformat.Command_Line.Verbose.Get then
       Gnatformat_Trace.Set_Active (True);
    end if;
 
    Gnatformat_Trace.Trace
      ("GNATformat " & Gnatformat.Version & " " & Gnatformat.Build_Date);
+
+   Gnatformat.Configuration.Elaborate_GPR2;
+
+   GPR_Options.Print_GPR_Registry;
 
    declare
       use type Gnatformat.Command_Line.Sources.Result_Array;
@@ -455,7 +463,9 @@ begin
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
-      Load_Project (Project_Tree, Project_File);
+      if Project_File /= GNATCOLL.VFS.No_File then
+         Load_Project (Project_Tree, Project_File);
+      end if;
 
       declare
          function Get_Preprocessor_Data return Preprocessor_Data_Record;

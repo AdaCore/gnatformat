@@ -1,12 +1,17 @@
-usage: gnatformat [--help|-h] [--json-help] [--project|-P PROJECT] [-X KEY=VALUE
-                  [KEY=VALUE...]] [--no-subprojects] [-U] [--verbose] 
-                 [--version|-v] [--print-gpr-registry] [--check] [--pipe|-p] 
-                 [--keep-going|-k] [--unparsing-configuration 
-                 UNPARSING_CONFIGURATION_FILE] [--width|-w WIDTH] 
-                 [--indentation|-i INDENTATION] [--indentation-kind 
-                 INDENTATION-KIND] [--indentation-continuation 
-                 INDENTATION-CONTINUATION] [--end-of-line END-OF-LINE] 
-                 [--charset CHARSET] [--ignore IGNORE] SOURCE [SOURCE ...] 
+usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose] 
+                 [--version|-v] [--check] [--pipe|-p] [--keep-going|-k] 
+                 [--unparsing-configuration UNPARSING_CONFIGURATION_FILE] 
+                 [--width|-w WIDTH] [--indentation|-i INDENTATION] 
+                 [--indentation-kind INDENTATION-KIND] 
+                 [--indentation-continuation INDENTATION-CONTINUATION] 
+                 [--end-of-line END-OF-LINE] [--charset CHARSET] [--ignore 
+                 IGNORE] SOURCE [SOURCE ...] [-aP Search path [Search path...]] 
+                 [--autoconf autoconf [autoconf...]] [--config config] [--db db 
+                 [db...]] [--db-] [--implicit-with project [project...]] [-el] 
+                 [--no-project] [-P project] [--print-gpr-registry] [--root-dir 
+                 root-dir] [--relocate-build-tree relocate-build-tree] [--RTS 
+                 rts [rts...]] [--src-subdirs src-subdirs] [--subdirs subdirs] 
+                 [--target target] [-X scenario [scenario...]] 
 
 GNATformat test (test) - Format Ada code
 
@@ -17,18 +22,12 @@ optional arguments:
    --help, -h                  Show this help message
    --json-help                 Output the help for this command as JSON, and 
                                exit
-   --project, -P               Specify the project file to load; the .gpr 
-                               extension can be omitted  if the file is in the 
-                               current directory
-   -X                          Specify an external reference to a scenario 
-                               variable
    --no-subprojects            Only process the root project, not the 
                                subprojects
    -U                          Process all files, not only those that are in the
                                 closure of mains
    --verbose                   Print debug logs
    --version, -v               Show the version
-   --print-gpr-registry        Print the GPR registered packages and attributes
    --check                     Exit with error code 1 if the input is not 
                                formatted correctly and prints the file names 
                                that would be formatted
@@ -47,5 +46,27 @@ optional arguments:
    --charset                   Charset to use for source decoding (default value
                                 = iso-8859-1)
    --ignore                    Ignore file with the sources that will be ignored
+   -aP                         Add directory to the project search path
+   --autoconf                  Specify/create the main config project file name
+   --config                    Specify the configuration project file name
+   --db                        Parse dir as an additional knowledge base
+   --db-                       Do not load the standard knowledge base
+   --implicit-with             Add the given projects as a dependency on all 
+                               loaded projects
+   -el                         Follows symlinks for project files
+   --no-project                Do not use a project file
+   -P                          The project file
+   --print-gpr-registry        Print the GPR registry
+   --root-dir                  Root directory of obj/lib/exec to relocate
+   --relocate-build-tree       Root obj/lib/exec dirs are current-directory or 
+                               dir
+   --RTS                        --RTS=<runtime> Use runtime <runtime> for 
+                               language Ada; --RTS:<lang>=<runtime> Use runtime 
+                               <runtime> for language <lang>
+   --src-subdirs               prepend <obj>/dir to the list of source dirs for 
+                               each project
+   --subdirs                   Use dir as suffix to obj/lib/exec directories
+   --target                    Specify a target for cross platforms
+   -X                          Specify an external reference for Project Files
    
 
