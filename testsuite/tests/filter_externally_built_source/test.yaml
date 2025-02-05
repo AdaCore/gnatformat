@@ -1,0 +1,13 @@
+description: Test the --print-gpr-registry switch
+driver: gnatformat
+args:
+  [
+    "-P",
+    "bar/bar.gpr",
+    "foo.ads",
+    "bar.adb",
+    "baz.ads",
+    "--pipe",
+    "--keep-going",
+  ]
+status_code: 1

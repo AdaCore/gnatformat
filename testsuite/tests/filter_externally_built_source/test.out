@@ -1,0 +1,11 @@
+foo.ads is an externally built source
+--  bar.adb
+procedure Bar is
+begin
+   null;
+end Bar;
+
+--  baz.ads
+package Baz is
+    I : Integer;
+end Baz;

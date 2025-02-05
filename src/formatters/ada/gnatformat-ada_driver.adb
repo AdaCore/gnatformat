@@ -115,9 +115,10 @@ procedure Gnatformat.Ada_Driver is
 
       for Source of Gnatformat.Command_Line.Sources.Get loop
          Gnatformat_Trace.Trace ("Resolving " & Source.Display_Full_Name);
+
          declare
             Resolved_Source : constant GPR2.Build.Source.Object :=
-              Project_Tree.Root_Project.Source
+              Project_Tree.Root_Project.Visible_Source
                 (GPR2.Simple_Name (Source.Base_Name));
 
          begin
@@ -125,6 +126,17 @@ procedure Gnatformat.Ada_Driver is
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
                   "Failed to find " & Source.Display_Base_Name);
+
+               if not Gnatformat.Command_Line.Keep_Going.Get then
+                  GNAT.OS_Lib.OS_Exit (1);
+               end if;
+
+               General_Failed := True;
+
+            elsif Resolved_Source.Owning_View.Is_Externally_Built then
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  Source.Display_Base_Name & " is an externally built source");
 
                if not Gnatformat.Command_Line.Keep_Going.Get then
                   GNAT.OS_Lib.OS_Exit (1);

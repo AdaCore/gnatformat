@@ -1,0 +1,6 @@
+with "../foo/foo.gpr";
+with "../baz/baz.gpr";
+
+project Bar is
+   for Source_Dirs use ("src");
+end Bar;
