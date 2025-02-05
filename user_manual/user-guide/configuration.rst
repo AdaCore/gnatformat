@@ -96,9 +96,9 @@ Formatting Control Regions
 GNATformat allows the user to specify regions of the source code which should not be formatted.
 These regions are delimited by the following pairs of whole line comments:
 
-* ``--format off`` / ``--format on``
-* ``--begin read only`` / ``--end read only``, for GNATtest users
-* ``--pp off`` / ``--pp on``, for GNATpp users
+* ``--!format off`` / ``--!format on``
+* ``--  begin read only`` / ``--  end read only``, for GNATtest users
+* ``--!pp off`` / ``--!pp on``, for GNATpp users
 
 Additionally, the user is allowed to specify just the "off" comment (e.g., ``--format off``), in
 which case the rest of the file will not be formatted.
