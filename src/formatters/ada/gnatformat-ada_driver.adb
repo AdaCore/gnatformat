@@ -714,8 +714,6 @@ begin
                                 (Ada.Text_IO.Standard_Error,
                                  String (Source.Path_Name.Simple_Name)
                                  & " is not correctly formatted");
-                              Ada.Text_IO.New_Line
-                                (Ada.Text_IO.Standard_Error);
                            end if;
                         end;
 
