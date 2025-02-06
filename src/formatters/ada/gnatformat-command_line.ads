@@ -10,6 +10,8 @@ with GNATCOLL.VFS;
 
 with Gnatformat.Configuration;
 
+with GPR2.Options.Opt_Parse;
+
 --  Gnatformat command line utilities
 
 package Gnatformat.Command_Line is
@@ -55,27 +57,6 @@ package Gnatformat.Command_Line is
       return Gnatformat.Configuration.Optional_Unbounded_String
    is ((Is_Set => True, Value => To_Unbounded_String (S)));
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
-
-   package Project is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-P",
-      Long        => "--project",
-      Help        =>
-        "Specify the project file to load; the .gpr extension can be omitted "
-        & " if the file is in the current directory",
-      Arg_Type    => GNATCOLL.VFS.Virtual_File,
-      Convert     => To_Virtual_File,
-      Default_Val => GNATCOLL.VFS.No_File);
-
-   package Scenario is new Parse_Option_List
-     (Parser     => Parser,
-      Short      => "-X",
-      Name       => "KEY=VALUE",
-      Help       =>
-        "Specify an external reference to a scenario variable",
-      Accumulate => True,
-      Arg_Type   => Unbounded_String,
-      Convert    => To_Unbounded_String);
 
    package Root_Project_Only is new Parse_Flag
       (Parser => Parser,
@@ -199,5 +180,7 @@ package Gnatformat.Command_Line is
       Arg_Type    => GNATCOLL.VFS.Virtual_File,
       Convert     => To_Virtual_File,
       Help        => "Source files to format");
+
+   package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 
 end Gnatformat.Command_Line;
