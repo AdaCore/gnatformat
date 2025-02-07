@@ -1,4 +1,4 @@
-description: Test the --print-gpr-registry switch
+description: Test that externally built sources are not formatted
 driver: gnatformat
 args:
   [

@@ -1,0 +1,7 @@
+project Foo is
+   for Source_Dirs use ("src");
+
+   package Format is
+      for Indentation ("Ada") use "4";
+   end Format;
+end Foo;

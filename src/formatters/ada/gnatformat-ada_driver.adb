@@ -74,11 +74,28 @@ procedure Gnatformat.Ada_Driver is
 
    subtype Unbounded_String_Vector is Unbounded_String_Vectors.Vector;
 
+   type Project_Source_Record (Visible : Boolean := True) is record
+      File : GNATCOLL.VFS.Virtual_File;
+
+      case Visible is
+         when True =>
+            Visible_Source : GPR2.Build.Source.Object;
+
+         when False =>
+            null;
+      end case;
+   end record;
+
+   package Project_Source_Vectors is new
+     Ada.Containers.Vectors (Positive, Project_Source_Record);
+
+   subtype Project_Source_Vector is Project_Source_Vectors.Vector;
+
    function Get_Command_Line_Sources
      (Project_Tree : GPR2.Project.Tree.Object)
-      return Source_List;
+      return Project_Source_Vector;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
-   --  an GPR2.Project.Source.Set.Object.
+   --  an Command_Line_Source_Vector.
 
    function Get_Project_Sources
      (Project_Tree : GPR2.Project.Tree.Object)
@@ -104,9 +121,9 @@ procedure Gnatformat.Ada_Driver is
 
    function Get_Command_Line_Sources
      (Project_Tree : GPR2.Project.Tree.Object)
-      return Source_List
+      return Project_Source_Vector
    is
-      Sources : Source_List;
+      Sources : Project_Source_Vector;
 
    begin
       Gnatformat_Trace.Trace ("Getting command line sources");
@@ -123,17 +140,29 @@ procedure Gnatformat.Ada_Driver is
 
          begin
             if Resolved_Source = GPR2.Build.Source.Undefined then
-               Ada.Text_IO.Put_Line
-                 (Ada.Text_IO.Standard_Error,
-                  "Failed to find " & Source.Display_Base_Name);
+               --  This is an invisible source to the project
+               --  Only format if it exists on disk.
 
-               if not Gnatformat.Command_Line.Keep_Going.Get then
-                  GNAT.OS_Lib.OS_Exit (1);
+               if Source.Is_Regular_File then
+                  Sources.Append
+                    (Project_Source_Record'(File => Source, Visible => False));
+
+               else
+                  Ada.Text_IO.Put_Line
+                    (Ada.Text_IO.Standard_Error,
+                     "Failed to find " & Source.Display_Base_Name);
+
+                  if not Gnatformat.Command_Line.Keep_Going.Get then
+                     GNAT.OS_Lib.OS_Exit (1);
+                  end if;
+
+                  General_Failed := True;
                end if;
 
-               General_Failed := True;
-
             elsif Resolved_Source.Owning_View.Is_Externally_Built then
+               --  This is an visible source to the project but externally
+               --  built. Do not format.
+
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
                   Source.Display_Base_Name & " is an externally built source");
@@ -145,7 +174,15 @@ procedure Gnatformat.Ada_Driver is
                General_Failed := True;
 
             else
-               Sources.Append (Resolved_Source);
+               --  This is an visible source to the project
+
+               Sources.Append
+                 (Project_Source_Record'
+                    (File           =>
+                       GNATCOLL.VFS.Create_From_UTF8
+                         (Resolved_Source.Path_Name.String_Value),
+                     Visible        => True,
+                     Visible_Source => Resolved_Source));
             end if;
          end;
       end loop;
@@ -566,7 +603,7 @@ begin
          end record;
 
          function Format_Source
-           (Source_Path               : GPR2.Path_Name.Object;
+           (Source                    : GNATCOLL.VFS.Virtual_File;
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type)
             return Format_Source_Result;
@@ -574,9 +611,14 @@ begin
          --  Project_Formatting_Config.
 
          function Process_Project_Source
-           (Source : GPR2.Build.Source.Object)
+           (Source         : Project_Source_Record;
+            Format_Options :
+              Gnatformat.Configuration.Format_Options_Type :=
+                Gnatformat.Configuration.Default_Format_Options)
             return Boolean;
          --  Formats the source defined by Path.
+         --  If Source is Visible, then its format options are fetched by using
+         --  its owning view. If invisible, then Format_Options is used.
          --  If --pipe is used, then prints the formatted source to stdout.
          --  Otherwise writes it to disk.
 
@@ -593,7 +635,7 @@ begin
          -------------------
 
          function Format_Source
-           (Source_Path               : GPR2.Path_Name.Object;
+           (Source                    : GNATCOLL.VFS.Virtual_File;
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type)
             return Format_Source_Result
@@ -602,9 +644,10 @@ begin
               Ada.Strings.Unbounded.To_String
                 (Gnatformat.Configuration.Get_Charset
                    (Project_Formatting_Config,
-                    String (Source_Path.Simple_Name)));
+                    Source.Display_Base_Name));
             Unit    : constant Libadalang.Analysis.Analysis_Unit :=
-              LAL_Context.Get_From_File (String (Source_Path.Value), Charset);
+              LAL_Context.Get_From_File
+                (Source.Display_Full_Name (Normalize => True), Charset);
 
          begin
             if Unit.Has_Diagnostics then
@@ -637,18 +680,25 @@ begin
          ----------------------------
 
          function Process_Project_Source
-           (Source : GPR2.Build.Source.Object) return Boolean
+           (Source         : Project_Source_Record;
+            Format_Options :
+              Gnatformat.Configuration.Format_Options_Type :=
+                Gnatformat.Configuration.Default_Format_Options)
+            return Boolean
          is
             use type Ada.Exceptions.Exception_Id;
 
+            Source_Simple_Name : constant String :=
+              Source.File.Display_Base_Name;
+            Source_Path_Name   : constant String :=
+              Source.File.Display_Full_Name;
+
          begin
             Gnatformat_Trace.Trace
-              ("Processing project source "
-               & String (Source.Path_Name.Simple_Name));
+              ("Processing project source " & Source_Simple_Name);
 
             if Libadalang.Preprocessing.Needs_Preprocessing
-                 (Preprocessor_Data.Preprocessor_Data,
-                  String (Source.Path_Name.Name))
+                 (Preprocessor_Data.Preprocessor_Data, Source_Simple_Name)
             then
                if Print_New_Line then
                   Ada.Text_IO.New_Line;
@@ -658,37 +708,40 @@ begin
 
                Ada.Text_IO.Put_Line
                  ("--  "
-                  & String (Source.Path_Name.Simple_Name)
+                  & Source_Simple_Name
                   & " was skipped because it requires preprocessing");
 
                return True;
             end if;
 
             declare
-               Project_Formatting_Config :
+               View_Format_Options :
                  Gnatformat.Configuration.Format_Options_Type :=
-                   Gnatformat.Configuration.Get
-                     (Project_Format_Options_Cache, Source.Owning_View);
+                   (case Source.Visible is
+                      when True =>
+                        Gnatformat.Configuration.Get
+                          (Project_Format_Options_Cache,
+                           Source.Visible_Source.Owning_View),
+                      when False => Format_Options);
 
             begin
                Gnatformat.Configuration.Overwrite
-                 (Project_Formatting_Config, CLI_Formatting_Config);
+                 (View_Format_Options, CLI_Formatting_Config);
 
                if Gnatformat
                     .Configuration
-                    .Get_Ignore (Project_Formatting_Config)
-                    .Contains (String (Source.Path_Name.Simple_Name))
+                    .Get_Ignore (View_Format_Options)
+                    .Contains (Source_Simple_Name)
                then
                   Gnatformat_Trace.Trace
-                    (String (Source.Path_Name.Simple_Name)
+                    (Source_Simple_Name
                      & " was skipped because it is in the ignore list");
                   return True;
                end if;
 
                declare
                   Result : constant Format_Source_Result :=
-                    Format_Source
-                      (Source.Path_Name, Project_Formatting_Config);
+                    Format_Source (Source.File, View_Format_Options);
 
                begin
                   if Gnatformat.Command_Line.Pipe.Get then
@@ -700,10 +753,16 @@ begin
                               Print_New_Line := True;
                            end if;
 
+                           if not Source.Visible then
+                              Ada.Text_IO.Put_Line
+                                ("--  Warning: Formatting """
+                                 & Source_Path_Name
+                                 & """ which is not visible to the provided "
+                                 & "project");
+                           end if;
                            if Print_Source_Simple_Name then
                               Ada.Text_IO.Put_Line
-                                ("--  "
-                                 & String (Source.Path_Name.Simple_Name));
+                                ("--  " & Source_Simple_Name);
                            end if;
 
                            Ada.Strings.Unbounded.Text_IO.Put
@@ -722,7 +781,7 @@ begin
                            Ada.Text_IO.Put_Line
                              (Ada.Text_IO.Standard_Error,
                               "--  "
-                              & String (Source.Path_Name.Simple_Name)
+                              & Source_Simple_Name
                               & " failed to format");
                            for Diagnostic of Result.Diagnostics loop
                               Ada.Strings.Unbounded.Text_IO.Put_Line
@@ -733,12 +792,19 @@ begin
                      end case;
 
                   else
+                     if not Source.Visible then
+                        Ada.Text_IO.Put_Line
+                        ("Warning: Formatting """
+                           & Source_Path_Name
+                           & """ which is not visible to the provided "
+                           & "project");
+                     end if;
                      if Gnatformat.Command_Line.Check.Get then
                         declare
                            Original_Source :
                              constant Ada.Strings.Unbounded.Unbounded_String :=
                                Gnatformat.Helpers.Read_To_Unbounded_String
-                                 (String (Source.Path_Name.Value));
+                                 (Source_Path_Name);
 
                            use type Ada.Strings.Unbounded.Unbounded_String;
 
@@ -747,15 +813,14 @@ begin
                               General_Failed := True;
                               Ada.Text_IO.Put_Line
                                 (Ada.Text_IO.Standard_Error,
-                                 String (Source.Path_Name.Simple_Name)
+                                 Source_Simple_Name
                                  & " is not correctly formatted");
                            end if;
                         end;
 
                      else
                         Gnatformat.Helpers.Write
-                          (String (Source.Path_Name.Value),
-                           Result.Formatted_Source);
+                          (Source_Path_Name, Result.Formatted_Source);
                      end if;
                   end if;
                end;
@@ -775,7 +840,7 @@ begin
 
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
-                  "Failed to format " & String (Source.Path_Name.Value));
+                  "Failed to format " & Source_Path_Name);
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
                   Ada.Exceptions.Exception_Message (E));
@@ -1006,13 +1071,22 @@ begin
 
             if Project_Tree.Is_Defined then
                declare
-                  Command_Line_Sources : constant Source_List :=
+                  Command_Line_Sources : constant Project_Source_Vector :=
                     Get_Command_Line_Sources (Project_Tree);
 
+                  Format_Options :
+                    Gnatformat.Configuration.Format_Options_Type :=
+                      Gnatformat.Configuration.Get
+                        (Project_Format_Options_Cache,
+                         Project_Tree.Root_Project);
+
                begin
+                  Gnatformat.Configuration.Overwrite
+                    (Format_Options, CLI_Formatting_Config);
+
                   for Source of Command_Line_Sources loop
                      exit when
-                       not Process_Project_Source (Source)
+                       not Process_Project_Source (Source, Format_Options)
                        and not Gnatformat.Command_Line.Keep_Going.Get;
                   end loop;
                end;
@@ -1045,17 +1119,15 @@ begin
 
                      else
                         exit when
-                           not Process_Standalone_Source
-                                 (Source,
-                                  (if Charset.Is_Set
-                                   then
-                                     Ada
-                                       .Strings
-                                       .Unbounded
-                                       .To_String (Charset.Value)
-                                   else
-                                     Gnatformat.Configuration.Default_Charset))
-                           and not Gnatformat.Command_Line.Keep_Going.Get;
+                          not Process_Standalone_Source
+                                (Source,
+                                 (if Charset.Is_Set
+                                  then
+                                    Ada.Strings.Unbounded.To_String
+                                      (Charset.Value)
+                                  else
+                                    Gnatformat.Configuration.Default_Charset))
+                          and not Gnatformat.Command_Line.Keep_Going.Get;
                      end if;
                   end loop;
                end;
@@ -1063,8 +1135,14 @@ begin
 
          else
             declare
-               Command_Line_Sources : constant Source_List :=
-                 Get_Project_Sources (Project_Tree);
+               Command_Line_Sources : constant Project_Source_Vector :=
+                 [for Source of Get_Project_Sources (Project_Tree)
+                  => Project_Source_Record'
+                    (File           =>
+                       GNATCOLL.VFS.Create_From_UTF8
+                         (Source.Path_Name.String_Value),
+                     Visible        => True,
+                     Visible_Source => Source)];
 
             begin
                for Source of Command_Line_Sources loop
