@@ -226,7 +226,7 @@ package Gnatformat.Configuration is
    --  Retrives the format options associated to Project using a cached result
    --  if existent. Otherwise the format options are computed.
 
-   type Format_Options_Builder_Type is private;
+   type Format_Options_Builder_Type is tagged private;
    --  Note: this is not a lazy builder. Each With_<Option> method will
    --  actively build the inner Format_Options_Type.
 

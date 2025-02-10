@@ -36,12 +36,16 @@ package body Gnatformat.Command_Line.Configuration is
 
    begin
       if Charset_Value.Is_Set then
-         Format_Options_Builder.With_Charset
-           (Charset => Charset_Value.Value, Language => Ada_Language);
+         Gnatformat.Configuration.With_Charset
+           (Self     => Format_Options_Builder,
+            Charset  => Charset_Value.Value,
+            Language => Ada_Language);
       end if;
       if Width_Value.Is_Set then
-         Format_Options_Builder.With_Width
-           (Width => Width_Value.Value, Language => Ada_Language);
+         Gnatformat.Configuration.With_Width
+           (Self => Format_Options_Builder,
+            Width => Width_Value.Value,
+            Language => Ada_Language);
       end if;
       if Indentation_Value.Is_Set then
          Format_Options_Builder.With_Indentation

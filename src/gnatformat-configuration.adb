@@ -370,7 +370,7 @@ package body Gnatformat.Configuration is
      (Self     : Format_Options_Type;
       Language : Supported_Languages)
       return Prettier_Ada.Documents.Format_Options_Type
-   is (Self.Language (Language).Into);
+   is (Into (Self.Language (Language)));
 
    ----------
    -- Into --
@@ -381,7 +381,7 @@ package body Gnatformat.Configuration is
       Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type
    is (if Self.Sources.Contains (Source_Filename)
-       then Self.Sources.Element (Source_Filename).Into
+       then Into (Self.Sources.Element (Source_Filename))
        else Prettier_Ada.Documents.Default_Format_Options);
 
    -----------
@@ -407,8 +407,8 @@ package body Gnatformat.Configuration is
       Language_Fallback : Supported_Languages)
       return Prettier_Ada.Documents.Format_Options_Type
    is (if Self.Sources.Contains (Source_Filename)
-       then Self.Sources.Element (Source_Filename).Into
-       else Self.Into (Language_Fallback));
+       then Into (Self.Sources.Element (Source_Filename))
+       else Into (Self, Language_Fallback));
 
    -----------------------------
    --  Load_Unparsing_Config  --
@@ -484,17 +484,16 @@ package body Gnatformat.Configuration is
 
    begin
       for Supported_Language in Supported_Languages loop
-         Target
-           .Language (Supported_Language)
-           .Overwrite (Source.Language (Supported_Language));
+         Overwrite
+           (Target.Language (Supported_Language),
+            Source.Language (Supported_Language));
       end loop;
 
       while Has_Element (Source_Cursor) loop
          if Target.Sources.Contains (Key (Source_Cursor)) then
-            Target
-              .Sources
-              .Reference (Source_Cursor)
-              .Overwrite (Element (Source_Cursor));
+            Overwrite
+              (Target.Sources.Reference (Source_Cursor),
+               Element (Source_Cursor));
 
          else
             Target.Sources.Insert

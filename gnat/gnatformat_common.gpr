@@ -12,7 +12,7 @@ abstract project Gnatformat_Common is
    Build_Mode : Build_Mode_Type :=
      external ("GNATFORMAT_BUILD_MODE", external ("BUILD_MODE", "dev"));
 
-   Common_Switches := ("-fPIC", "-gnatX", "-gnatyg", "-gnatwa", "-g");
+   Common_Switches := ("-fPIC", "-gnat2022", "-gnatyg", "-gnatwa", "-g");
 
    package Compiler is
       case Build_Mode is
