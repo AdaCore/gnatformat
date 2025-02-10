@@ -526,11 +526,13 @@ package body Gnatformat.Formatting is
          end;
       end Validate_Markers;
 
+      Original_Source_Markers  : Marker_Information_Vector;
+      Formatted_Source_Markers : Marker_Information_Vector;
+
    begin
       --  Start by finding the Off / On markers in the original source
 
-      Original_Source_Markers : constant Marker_Information_Vector :=
-        Find_Markers_Information (Original_Source);
+      Original_Source_Markers := Find_Markers_Information (Original_Source);
 
       --  If no markers are found in the original source, then there's nothing
       --  to restore. Return the formatted source.
@@ -546,8 +548,7 @@ package body Gnatformat.Formatting is
 
       --  Find the Off / On markers in the formatted source
 
-      Formatted_Source_Markers : constant Marker_Information_Vector :=
-        Find_Markers_Information (Formatted_Source);
+      Formatted_Source_Markers := Find_Markers_Information (Formatted_Source);
 
       --  Validate the the markers found in the formatted source are in a good
       --  state.
