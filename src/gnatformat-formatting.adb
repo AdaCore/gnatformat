@@ -43,8 +43,10 @@ package body Gnatformat.Formatting is
       return Ada.Strings.Unbounded.Unbounded_String
    is (Format
          (Libadalang.Generic_API.To_Generic_Unit (Unit),
-          Format_Options.Into
-            (Ada.Directories.Simple_Name (Unit.Get_Filename), Ada_Language),
+          Gnatformat.Configuration.Into
+            (Format_Options,
+             Ada.Directories.Simple_Name (Unit.Get_Filename),
+             Ada_Language),
           Configuration));
 
    -----------------------------
@@ -428,13 +430,13 @@ package body Gnatformat.Formatting is
                then
                   raise Internal_Error_Off_On_Invalid_Marker
                     with
-                      f"On / Off marker section mismatch, expected an off "
-                      & "marker, found "
-                      & f"{On_Off_Section_Markers
+                      "On / Off marker section mismatch, expected an off "
+                      & "marker, found """
+                      & Ada.Strings.Unbounded.To_String
+                          (On_Off_Section_Markers
                              (Markers_Information.Constant_Reference
-                                (Marker_Index)
-                                .Marker_Index)
-                                (On)}";
+                                (Marker_Index).Marker_Index) (On))
+                      & """";
                end if;
 
                if Marker_Index + 1 > Markers_Count then
@@ -447,18 +449,17 @@ package body Gnatformat.Formatting is
                then
                   raise Off_On_Invalid_Marker
                     with
-                      f"On / Off marker section mismatch, expected "
-                      & f"{On_Off_Section_Markers
-                              (Markers_Information.Constant_Reference
-                                 (Marker_Index)
-                                 .Marker_Index)
-                                 (On)}"
-                      & ", found "
-                      & f"{On_Off_Section_Markers
-                              (Markers_Information.Constant_Reference
-                                 (Marker_Index + 1)
-                                 .Marker_Index)
-                                 (Off)}";
+                      "On / Off marker section mismatch, expected """
+                      & Ada.Strings.Unbounded.To_String
+                          (On_Off_Section_Markers
+                             (Markers_Information.Constant_Reference
+                                (Marker_Index).Marker_Index) (On))
+                      & """, found """
+                      & Ada.Strings.Unbounded.To_String
+                          (On_Off_Section_Markers
+                             (Markers_Information.Constant_Reference
+                                (Marker_Index + 1).Marker_Index) (Off))
+                      & """";
                end if;
 
                if Markers_Information.Constant_Reference (Marker_Index)
@@ -468,18 +469,19 @@ package body Gnatformat.Formatting is
                then
                   raise Internal_Error_Off_On_Invalid_Marker
                     with
-                      f"Invalid On / Off section, marker "
-                      & f"{On_Off_Section_Markers
-                              (Markers_Information.Constant_Reference
-                                 (Marker_Index)
-                                 .Marker_Index)
-                                 (Off)}"
-                      & ", followed by "
-                      & f"{On_Off_Section_Markers
-                              (Markers_Information.Constant_Reference
-                                 (Marker_Index + 1)
-                                 .Marker_Index)
-                                 (On)}";
+                      "Invalid On / Off section, marker """
+                      & Ada.Strings.Unbounded.To_String
+                          (On_Off_Section_Markers
+                             (Markers_Information
+                                .Constant_Reference (Marker_Index)
+                                .Marker_Index) (Off))
+                      & """, followed by """
+                      & Ada.Strings.Unbounded.To_String
+                          (On_Off_Section_Markers
+                             (Markers_Information
+                                .Constant_Reference (Marker_Index + 1)
+                                 .Marker_Index) (On))
+                      & """";
                end if;
 
                Marker_Index := @ + 2;
@@ -1265,7 +1267,7 @@ package body Gnatformat.Formatting is
       Estimated_Indentation : Natural := 0;
 
       Format_Options        : Prettier_Ada.Documents.Format_Options_Type :=
-        Options.Into (Ada_Language);
+        Gnatformat.Configuration.Into (Options, Ada_Language);
       Offset_Set       : Boolean := False;
    begin
       if Input_Selection_Range = No_Source_Location_Range then

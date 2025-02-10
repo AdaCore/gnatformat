@@ -291,22 +291,25 @@ procedure Gnatformat.Ada_Driver is
          while Ada.Directories.More_Entries (Search) loop
             Ada.Directories.Get_Next_Entry (Search, Current_Entry);
 
-            if Ada.Directories.Extension (Current_Entry.Simple_Name) = "gpr"
+            if Ada.Directories.Extension
+                 (Ada.Directories.Simple_Name (Current_Entry))
+               = "gpr"
             then
                if Result = GNATCOLL.VFS.No_File then
                   Gnatformat_Trace.Trace
                     ("Found implicit project """
-                     & Current_Entry.Full_Name
+                     & Ada.Directories.Full_Name (Current_Entry)
                      & """");
 
                   Result :=
                     GNATCOLL.VFS.Create
-                      (GNATCOLL.VFS."+" (Current_Entry.Full_Name));
+                      (GNATCOLL.VFS."+"
+                         (Ada.Directories.Full_Name (Current_Entry)));
 
                else
                   Gnatformat_Trace.Trace
                     ("Found another implicit project """
-                     & Current_Entry.Full_Name
+                     & Ada.Directories.Full_Name (Current_Entry)
                      & """ - only one is allowed");
 
                   return GNATCOLL.VFS.No_File;
@@ -585,8 +588,9 @@ begin
          is
             Charset : constant String :=
               Ada.Strings.Unbounded.To_String
-                (Project_Formatting_Config.Get_Charset
-                   (String (Source_Path.Simple_Name)));
+                (Gnatformat.Configuration.Get_Charset
+                   (Project_Formatting_Config,
+                    String (Source_Path.Simple_Name)));
             Unit    : constant Libadalang.Analysis.Analysis_Unit :=
               LAL_Context.Get_From_File (String (Source_Path.Value), Charset);
 
@@ -651,13 +655,17 @@ begin
             declare
                Project_Formatting_Config :
                  Gnatformat.Configuration.Format_Options_Type :=
-                   Project_Format_Options_Cache.Get (Source.Owning_View);
+                   Gnatformat.Configuration.Get
+                     (Project_Format_Options_Cache, Source.Owning_View);
 
             begin
-               Project_Formatting_Config.Overwrite (CLI_Formatting_Config);
+               Gnatformat.Configuration.Overwrite
+                 (Project_Formatting_Config, CLI_Formatting_Config);
 
-               if Project_Formatting_Config.Get_Ignore.Contains
-                    (String (Source.Path_Name.Simple_Name))
+               if Gnatformat
+                    .Configuration
+                    .Get_Ignore (Project_Formatting_Config)
+                    .Contains (String (Source.Path_Name.Simple_Name))
                then
                   Gnatformat_Trace.Trace
                     (String (Source.Path_Name.Simple_Name)
@@ -812,7 +820,8 @@ begin
                   for Diagnostic of Unit.Diagnostics loop
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
-                        Diagnostic.To_Pretty_String);
+                        Langkit_Support.Diagnostics.To_Pretty_String
+                          (Diagnostic));
                   end loop;
 
                   return False;
