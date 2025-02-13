@@ -3,3 +3,5 @@ description: |
 driver: gnatformat
 args: []
 status_code: 1
+control:
+  - ["SKIP", 'env.build.os.name != "linux"', "Prints --help"]
