@@ -1,0 +1,10 @@
+library project Baz is
+   for Library_Kind use "static";
+   for Library_Name use "Baz";
+   for Library_Dir use "lib";
+   for Source_Dirs use ("src");
+
+   package Format is
+      for Indentation ("Ada") use "4";
+   end Format;
+end Baz;
