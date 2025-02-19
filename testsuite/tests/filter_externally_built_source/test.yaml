@@ -1,0 +1,13 @@
+description: Test that externally built sources are not formatted
+driver: gnatformat
+args:
+  [
+    "-P",
+    "bar/bar.gpr",
+    "foo.ads",
+    "bar.adb",
+    "baz.ads",
+    "--pipe",
+    "--keep-going",
+  ]
+status_code: 1

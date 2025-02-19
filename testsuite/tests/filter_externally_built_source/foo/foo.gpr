@@ -1,0 +1,7 @@
+library project Foo is
+   for Library_Kind use "static";
+   for Library_Name use "Foo";
+   for Library_Dir use "lib";
+   for Source_Dirs use ("src");
+   for Externally_Built use "true";
+end Foo;
