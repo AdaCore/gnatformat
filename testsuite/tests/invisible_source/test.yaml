@@ -1,3 +1,5 @@
 description: Test formatting sources that are invisible to the project
 driver: gnatformat
 args: ["-P", "foo.gpr", "src/foo.adb", "invisible_src/bar.adb", "--pipe"]
+control:
+  - ["SKIP", 'env.build.os.name != "linux"', "Output has linux relative paths"]
