@@ -173,6 +173,15 @@ package Gnatformat.Command_Line is
       Convert     => To_Optional_Unbounded_String,
       Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
 
+   package Gitdiff is new Parse_Option
+     (Parser => Parser,
+      Long => "--gitdiff",
+      Help => "Only format lines added since given commit",
+      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+      Convert     => To_Optional_Unbounded_String,
+      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None,
+      Usage_Text => "[--gitdiff BASE_COMMIT]");
+
    package Sources is new Parse_Positional_Arg_List
      (Parser      => Parser,
       Name        => "SOURCE",
