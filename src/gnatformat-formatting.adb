@@ -1256,7 +1256,8 @@ package body Gnatformat.Formatting is
       Format_Options  : Gnatformat.Configuration.Format_Options_Type;
       Configuration   :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+          Gnatformat.Configuration.Default_Unparsing_Configuration;
+      Use_Initial_Indentation : Boolean := False)
       return Gnatformat.Edits.Formatting_Edit_Type
    is
       use Gnatformat.Edits;
@@ -1326,7 +1327,9 @@ package body Gnatformat.Formatting is
             Indentation        => Current_Indentation,
             Inline_Indentation => Current_Continuation_Indent);
 
-         if Initial_Indentation /= Estimated_Indentation then
+         if not Use_Initial_Indentation
+           and then Initial_Indentation /= Estimated_Indentation
+         then
             Initial_Indentation := Estimated_Indentation;
          end if;
 

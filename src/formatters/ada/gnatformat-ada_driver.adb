@@ -45,6 +45,8 @@ with Langkit_Support.Generic_API.Unparsing;
 with Libadalang.Analysis;
 with Libadalang.Preprocessing;
 
+with Gitdiff;
+
 procedure Gnatformat.Ada_Driver is
 
    GPR_Options : GPR2.Options.Object;
@@ -489,6 +491,7 @@ begin
       if Project_File = GNATCOLL.VFS.No_File
         and Gnatformat.Command_Line.Sources.Get
             = Gnatformat.Command_Line.Sources.No_Results
+        and not Gnatformat.Command_Line.Gitdiff.Get.Is_Set
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -1044,6 +1047,10 @@ begin
                return False;
          end Process_Standalone_Source;
 
+         Base_Commit_ID :
+           constant Gnatformat.Configuration.Optional_Unbounded_String :=
+             Gnatformat.Command_Line.Gitdiff.Get;
+
       begin
          if Preprocessor_Data.Default_Config.Enabled then
             --  If Preprocessor_Data.Default_Config is enabled, then all
@@ -1133,6 +1140,25 @@ begin
                end;
             end if;
 
+         elsif Base_Commit_ID.Is_Set then
+            declare
+               Charset :
+                 constant Gnatformat.Configuration.Optional_Unbounded_String :=
+                   Gnatformat.Command_Line.Charset.Get;
+            begin
+               Gitdiff.Format_New_Lines
+                 (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
+                  Gitdiff.Context'
+                    (Lal_Ctx          => LAL_Context,
+                     Options          =>
+                       Gnatformat.Command_Line.Configuration.Get,
+                     Unparsing_Config => Unparsing_Configuration,
+                     Charset          =>
+                       (if Charset.Is_Set then Charset.Value
+                        else
+                          Ada.Strings.Unbounded.To_Unbounded_String
+                            (Gnatformat.Configuration.Default_Charset))));
+            end;
          else
             declare
                Command_Line_Sources : constant Project_Source_Vector :=

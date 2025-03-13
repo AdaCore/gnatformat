@@ -49,7 +49,8 @@ package Gnatformat.Formatting is
       Format_Options  : Gnatformat.Configuration.Format_Options_Type;
       Configuration   :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+          Gnatformat.Configuration.Default_Unparsing_Configuration;
+      Use_Initial_Indentation : Boolean := False)
       return Gnatformat.Edits.Formatting_Edit_Type;
    --  Range formats a section of Unit using the provided Format_Options and
    --  Configuration. The section is computed based on the bottommost node that
