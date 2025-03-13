@@ -53,142 +53,162 @@ package Gnatformat.Command_Line is
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
 
    function To_Optional_Unbounded_String
-     (S : String)
-      return Gnatformat.Configuration.Optional_Unbounded_String
+     (S : String) return Gnatformat.Configuration.Optional_Unbounded_String
    is ((Is_Set => True, Value => To_Unbounded_String (S)));
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
 
-   package Root_Project_Only is new Parse_Flag
-      (Parser => Parser,
-       Long   => "--no-subprojects",
-       Help   => "Only process the root project, not the subprojects");
+   package Root_Project_Only is new
+     Parse_Flag
+       (Parser => Parser,
+        Long   => "--no-subprojects",
+        Help   => "Only process the root project, not the subprojects");
 
-   package All_Sources is new Parse_Flag
-     (Parser => Parser,
-      Short  => "-U",
-      Name   => "Process all sources",
-      Help   =>
-        "Process all files, not only those that are in the closure of mains");
+   package All_Sources is new
+     Parse_Flag
+       (Parser => Parser,
+        Short  => "-U",
+        Name   => "Process all sources",
+        Help   =>
+          "Process all files, not only those that are in the closure of mains");
 
-   package Verbose is new Parse_Flag
-     (Parser => Parser,
-      Long   => "--verbose",
-      Help   => "Print debug logs");
+   package Verbose is new
+     Parse_Flag
+       (Parser => Parser,
+        Long   => "--verbose",
+        Help   => "Print debug logs");
 
-   package Version is new Parse_Flag
-     (Parser => Parser,
-      Short  => "-v",
-      Long   => "--version",
-      Help   => "Show the version");
+   package Version is new
+     Parse_Flag
+       (Parser => Parser,
+        Short  => "-v",
+        Long   => "--version",
+        Help   => "Show the version");
 
-   package Check is new Parse_Flag
-     (Parser => Parser,
-      Long   => "--check",
-      Help   =>
-        "Exit with error code 1 if the input is not formatted correctly and "
-        & "prints the file names that would be formatted");
+   package Check is new
+     Parse_Flag
+       (Parser => Parser,
+        Long   => "--check",
+        Help   =>
+          "Exit with error code 1 if the input is not formatted correctly and "
+          & "prints the file names that would be formatted");
 
-   package Pipe is new Parse_Flag
-     (Parser => Parser,
-      Short  => "-p",
-      Long   => "--pipe",
-      Help   =>
-        "Print the result to stdout instead of editing the files on disk "
-        & "(takes precedence over --check)");
+   package Pipe is new
+     Parse_Flag
+       (Parser => Parser,
+        Short  => "-p",
+        Long   => "--pipe",
+        Help   =>
+          "Print the result to stdout instead of editing the files on disk "
+          & "(takes precedence over --check)");
 
-   package Keep_Going is new Parse_Flag
-     (Parser => Parser,
-      Short  => "-k",
-      Long   => "--keep-going",
-      Help   => "Keep going after errors formatting a source file");
+   package Keep_Going is new
+     Parse_Flag
+       (Parser => Parser,
+        Short  => "-k",
+        Long   => "--keep-going",
+        Help   => "Keep going after errors formatting a source file");
 
-   package Unparsing_Configuration is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--unparsing-configuration",
-      Name        => "UNPARSING_CONFIGURATION_FILE",
-      Help        => "Unparsing configuration file",
-      Arg_Type    => GNATCOLL.VFS.Virtual_File,
-      Convert     => To_Virtual_File,
-      Default_Val => GNATCOLL.VFS.No_File);
+   package Unparsing_Configuration is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--unparsing-configuration",
+        Name        => "UNPARSING_CONFIGURATION_FILE",
+        Help        => "Unparsing configuration file",
+        Arg_Type    => GNATCOLL.VFS.Virtual_File,
+        Convert     => To_Virtual_File,
+        Default_Val => GNATCOLL.VFS.No_File);
 
-   package Width is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-w",
-      Long        => "--width",
-      Help        => "Max line width (default value = 79)",
-      Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => To_Optional_Positive,
-      Default_Val => Gnatformat.Configuration.Optional_Positives.None);
+   package Width is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-w",
+        Long        => "--width",
+        Help        => "Max line width (default value = 79)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Positive,
+        Convert     => To_Optional_Positive,
+        Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
-   package Indentation is new Parse_Option
-     (Parser      => Parser,
-      Short       => "-i",
-      Long        => "--indentation",
-      Help        => "Indentation size (default value = 3)",
-      Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => To_Optional_Positive,
-      Default_Val => Gnatformat.Configuration.Optional_Positives.None);
+   package Indentation is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-i",
+        Long        => "--indentation",
+        Help        => "Indentation size (default value = 3)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Positive,
+        Convert     => To_Optional_Positive,
+        Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
-   package Indentation_Kind is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--indentation-kind",
-      Help        =>
-        "Indentation kind: tabs | spaces (default value = spaces)",
-      Arg_Type    => Gnatformat.Configuration.Optional_Indentation_Kind,
-      Convert     => To_Optional_Indentation_Kind,
-      Default_Val => Gnatformat.Configuration.Optional_Indentation_Kinds.None);
+   package Indentation_Kind is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--indentation-kind",
+        Help        =>
+          "Indentation kind: tabs | spaces (default value = spaces)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Indentation_Kind,
+        Convert     => To_Optional_Indentation_Kind,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Indentation_Kinds.None);
 
-   package Indentation_Continuation is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--indentation-continuation",
-      Help        =>
-        "Continuation Line Indentation size (default value = indentation - 1)",
-      Arg_Type    => Gnatformat.Configuration.Optional_Positive,
-      Convert     => To_Optional_Positive,
-      Default_Val => Gnatformat.Configuration.Optional_Positives.None);
+   package Indentation_Continuation is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--indentation-continuation",
+        Help        =>
+          "Continuation Line Indentation size (default value = indentation - 1)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Positive,
+        Convert     => To_Optional_Positive,
+        Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
-   package End_Of_Line is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--end-of-line",
-      Help        => "End of line sequence: lf | crlf (default value = lf)",
-      Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
-      Convert     => To_Optional_End_Of_Line_Kind,
-      Default_Val => Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
+   package End_Of_Line is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--end-of-line",
+        Help        => "End of line sequence: lf | crlf (default value = lf)",
+        Arg_Type    => Gnatformat.Configuration.Optional_End_Of_Line_Kind,
+        Convert     => To_Optional_End_Of_Line_Kind,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
 
-   package Charset is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--charset",
-      Help        =>
-        "Charset to use for source decoding (default value = iso-8859-1)",
-      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
-      Convert     => To_Optional_Unbounded_String,
-      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
+   package Charset is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--charset",
+        Help        =>
+          "Charset to use for source decoding (default value = iso-8859-1)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+        Convert     => To_Optional_Unbounded_String,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Unbounded_Strings.None);
 
-   package Ignore is new Parse_Option
-     (Parser      => Parser,
-      Long        => "--ignore",
-      Help        =>
-        "Ignore file with the sources that will be ignored",
-      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
-      Convert     => To_Optional_Unbounded_String,
-      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None);
+   package Ignore is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--ignore",
+        Help        => "Ignore file with the sources that will be ignored",
+        Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+        Convert     => To_Optional_Unbounded_String,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Unbounded_Strings.None);
 
-   package Gitdiff is new Parse_Option
-     (Parser => Parser,
-      Long => "--gitdiff",
-      Help => "Only format lines added since given commit",
-      Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
-      Convert     => To_Optional_Unbounded_String,
-      Default_Val => Gnatformat.Configuration.Optional_Unbounded_Strings.None,
-      Usage_Text => "[--gitdiff BASE_COMMIT]");
+   package Gitdiff is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--gitdiff",
+        Help        => "Only format lines added since given commit",
+        Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
+        Convert     => To_Optional_Unbounded_String,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Unbounded_Strings.None,
+        Usage_Text  => "[--gitdiff BASE_COMMIT]");
 
-   package Sources is new Parse_Positional_Arg_List
-     (Parser      => Parser,
-      Name        => "SOURCE",
-      Allow_Empty => True,
-      Arg_Type    => GNATCOLL.VFS.Virtual_File,
-      Convert     => To_Virtual_File,
-      Help        => "Source files to format");
+   package Sources is new
+     Parse_Positional_Arg_List
+       (Parser      => Parser,
+        Name        => "SOURCE",
+        Allow_Empty => True,
+        Arg_Type    => GNATCOLL.VFS.Virtual_File,
+        Convert     => To_Virtual_File,
+        Help        => "Source files to format");
 
    package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 

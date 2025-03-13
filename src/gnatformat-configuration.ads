@@ -62,8 +62,7 @@ package Gnatformat.Configuration is
      Optional_Unbounded_Strings.Optional_Type;
 
    package String_Hashed_Sets is new
-     Ada.Containers.Indefinite_Hashed_Sets
-       (String, Ada.Strings.Hash, "=");
+     Ada.Containers.Indefinite_Hashed_Sets (String, Ada.Strings.Hash, "=");
 
    subtype String_Hashed_Set is String_Hashed_Sets.Set;
 
@@ -103,9 +102,7 @@ package Gnatformat.Configuration is
    --  end-of-line value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
-   function Get_Ignore
-     (Self : Format_Options_Type)
-      return String_Hashed_Set;
+   function Get_Ignore (Self : Format_Options_Type) return String_Hashed_Set;
    --  Retrieves the already resolved ignore option, i.e., the contents (list
    --  of sources to be ignored) of the file used to build the ignore option.
    --  Defaults to an empty String_Hashed_Set is Format_Options_Type was not
@@ -114,8 +111,7 @@ package Gnatformat.Configuration is
    function Get_Indentation
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive;
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
    --  Retrieves the indentation option for the specified Source_Filename if it
    --  exists.
    --  If the indentation option for Source_Filename does not exist, the
@@ -144,8 +140,7 @@ package Gnatformat.Configuration is
    function Get_Indentation_Continuation
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive;
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
    --  Retrieves the indentaiton-continuation option for the specified
    --  Source_Filename it exists.
    --  If the indentaiton-continuation option for Source_Filename does not
@@ -159,8 +154,7 @@ package Gnatformat.Configuration is
    function Get_Width
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive;
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
    --  Retrieves the width option for the specified Source_Filename if it
    --  exists.
    --  If the width option for Source_Filename does not exist, the
@@ -172,21 +166,18 @@ package Gnatformat.Configuration is
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
    function From_Project
-     (Project : GPR2.Project.View.Object)
-      return Format_Options_Type;
+     (Project : GPR2.Project.View.Object) return Format_Options_Type;
    --  Creates a Format_Options_Type by parsing Project's Format package
 
    function Into
-     (Self     : Format_Options_Type;
-      Language : Supported_Languages)
+     (Self : Format_Options_Type; Language : Supported_Languages)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Language into an
    --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
    --  associated to Language, then returns Default_Format_Options.
 
    function Into
-     (Self            : Format_Options_Type;
-      Source_Filename : String)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Source_Filename into an
    --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
@@ -204,8 +195,7 @@ package Gnatformat.Configuration is
    --  returns Default_Format_Options.
 
    procedure Overwrite
-     (Target : in out Format_Options_Type;
-      Source : Format_Options_Type);
+     (Target : in out Format_Options_Type; Source : Format_Options_Type);
    --  Overwrites Target's options by Source's ones
 
    Default_Format_Options : constant Format_Options_Type;
@@ -220,9 +210,8 @@ package Gnatformat.Configuration is
    --  same project view.
 
    function Get
-     (Self     : in out Project_Format_Options_Cache_Type;
-      Project  : GPR2.Project.View.Object)
-      return Format_Options_Type;
+     (Self    : in out Project_Format_Options_Cache_Type;
+      Project : GPR2.Project.View.Object) return Format_Options_Type;
    --  Retrives the format options associated to Project using a cached result
    --  if existent. Otherwise the format options are computed.
 
@@ -244,8 +233,7 @@ package Gnatformat.Configuration is
    --  A builder of Format_Options_Type.
 
    function Build
-     (Self : Format_Options_Builder_Type)
-      return Format_Options_Type;
+     (Self : Format_Options_Builder_Type) return Format_Options_Type;
    --  Returns the format options current state
 
    procedure With_Charset
@@ -279,8 +267,8 @@ package Gnatformat.Configuration is
    --  and value. If the Attribute id is unknown, then it's ignored.
 
    procedure With_Ignore
-     (Self     : in out Format_Options_Builder_Type;
-      Ignore   : GNATCOLL.VFS.Virtual_File);
+     (Self   : in out Format_Options_Builder_Type;
+      Ignore : GNATCOLL.VFS.Virtual_File);
    --  Sets the Ignore option
 
    procedure With_Indentation
@@ -347,56 +335,49 @@ private
 
    Package_Id : constant GPR2.Package_Id := GPR2."+" ("format");
 
-   Width_Attribute_Id   : constant GPR2.Attribute_Id   :=
-     GPR2."+" ("width");
+   Width_Attribute_Id   : constant GPR2.Attribute_Id := GPR2."+" ("width");
    Q_Width_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Width_Attribute_Id);
 
-   Ignore_Attribute_Id   : constant GPR2.Attribute_Id   :=
-     GPR2."+" ("ignore");
+   Ignore_Attribute_Id   : constant GPR2.Attribute_Id := GPR2."+" ("ignore");
    Q_Ignore_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Ignore_Attribute_Id);
 
-   Indentation_Attribute_Id   : constant GPR2.Attribute_Id   :=
+   Indentation_Attribute_Id   : constant GPR2.Attribute_Id :=
      GPR2."+" ("indentation");
    Q_Indentation_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Indentation_Attribute_Id);
 
-   Indentation_Kind_Attribute_Id   : constant GPR2.Attribute_Id   :=
+   Indentation_Kind_Attribute_Id   : constant GPR2.Attribute_Id :=
      GPR2."+" ("indentation_kind");
    Q_Indentation_Kind_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Indentation_Kind_Attribute_Id);
 
-   Indentation_Continuation_Attribute_Id   : constant GPR2.Attribute_Id   :=
+   Indentation_Continuation_Attribute_Id   : constant GPR2.Attribute_Id :=
      GPR2."+" ("indentation_continuation");
    Q_Indentation_Continuation_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Indentation_Continuation_Attribute_Id);
 
-   End_Of_Line_Attribute_Id   : constant GPR2.Attribute_Id   :=
+   End_Of_Line_Attribute_Id   : constant GPR2.Attribute_Id :=
      GPR2."+" ("end_of_line");
    Q_End_Of_Line_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, End_Of_Line_Attribute_Id);
 
-   Charset_Attribute_Id   : constant GPR2.Attribute_Id   :=
-     GPR2."+" ("charset");
+   Charset_Attribute_Id   : constant GPR2.Attribute_Id := GPR2."+" ("charset");
    Q_Charset_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Charset_Attribute_Id);
 
-   type Basic_Format_Options_Type is
-     record
-       Width                    : Optional_Positive         :=
-         (Is_Set => False);
-       Indentation              : Optional_Positive         :=
-         (Is_Set => False);
-       Indentation_Kind         : Optional_Indentation_Kind :=
-         (Is_Set => False);
-       Indentation_Continuation : Optional_Positive         :=
-         (Is_Set => False);
-       End_Of_Line              : Optional_End_Of_Line_Kind :=
-         (Is_Set => False);
-       Charset                  : Optional_Unbounded_String :=
-         (Is_Set => False);
-     end record;
+   type Basic_Format_Options_Type is record
+      Width                    : Optional_Positive := (Is_Set => False);
+      Indentation              : Optional_Positive := (Is_Set => False);
+      Indentation_Kind         : Optional_Indentation_Kind :=
+        (Is_Set => False);
+      Indentation_Continuation : Optional_Positive := (Is_Set => False);
+      End_Of_Line              : Optional_End_Of_Line_Kind :=
+        (Is_Set => False);
+      Charset                  : Optional_Unbounded_String :=
+        (Is_Set => False);
+   end record;
 
    function Into
      (Self : Basic_Format_Options_Type)
@@ -453,8 +434,8 @@ private
    end record;
 
    Default_Format_Options : constant Format_Options_Type :=
-     (Language => [others => Default_Basic_Format_Options],
-      Sources  => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
+     (Language        => [others => Default_Basic_Format_Options],
+      Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
       Ignored_Sources => (Is_Set => False));
 
    package View_Ids_To_Format_Options_Hashed_Maps is new
@@ -467,20 +448,18 @@ private
    subtype View_Id_To_Format_Options_Hashed_Map is
      View_Ids_To_Format_Options_Hashed_Maps.Map;
 
-   type Project_Format_Options_Cache_Type is tagged
-     record
-       Cache : View_Id_To_Format_Options_Hashed_Map;
-     end record;
+   type Project_Format_Options_Cache_Type is tagged record
+      Cache : View_Id_To_Format_Options_Hashed_Map;
+   end record;
 
-   type Format_Options_Builder_Type is tagged
-     record
-       Project        : Optional_GPR2_Project_View;
-       Format_Options : Format_Options_Type;
-     end record;
+   type Format_Options_Builder_Type is tagged record
+      Project        : Optional_GPR2_Project_View;
+      Format_Options : Format_Options_Type;
+   end record;
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
        Langkit_Support.Generic_API.Unparsing.Default_Unparsing_Configuration
-          (Language => Libadalang.Generic_API.Ada_Lang_Id);
+         (Language => Libadalang.Generic_API.Ada_Lang_Id);
 
 end Gnatformat.Configuration;

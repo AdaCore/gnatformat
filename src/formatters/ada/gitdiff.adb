@@ -162,7 +162,8 @@ package body Gitdiff is
                 (Diff_Text (Matches (4).First .. Matches (4).Last));
             Last_Line  : constant Positive :=
               First_Line
-              + (if Matches (5) = No_Match then 0
+              + (if Matches (5) = No_Match
+                 then 0
                  else
                    Positive'Value
                      (Diff_Text (Matches (5).First .. Matches (5).Last))

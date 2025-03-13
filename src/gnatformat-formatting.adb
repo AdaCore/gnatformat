@@ -14,7 +14,7 @@ with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 with Langkit_Support.Text;
 with Libadalang.Common;
 with Libadalang.Generic_API;
-with Prettier_Ada.Documents; use Prettier_Ada.Documents;
+with Prettier_Ada.Documents;      use Prettier_Ada.Documents;
 
 package body Gnatformat.Formatting is
 
@@ -89,11 +89,11 @@ package body Gnatformat.Formatting is
          Index_On_String : Positive;
          --  The character (byte) index of the String where this marker starts
 
-         Marker_Index    : On_Off_Section_Marker_Index;
+         Marker_Index : On_Off_Section_Marker_Index;
          --  The index (identifier) of this marker on the markers list
          --  On_Off_Section_Markers.
 
-         Kind            : Marker_Kind;
+         Kind : Marker_Kind;
       end record;
 
       function "<" (Left, Right : Marker_Information_Record) return Boolean
@@ -281,8 +281,7 @@ package body Gnatformat.Formatting is
                         From
                         + Ada.Strings.Unbounded.Length
                             (On_Off_Section_Markers
-                               (On_Off_Section_Marker_Index)
-                                  (Current_Marker))
+                               (On_Off_Section_Marker_Index) (Current_Marker))
                         - 1)
                   then
                      Markers_Information.Append
@@ -435,7 +434,8 @@ package body Gnatformat.Formatting is
                       & Ada.Strings.Unbounded.To_String
                           (On_Off_Section_Markers
                              (Markers_Information.Constant_Reference
-                                (Marker_Index).Marker_Index) (On))
+                                (Marker_Index)
+                                .Marker_Index) (On))
                       & """";
                end if;
 
@@ -453,12 +453,14 @@ package body Gnatformat.Formatting is
                       & Ada.Strings.Unbounded.To_String
                           (On_Off_Section_Markers
                              (Markers_Information.Constant_Reference
-                                (Marker_Index).Marker_Index) (On))
+                                (Marker_Index)
+                                .Marker_Index) (On))
                       & """, found """
                       & Ada.Strings.Unbounded.To_String
                           (On_Off_Section_Markers
                              (Markers_Information.Constant_Reference
-                                (Marker_Index + 1).Marker_Index) (Off))
+                                (Marker_Index + 1)
+                                .Marker_Index) (Off))
                       & """";
                end if;
 
@@ -472,15 +474,15 @@ package body Gnatformat.Formatting is
                       "Invalid On / Off section, marker """
                       & Ada.Strings.Unbounded.To_String
                           (On_Off_Section_Markers
-                             (Markers_Information
-                                .Constant_Reference (Marker_Index)
+                             (Markers_Information.Constant_Reference
+                                (Marker_Index)
                                 .Marker_Index) (Off))
                       & """, followed by """
                       & Ada.Strings.Unbounded.To_String
                           (On_Off_Section_Markers
-                             (Markers_Information
-                                .Constant_Reference (Marker_Index + 1)
-                                 .Marker_Index) (On))
+                             (Markers_Information.Constant_Reference
+                                (Marker_Index + 1)
+                                .Marker_Index) (On))
                       & """";
                end if;
 
@@ -598,12 +600,12 @@ package body Gnatformat.Formatting is
    end Format;
 
    function Format_Unit
-     (Unit                  : Libadalang.Analysis.Analysis_Unit;
-      Options               : Gnatformat.Configuration.Format_Options_Type;
+     (Unit             : Libadalang.Analysis.Analysis_Unit;
+      Options          : Gnatformat.Configuration.Format_Options_Type;
       --  Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
-      Unparsing_Config      :
+      Unparsing_Config :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Default_Unparsing_Configuration)
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Gnatformat.Edits.Formatting_Edit_Type;
    --  Gnatformat library entry point for the whole Unit formatting
 
@@ -613,11 +615,12 @@ package body Gnatformat.Formatting is
 
    procedure Find_Matching_Parents
      (Node     : Libadalang.Analysis.Ada_Node'Class;
-      Match    : not null access function
-        (Node : Libadalang.Analysis.Ada_Node'Class) return Boolean;
-      Callback : not null access procedure
-        (Parent : Libadalang.Analysis.Ada_Node;
-         Stop   : in out Boolean));
+      Match    :
+        not null access function
+          (Node : Libadalang.Analysis.Ada_Node'Class) return Boolean;
+      Callback :
+        not null access procedure
+          (Parent : Libadalang.Analysis.Ada_Node; Stop : in out Boolean));
    --  Iterates through the parents of Node and calls Callback on the
    --  parents where Match returns True. This iterative process stops if
    --  Callback sets Stop to True.
@@ -629,8 +632,7 @@ package body Gnatformat.Formatting is
    --  Retrieves the closest enclosing parent for the given selection range
 
    function Get_Initial_Indentation
-     (Node        : Libadalang.Analysis.Ada_Node;
-      Indentation : Natural := 3)
+     (Node : Libadalang.Analysis.Ada_Node; Indentation : Natural := 3)
       return Natural;
    --  Returns the initial indentation that needs to be used for the selected
    --  Node formatting
@@ -638,8 +640,7 @@ package body Gnatformat.Formatting is
    function Estimate_Indentation
      (Node               : Libadalang.Analysis.Ada_Node;
       Indentation        : Natural := 3;
-      Inline_Indentation : Natural := 2)
-      return Natural;
+      Inline_Indentation : Natural := 2) return Natural;
    --  Estimate the indentation for Node (assuming that it starts in the
    --  begining of its start line.
 
@@ -666,11 +667,11 @@ package body Gnatformat.Formatting is
    -------------------
 
    function Format_Unit
-     (Unit                  : Libadalang.Analysis.Analysis_Unit;
-      Options               : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Config      :
+     (Unit             : Libadalang.Analysis.Analysis_Unit;
+      Options          : Gnatformat.Configuration.Format_Options_Type;
+      Unparsing_Config :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Default_Unparsing_Configuration)
+          Gnatformat.Configuration.Default_Unparsing_Configuration)
       return Gnatformat.Edits.Formatting_Edit_Type
    is
       use Ada.Strings.Unbounded;
@@ -678,14 +679,15 @@ package body Gnatformat.Formatting is
       use Libadalang.Analysis;
       use Langkit_Support.Slocs;
 
-      SL_Root        : constant Source_Location_Range := Unit.Root.Sloc_Range;
+      SL_Root : constant Source_Location_Range := Unit.Root.Sloc_Range;
 
-      Formatted_Str  : constant Unbounded_String :=
-        Format (Unit => Unit,
-                Format_Options => Options,
-                Configuration  => Unparsing_Config);
+      Formatted_Str : constant Unbounded_String :=
+        Format
+          (Unit           => Unit,
+           Format_Options => Options,
+           Configuration  => Unparsing_Config);
 
-      Diagnostics_V  : constant Diagnostics_Vectors.Vector :=
+      Diagnostics_V : constant Diagnostics_Vectors.Vector :=
         Diagnostics_Array_To_Vector (Unit.Diagnostics);
 
    begin
@@ -704,15 +706,15 @@ package body Gnatformat.Formatting is
 
    procedure Find_Matching_Parents
      (Node     : Libadalang.Analysis.Ada_Node'Class;
-      Match    : not null access function
-        (Node : Libadalang.Analysis.Ada_Node'Class) return Boolean;
-      Callback : not null access procedure
-        (Parent : Libadalang.Analysis.Ada_Node;
-         Stop   : in out Boolean))
+      Match    :
+        not null access function
+          (Node : Libadalang.Analysis.Ada_Node'Class) return Boolean;
+      Callback :
+        not null access procedure
+          (Parent : Libadalang.Analysis.Ada_Node; Stop : in out Boolean))
    is
       use Libadalang.Analysis;
-      Parent : Ada_Node :=
-        (if Node.Is_Null then No_Ada_Node else Node.Parent);
+      Parent : Ada_Node := (if Node.Is_Null then No_Ada_Node else Node.Parent);
       Stop   : Boolean := False;
 
    begin
@@ -742,10 +744,10 @@ package body Gnatformat.Formatting is
 
       type Search_Direction is (Forward, Backward);
 
-      function Lookup (Unit  : Analysis_Unit;
-                       Token : Libadalang.Common.Token_Reference;
-                       Look  : Search_Direction)
-                       return Ada_Node;
+      function Lookup
+        (Unit  : Analysis_Unit;
+         Token : Libadalang.Common.Token_Reference;
+         Look  : Search_Direction) return Ada_Node;
       --  Finds the next Ada_Node relative to Token. Look param controls the
       --  search direction. If Token already belongs to an Ada_Node, that node
       --  is returned. Returns No_Ada_Node if no node is found or if
@@ -758,10 +760,9 @@ package body Gnatformat.Formatting is
       function Lookup
         (Unit  : Analysis_Unit;
          Token : Libadalang.Common.Token_Reference;
-         Look  : Search_Direction)
-      return Ada_Node
+         Look  : Search_Direction) return Ada_Node
       is
-         Crt_Token      : Token_Reference              := Token;
+         Crt_Token      : Token_Reference := Token;
          Crt_Token_Kind : Libadalang.Common.Token_Kind :=
            Kind (Libadalang.Common.Data (Crt_Token));
       begin
@@ -784,14 +785,15 @@ package body Gnatformat.Formatting is
             return No_Ada_Node;
          end if;
 
-         return Unit.Root.Lookup
-           (Start_Sloc (Sloc_Range (Data (Crt_Token)))).As_Ada_Node;
+         return
+           Unit.Root.Lookup (Start_Sloc (Sloc_Range (Data (Crt_Token))))
+             .As_Ada_Node;
       end Lookup;
 
       Crt_Start_Tok : constant Token_Reference :=
         Unit.Lookup_Token
           (Source_Location'(SL_Range.Start_Line, SL_Range.Start_Column));
-      Crt_End_Tok : constant Token_Reference :=
+      Crt_End_Tok   : constant Token_Reference :=
         Unit.Lookup_Token
           (Source_Location'(SL_Range.End_Line, SL_Range.End_Column));
 
@@ -806,13 +808,18 @@ package body Gnatformat.Formatting is
 
       function Is_Relevant_Parent_Kind
         (Kind : Ada_Node_Kind_Type) return Boolean
-      is (Kind in Ada_Decl_Block | Ada_Type_Decl | Ada_Compilation_Unit
-            | Ada_Stmt | Ada_Stmt_List | Ada_Ada_Node_List
-            | Ada_Basic_Decl | Ada_Subp_Spec
-            | Ada_Use_Type_Clause);
+      is (Kind
+          in Ada_Decl_Block
+           | Ada_Type_Decl
+           | Ada_Compilation_Unit
+           | Ada_Stmt
+           | Ada_Stmt_List
+           | Ada_Ada_Node_List
+           | Ada_Basic_Decl
+           | Ada_Subp_Spec
+           | Ada_Use_Type_Clause);
 
-      function Is_Relevant_Parent_Node
-        (Node : Ada_Node'Class) return Boolean
+      function Is_Relevant_Parent_Node (Node : Ada_Node'Class) return Boolean
       is (not Node.Is_Null and then Is_Relevant_Parent_Kind (Node.Kind));
 
       procedure Is_Relevant_Parent_Node_Callback
@@ -836,10 +843,9 @@ package body Gnatformat.Formatting is
       --------------------------------------
 
       procedure Is_Relevant_Parent_Node_Callback
-        (Parent : Ada_Node; Stop : in out Boolean)
-      is
+        (Parent : Ada_Node; Stop : in out Boolean) is
       begin
-         Stop        := True;
+         Stop := True;
          Parent_Node := Parent;
       end Is_Relevant_Parent_Node_Callback;
 
@@ -854,12 +860,12 @@ package body Gnatformat.Formatting is
       begin
          return
            (Start_Node.Sloc_Range.Start_Line > End_Node.Sloc_Range.Start_Line
-            and then
-            Start_Node.Sloc_Range.End_Line < End_Node.Sloc_Range.End_Line)
-           or else
-             (Start_Node.Sloc_Range.Start_Line < End_Node.Sloc_Range.Start_Line
-              and then
-              Start_Node.Sloc_Range.End_Line > End_Node.Sloc_Range.End_Line);
+            and then Start_Node.Sloc_Range.End_Line
+                     < End_Node.Sloc_Range.End_Line)
+           or else (Start_Node.Sloc_Range.Start_Line
+                    < End_Node.Sloc_Range.Start_Line
+                    and then Start_Node.Sloc_Range.End_Line
+                             > End_Node.Sloc_Range.End_Line);
       end Are_Overlapping_Nodes;
 
       --------------------------
@@ -869,19 +875,21 @@ package body Gnatformat.Formatting is
       function Get_Overlapping_Node
         (Start_Node : Ada_Node; End_Node : Ada_Node) return Ada_Node
       is
-         pragma Assert (Start_Node /= End_Node
-                        and then Are_Overlapping_Nodes (Start_Node, End_Node));
+         pragma
+           Assert
+             (Start_Node /= End_Node
+                and then Are_Overlapping_Nodes (Start_Node, End_Node));
       begin
          if Start_Node.Sloc_Range.Start_Line > End_Node.Sloc_Range.Start_Line
-            and then
-             Start_Node.Sloc_Range.End_Line < End_Node.Sloc_Range.End_Line
+           and then Start_Node.Sloc_Range.End_Line
+                    < End_Node.Sloc_Range.End_Line
          then
             return End_Node;
 
-         elsif
-           Start_Node.Sloc_Range.Start_Line < End_Node.Sloc_Range.Start_Line
-           and then
-             Start_Node.Sloc_Range.End_Line > End_Node.Sloc_Range.End_Line
+         elsif Start_Node.Sloc_Range.Start_Line
+           < End_Node.Sloc_Range.Start_Line
+           and then Start_Node.Sloc_Range.End_Line
+                    > End_Node.Sloc_Range.End_Line
          then
             return Start_Node;
          end if;
@@ -896,8 +904,8 @@ package body Gnatformat.Formatting is
       function Get_Common_Enclosing_Parent_Node
         (Start_Node : Ada_Node; End_Node : Ada_Node) return Ada_Node
       is
-         pragma Assert
-           (Start_Node /= No_Ada_Node and then End_Node /= No_Ada_Node);
+         pragma
+           Assert (Start_Node /= No_Ada_Node and then End_Node /= No_Ada_Node);
       begin
          if Start_Node = End_Node then
             return Start_Node;
@@ -924,7 +932,7 @@ package body Gnatformat.Formatting is
       --  Start of Get_Selection_Enclosing_Node
    begin
       Enclosing_Node := No_Ada_Node;
-      Parent_Node    := Crt_Start_Node;
+      Parent_Node := Crt_Start_Node;
 
       --  Find the first relevant parent of Crt_Start_Node
       if not Is_Relevant_Parent_Kind (Kind (Crt_Start_Node)) then
@@ -981,9 +989,8 @@ package body Gnatformat.Formatting is
    -------------------------------
 
    function Get_Initial_Indentation
-     (Node        : Libadalang.Analysis.Ada_Node;
-      Indentation : Natural := 3)
-     return Natural
+     (Node : Libadalang.Analysis.Ada_Node; Indentation : Natural := 3)
+      return Natural
    is
       use Libadalang.Analysis;
       use Libadalang.Common;
@@ -996,14 +1003,21 @@ package body Gnatformat.Formatting is
 
       function Is_Expected_Parent_Kind
         (Kind : Ada_Node_Kind_Type) return Boolean
-      is (Kind in Ada_Package_Body | Ada_Package_Decl |
-                  Ada_Library_Item | Ada_Subp_Body | Ada_Task_Body |
-                  Ada_Decl_Block | Ada_For_Loop_Stmt | Ada_Loop_Stmt |
-                  Ada_While_Loop_Stmt | Ada_If_Stmt_Range |
-                  Ada_Case_Stmt_Range | Ada_Case_Stmt_Alternative_Range);
+      is (Kind
+          in Ada_Package_Body
+           | Ada_Package_Decl
+           | Ada_Library_Item
+           | Ada_Subp_Body
+           | Ada_Task_Body
+           | Ada_Decl_Block
+           | Ada_For_Loop_Stmt
+           | Ada_Loop_Stmt
+           | Ada_While_Loop_Stmt
+           | Ada_If_Stmt_Range
+           | Ada_Case_Stmt_Range
+           | Ada_Case_Stmt_Alternative_Range);
 
-      function Is_Expected_Parent_Node
-        (Node : Ada_Node'Class) return Boolean
+      function Is_Expected_Parent_Node (Node : Ada_Node'Class) return Boolean
       is (not Node.Is_Null and then Is_Expected_Parent_Kind (Node.Kind));
 
       procedure Is_Expected_Parent_Node_Callback
@@ -1015,10 +1029,9 @@ package body Gnatformat.Formatting is
       --------------------------------------
 
       procedure Is_Expected_Parent_Node_Callback
-        (Parent : Ada_Node; Stop : in out Boolean)
-      is
+        (Parent : Ada_Node; Stop : in out Boolean) is
       begin
-         Stop        := True;
+         Stop := True;
          Parent_Node := Parent;
       end Is_Expected_Parent_Node_Callback;
 
@@ -1026,14 +1039,14 @@ package body Gnatformat.Formatting is
       -- Get_Parent_Indenation --
       ---------------------------
 
-      function Get_Parent_Indentation (Node : Ada_Node) return Natural
-      is
+      function Get_Parent_Indentation (Node : Ada_Node) return Natural is
          Offset : Natural := 0;
       begin
          Parent_Node := Node;
-         Find_Matching_Parents (Node,
-                                Is_Expected_Parent_Node'Access,
-                                Is_Expected_Parent_Node_Callback'Access);
+         Find_Matching_Parents
+           (Node,
+            Is_Expected_Parent_Node'Access,
+            Is_Expected_Parent_Node_Callback'Access);
 
          if Kind (Parent_Node) = Ada_Library_Item
            and then Natural (Parent_Node.Sloc_Range.Start_Line) = 1
@@ -1045,14 +1058,22 @@ package body Gnatformat.Formatting is
          end if;
 
          case Kind (Parent_Node) is
-            when Ada_Package_Body | Ada_Package_Decl
-               | Ada_Task_Body | Ada_Subp_Body | Ada_Decl_Block
-               | Ada_For_Loop_Stmt | Ada_Loop_Stmt | Ada_While_Loop_Stmt
-               | Ada_If_Stmt_Range | Ada_Case_Stmt_Range
+            when Ada_Package_Body
+               | Ada_Package_Decl
+               | Ada_Task_Body
+               | Ada_Subp_Body
+               | Ada_Decl_Block
+               | Ada_For_Loop_Stmt
+               | Ada_Loop_Stmt
+               | Ada_While_Loop_Stmt
+               | Ada_If_Stmt_Range
+               | Ada_Case_Stmt_Range
                | Ada_Case_Stmt_Alternative_Range
-               => Offset := Offset + Indentation;
+            =>
+               Offset := Offset + Indentation;
 
-            when others => null;
+            when others =>
+               null;
          end case;
 
          return Offset;
@@ -1063,7 +1084,8 @@ package body Gnatformat.Formatting is
       ----------------------------
 
       function Get_Previous_Sibling (Node : Ada_Node) return Ada_Node
-      is (if Node /= No_Ada_Node then Node.Previous_Sibling.As_Ada_Node
+      is (if Node /= No_Ada_Node
+          then Node.Previous_Sibling.As_Ada_Node
           else No_Ada_Node);
       --  Returns the Node previous sibling or No_Ada_Node if no sibling found
 
@@ -1072,7 +1094,8 @@ package body Gnatformat.Formatting is
       ------------------------
 
       function Get_Next_Sibling (Node : Ada_Node) return Ada_Node
-      is (if Node /= No_Ada_Node then Node.Next_Sibling.As_Ada_Node
+      is (if Node /= No_Ada_Node
+          then Node.Next_Sibling.As_Ada_Node
           else No_Ada_Node);
       --  Returns the Node next sibling or No_Ada_Node if no sibling found
 
@@ -1083,7 +1106,8 @@ package body Gnatformat.Formatting is
    begin
       if Node.Kind in Ada_Ada_List then
          Offset :=
-           (if Node.Sloc_Range.Start_Column = 0 then 0
+           (if Node.Sloc_Range.Start_Column = 0
+            then 0
             else Natural (Node.Sloc_Range.Start_Column) - 1);
 
       elsif Node.Kind in Ada_Subp_Spec_Range then
@@ -1095,15 +1119,20 @@ package body Gnatformat.Formatting is
              (Node.P_Parent_Basic_Decl.As_Ada_Node, Indentation);
 
       elsif (not Prev_Sibling.Is_Null and not Next_Sibling.Is_Null)
-        and then Prev_Sibling.Sloc_Range.Start_Column =
-                   Next_Sibling.Sloc_Range.Start_Column
+        and then Prev_Sibling.Sloc_Range.Start_Column
+                 = Next_Sibling.Sloc_Range.Start_Column
       then
-         Offset := (if Prev_Sibling.Sloc_Range.Start_Column = 0 then 0
-                    else Natural (Prev_Sibling.Sloc_Range.Start_Column) - 1);
+         Offset :=
+           (if Prev_Sibling.Sloc_Range.Start_Column = 0
+            then 0
+            else Natural (Prev_Sibling.Sloc_Range.Start_Column) - 1);
 
       elsif not Prev_Sibling.Is_Null then
-         if Node.Kind in Ada_Subp_Body | Ada_Package_Body | Ada_Package_Decl
-                       | Ada_Generic_Package_Renaming_Decl
+         if Node.Kind
+            in Ada_Subp_Body
+             | Ada_Package_Body
+             | Ada_Package_Decl
+             | Ada_Generic_Package_Renaming_Decl
          then
             if Prev_Sibling.Kind = Ada_Private_Absent
               and then Next_Sibling.Is_Null
@@ -1113,18 +1142,22 @@ package body Gnatformat.Formatting is
                Offset := Get_Parent_Indentation (Node);
             else
                Offset :=
-                 (if Prev_Sibling.Sloc_Range.Start_Column = 0 then 0
+                 (if Prev_Sibling.Sloc_Range.Start_Column = 0
+                  then 0
                   else Natural (Prev_Sibling.Sloc_Range.Start_Column) - 1);
             end if;
          else
             Offset :=
-              (if Prev_Sibling.Sloc_Range.Start_Column = 0 then 0
+              (if Prev_Sibling.Sloc_Range.Start_Column = 0
+               then 0
                else Natural (Prev_Sibling.Sloc_Range.Start_Column) - 1);
          end if;
 
       elsif not Next_Sibling.Is_Null then
-         Offset := (if Next_Sibling.Sloc_Range.Start_Column = 0 then 0
-                    else Natural (Next_Sibling.Sloc_Range.Start_Column) - 1);
+         Offset :=
+           (if Next_Sibling.Sloc_Range.Start_Column = 0
+            then 0
+            else Natural (Next_Sibling.Sloc_Range.Start_Column) - 1);
 
       elsif Prev_Sibling.Is_Null and Next_Sibling.Is_Null then
          --  We should look backward for the Node parent to find the offset
@@ -1133,8 +1166,10 @@ package body Gnatformat.Formatting is
          Offset := Get_Parent_Indentation (Node);
 
       else
-         Offset := (if Node.Sloc_Range.Start_Column = 0 then 0
-                    else Natural (Node.Sloc_Range.Start_Column) - 1);
+         Offset :=
+           (if Node.Sloc_Range.Start_Column = 0
+            then 0
+            else Natural (Node.Sloc_Range.Start_Column) - 1);
       end if;
 
       return Offset;
@@ -1147,16 +1182,14 @@ package body Gnatformat.Formatting is
    function Estimate_Indentation
      (Node               : Libadalang.Analysis.Ada_Node;
       Indentation        : Natural := 3;
-      Inline_Indentation : Natural := 2)
-      return Natural
+      Inline_Indentation : Natural := 2) return Natural
    is
       use Libadalang.Analysis;
 
       function Parent_Based_Indentation
         (Parents            : Ada_Node_Array;
          Indentation        : Positive := 3;
-         Inline_Indentation : Positive := 2)
-      return Natural;
+         Inline_Indentation : Positive := 2) return Natural;
       --  Computes Indentation starting at zero and incrementing based on the
       --  Parents kind or returning earlier if finds a parent that always sets
       --  indentation, for instance, a parameter list.
@@ -1168,8 +1201,7 @@ package body Gnatformat.Formatting is
       function Parent_Based_Indentation
         (Parents            : Ada_Node_Array;
          Indentation        : Positive := 3;
-         Inline_Indentation : Positive := 2)
-      return Natural
+         Inline_Indentation : Positive := 2) return Natural
       is
          use Libadalang.Common;
 
@@ -1177,68 +1209,70 @@ package body Gnatformat.Formatting is
       begin
          for Parent of Parents loop
             case Parent.Kind is
-            when Ada_Loop_Stmt_Range
-               | Ada_For_Loop_Stmt_Range
-               | Ada_While_Loop_Stmt_Range
-               | Ada_If_Stmt_Range
-               | Ada_Case_Stmt_Range
-               | Ada_Case_Stmt_Alternative_Range
-               | Ada_Record_Type_Def_Range
-               | Ada_Generic_Formal_Part_Range
-               | Ada_Begin_Block_Range
-               | Ada_Decl_Block_Range =>
-               Current_Indentation := @ + Indentation;
-
-            when Ada_Declarative_Part_Range =>
-               --  When we type declare, a DeclBlock is created but not a
-               --  DeclarativePart one. Only when you close the block with an
-               --  end the node is created.
-               --  DeclarativePart is a node that adds indentation.
-               --  We cannot simply make DeclBlock also add indentation because
-               --  it would double indent. So only add indentation to
-               --  DeclarativeParts if their parent is not  DeclBlock.
-               if Parent.Parent.Kind not in Ada_Decl_Block_Range then
+               when Ada_Loop_Stmt_Range
+                  | Ada_For_Loop_Stmt_Range
+                  | Ada_While_Loop_Stmt_Range
+                  | Ada_If_Stmt_Range
+                  | Ada_Case_Stmt_Range
+                  | Ada_Case_Stmt_Alternative_Range
+                  | Ada_Record_Type_Def_Range
+                  | Ada_Generic_Formal_Part_Range
+                  | Ada_Begin_Block_Range
+                  | Ada_Decl_Block_Range
+               =>
                   Current_Indentation := @ + Indentation;
-               end if;
 
-            when Ada_Handled_Stmts_Range =>
-               --  HandledStmts can be children of DeclBlock and BeginBlock.
-               --  These two add indentation, so HandledStmts should not
-               --  double add if its their child.
-               if Parent.Parent.Kind not in
-                 Ada_Begin_Block_Range | Ada_Decl_Block_Range
-               then
-                  Current_Indentation := @ + Indentation;
-               end if;
+               when Ada_Declarative_Part_Range =>
+                  --  When we type declare, a DeclBlock is created but not a
+                  --  DeclarativePart one. Only when you close the block with
+                  --  an end the node is created.
+                  --  DeclarativePart is a node that adds indentation.
+                  --  We cannot simply make DeclBlock also add indentation
+                  --  because it would double indent. So only add indentation
+                  --  to DeclarativeParts if their parent is not  DeclBlock.
+                  if Parent.Parent.Kind not in Ada_Decl_Block_Range then
+                     Current_Indentation := @ + Indentation;
+                  end if;
 
-            when Ada_Subp_Spec_Range | Ada_Assign_Stmt_Range =>
-               Current_Indentation := @ + Inline_Indentation;
+               when Ada_Handled_Stmts_Range =>
+                  --  HandledStmts can be children of DeclBlock and BeginBlock.
+                  --  These two add indentation, so HandledStmts should not
+                  --  double add if its their child.
+                  if Parent.Parent.Kind
+                     not in Ada_Begin_Block_Range | Ada_Decl_Block_Range
+                  then
+                     Current_Indentation := @ + Indentation;
+                  end if;
 
-            when Ada_Dotted_Name_Range =>
-               Current_Indentation :=
-                 Natural (Parent.Sloc_Range.Start_Column) - 1
-                 + Inline_Indentation;
-               exit;
+               when Ada_Subp_Spec_Range | Ada_Assign_Stmt_Range =>
+                  Current_Indentation := @ + Inline_Indentation;
+
+               when Ada_Dotted_Name_Range =>
+                  Current_Indentation :=
+                    Natural (Parent.Sloc_Range.Start_Column)
+                    - 1
+                    + Inline_Indentation;
+                  exit;
 
                when Ada_Params_Range =>
-               Current_Indentation :=
-                 Natural (Parent.Sloc_Range.Start_Column) - 1 + 1;
-               exit;
+                  Current_Indentation :=
+                    Natural (Parent.Sloc_Range.Start_Column) - 1 + 1;
+                  exit;
 
                when Ada_Assoc_List_Range | Ada_Component_List_Range =>
-               Current_Indentation :=
-                 Natural (Parent.Sloc_Range.Start_Column) - 1;
-               exit;
+                  Current_Indentation :=
+                    Natural (Parent.Sloc_Range.Start_Column) - 1;
+                  exit;
 
                when others =>
-               null;
+                  null;
             end case;
          end loop;
 
          return Current_Indentation;
       end Parent_Based_Indentation;
 
-      Parents    : constant Ada_Node_Array :=
+      Parents : constant Ada_Node_Array :=
         (if Node.Is_Null then [] else Node.Parents (False));
 
    begin
@@ -1251,10 +1285,10 @@ package body Gnatformat.Formatting is
    --------------------
 
    function Range_Format
-     (Unit            : Libadalang.Analysis.Analysis_Unit;
-      Selection_Range : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options  : Gnatformat.Configuration.Format_Options_Type;
-      Configuration   :
+     (Unit                    : Libadalang.Analysis.Analysis_Unit;
+      Selection_Range         : Langkit_Support.Slocs.Source_Location_Range;
+      Format_Options          : Gnatformat.Configuration.Format_Options_Type;
+      Configuration           :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
           Gnatformat.Configuration.Default_Unparsing_Configuration;
       Use_Initial_Indentation : Boolean := False)
@@ -1265,18 +1299,19 @@ package body Gnatformat.Formatting is
       use Langkit_Support.Slocs;
 
       Enclosing_Node        : Ada_Node := No_Ada_Node;
-      Initial_Indentation   : Natural  := 0;
+      Initial_Indentation   : Natural := 0;
       Indentation_Offset    : Indentation_Offset_Type := (0, 0);
       Estimated_Indentation : Natural := 0;
 
       Prettier_Format_Options : Prettier_Ada.Documents.Format_Options_Type :=
         Gnatformat.Configuration.Into (Format_Options, Ada_Language);
 
-      Offset_Set       : Boolean := False;
+      Offset_Set : Boolean := False;
 
    begin
-      if Selection_Range = No_Source_Location_Range then
       --  If no selection range is provided dispatch to format the whole unit
+
+      if Selection_Range = No_Source_Location_Range then
          return
            Format_Unit
              (Unit             => Unit,
@@ -1306,7 +1341,7 @@ package body Gnatformat.Formatting is
 
       declare
          use Ada.Directories;
-         Current_Indentation         : constant Natural :=
+         Current_Indentation : constant Natural :=
            Gnatformat.Configuration.Get_Indentation
              (Self              => Format_Options,
               Source_Filename   => Simple_Name (Unit.Get_Filename),
@@ -1318,14 +1353,15 @@ package body Gnatformat.Formatting is
               Source_Filename   => Simple_Name (Unit.Get_Filename),
               Language_Fallback => Ada_Language);
       begin
-         Initial_Indentation := Get_Initial_Indentation
-           (Node        => Enclosing_Node,
-            Indentation => Current_Indentation);
+         Initial_Indentation :=
+           Get_Initial_Indentation
+             (Node => Enclosing_Node, Indentation => Current_Indentation);
 
-         Estimated_Indentation := Estimate_Indentation
-           (Node               => Enclosing_Node,
-            Indentation        => Current_Indentation,
-            Inline_Indentation => Current_Continuation_Indent);
+         Estimated_Indentation :=
+           Estimate_Indentation
+             (Node               => Enclosing_Node,
+              Indentation        => Current_Indentation,
+              Inline_Indentation => Current_Continuation_Indent);
 
          if not Use_Initial_Indentation
            and then Initial_Indentation /= Estimated_Indentation
@@ -1370,9 +1406,9 @@ package body Gnatformat.Formatting is
              (Libadalang.Generic_API.To_Generic_Node (Enclosing_Node),
               Configuration);
 
-         Diagnostics     : constant Diagnostics_Vectors.Vector :=
+         Diagnostics    : constant Diagnostics_Vectors.Vector :=
            Diagnostics_Array_To_Vector (Unit.Diagnostics);
-         Text_Edit_Sloc  : Langkit_Support.Slocs.Source_Location_Range :=
+         Text_Edit_Sloc : Langkit_Support.Slocs.Source_Location_Range :=
            Enclosing_Node.Sloc_Range;
       begin
          if Offset_Set and then Enclosing_Node.Sloc_Range.Start_Column /= 1
