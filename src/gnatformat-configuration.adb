@@ -21,8 +21,7 @@ package body Gnatformat.Configuration is
    -----------
 
    function Build
-     (Self : Format_Options_Builder_Type)
-      return Format_Options_Type
+     (Self : Format_Options_Builder_Type) return Format_Options_Type
    is (Self.Format_Options);
 
    -----------------------------------
@@ -32,8 +31,7 @@ package body Gnatformat.Configuration is
    function Create_Format_Options_Builder
      (Project : Optional_GPR2_Project_View := (Is_Set => False))
       return Format_Options_Builder_Type
-   is (Format_Options_Builder_Type'
-         (Project => Project, Format_Options => <>));
+   is (Format_Options_Builder_Type'(Project => Project, Format_Options => <>));
 
    -----------------------------------------
    -- Create_Project_Format_Options_Cache --
@@ -56,79 +54,72 @@ package body Gnatformat.Configuration is
         (Package_Id, GPR2.Project.Registry.Pack.Everywhere);
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Width_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_Width_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Width_Attribute_Id, "Max line width");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Indentation_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_Indentation_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Indentation_Attribute_Id, "Indentation size");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Indentation_Kind_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_Indentation_Kind_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Indentation_Kind_Attribute_Id, "Indentation kind: spaces | tabs");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Indentation_Continuation_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_Indentation_Continuation_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Indentation_Continuation_Attribute_Id,
          "Continuation Line Indentation size");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_End_Of_Line_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_End_Of_Line_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_End_Of_Line_Attribute_Id, "End of line sequence: lf | crlf");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Charset_Attribute_Id,
-         Index_Type            =>
+        (Name                 => Q_Charset_Attribute_Id,
+         Index_Type           =>
            GPR2.Project.Registry.Attribute.Language_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Charset_Attribute_Id, "Charset to use for source decoding");
 
       GPR2.Project.Registry.Attribute.Add
-        (Name                  => Q_Ignore_Attribute_Id,
-         Index_Type            => GPR2.Project.Registry.Attribute.No_Index,
-         Value                 => GPR2.Project.Registry.Attribute.Single,
-         Value_Case_Sensitive  => False,
-         Is_Allowed_In         =>
-           GPR2.Project.Registry.Attribute.Everywhere);
+        (Name                 => Q_Ignore_Attribute_Id,
+         Index_Type           => GPR2.Project.Registry.Attribute.No_Index,
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Charset_Attribute_Id, "Ignore file with the sources to ignore");
 
@@ -139,8 +130,7 @@ package body Gnatformat.Configuration is
    -----------------
 
    function From_Project
-     (Project : GPR2.Project.View.Object)
-      return Format_Options_Type
+     (Project : GPR2.Project.View.Object) return Format_Options_Type
    is
       Format_Options_Builder : Format_Options_Builder_Type :=
         Create_Format_Options_Builder ((Is_Set => True, Value => Project));
@@ -168,8 +158,7 @@ package body Gnatformat.Configuration is
 
    function Get
      (Self    : in out Project_Format_Options_Cache_Type;
-      Project : GPR2.Project.View.Object)
-      return Format_Options_Type
+      Project : GPR2.Project.View.Object) return Format_Options_Type
    is
       Id : constant GPR2.View_Ids.View_Id := Project.Id;
 
@@ -203,7 +192,7 @@ package body Gnatformat.Configuration is
 
    begin
       return
-        Into (Self,  Source_Filename, Language_Fallback).Charset
+        Into (Self, Source_Filename, Language_Fallback).Charset
         or Default_Basic_Format_Options.Charset.Value;
    end Get_Charset;
 
@@ -221,7 +210,7 @@ package body Gnatformat.Configuration is
 
    begin
       return
-        Into (Self,  Source_Filename, Language_Fallback).End_Of_Line
+        Into (Self, Source_Filename, Language_Fallback).End_Of_Line
         or Default_Basic_Format_Options.End_Of_Line.Value;
    end Get_End_Of_Line;
 
@@ -241,8 +230,7 @@ package body Gnatformat.Configuration is
    function Get_Indentation
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive
    is
       use Optional_Positives;
 
@@ -259,8 +247,7 @@ package body Gnatformat.Configuration is
    function Get_Indentation_Continuation
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive
    is
       use Optional_Positives;
 
@@ -296,8 +283,7 @@ package body Gnatformat.Configuration is
    function Get_Width
      (Self              : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Positive
+      Language_Fallback : Supported_Languages := Ada_Language) return Positive
    is
       use Optional_Positives;
 
@@ -318,48 +304,49 @@ package body Gnatformat.Configuration is
       use type Optional_Positive;
       use Prettier_Ada.Documents;
 
-      Width                     : constant Natural :=
+      Width                    : constant Natural :=
         Self.Width or Default_Basic_Format_Options.Width.Value;
-      Indentation               : constant Natural :=
+      Indentation              : constant Natural :=
         Self.Indentation or Default_Basic_Format_Options.Indentation.Value;
-      Indentation_Kind          :
+      Indentation_Kind         :
         constant Prettier_Ada.Documents.Indentation_Kind :=
           (case Self.Indentation_Kind.Is_Set is
-             when True  =>
+             when True =>
                (case Self.Indentation_Kind.Value is
                   when Spaces => Prettier_Ada.Documents.Spaces,
-                  when Tabs   => Prettier_Ada.Documents.Tabs),
+                  when Tabs => Prettier_Ada.Documents.Tabs),
              when False =>
                (case Default_Basic_Format_Options.Indentation_Kind.Value is
                   when Spaces => Prettier_Ada.Documents.Spaces,
-                  when Tabs   => Prettier_Ada.Documents.Tabs));
-      Indentation_Continuation  : constant Positive :=
+                  when Tabs => Prettier_Ada.Documents.Tabs));
+      Indentation_Continuation : constant Positive :=
         Self.Indentation_Continuation
         or Default_Basic_Format_Options.Indentation_Continuation.Value;
-      Indentation_Offset        :
+      Indentation_Offset       :
         constant Prettier_Ada.Documents.Indentation_Offset_Type :=
           (Tabs => 0, Spaces => 0);
-      End_Of_Line        : constant Prettier_Ada.Documents.End_Of_Line_Kind :=
-        (case Self.End_Of_Line.Is_Set is
-           when True  =>
-             (case Self.End_Of_Line.Value is
-                when LF   => Prettier_Ada.Documents.LF,
-                when CRLF => Prettier_Ada.Documents.CRLF),
-           when False =>
-             (case Default_Basic_Format_Options.End_Of_Line.Value is
-                when LF   => Prettier_Ada.Documents.LF,
-                when CRLF => Prettier_Ada.Documents.CRLF));
+      End_Of_Line              :
+        constant Prettier_Ada.Documents.End_Of_Line_Kind :=
+          (case Self.End_Of_Line.Is_Set is
+             when True =>
+               (case Self.End_Of_Line.Value is
+                  when LF => Prettier_Ada.Documents.LF,
+                  when CRLF => Prettier_Ada.Documents.CRLF),
+             when False =>
+               (case Default_Basic_Format_Options.End_Of_Line.Value is
+                  when LF => Prettier_Ada.Documents.LF,
+                  when CRLF => Prettier_Ada.Documents.CRLF));
 
    begin
       return
         Prettier_Ada.Documents.Format_Options_Type'
-          (Width             => Width,
-           Indentation       =>
+          (Width       => Width,
+           Indentation =>
              (Indentation_Kind,
               Indentation,
               Indentation_Continuation,
               Indentation_Offset),
-           End_Of_Line       => End_Of_Line);
+           End_Of_Line => End_Of_Line);
    end Into;
 
    ----------
@@ -367,8 +354,7 @@ package body Gnatformat.Configuration is
    ----------
 
    function Into
-     (Self     : Format_Options_Type;
-      Language : Supported_Languages)
+     (Self : Format_Options_Type; Language : Supported_Languages)
       return Prettier_Ada.Documents.Format_Options_Type
    is (Into (Self.Language (Language)));
 
@@ -377,8 +363,7 @@ package body Gnatformat.Configuration is
    ----------
 
    function Into
-     (Self            : Format_Options_Type;
-      Source_Filename : String)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type
    is (if Self.Sources.Contains (Source_Filename)
        then Into (Self.Sources.Element (Source_Filename))
@@ -391,8 +376,7 @@ package body Gnatformat.Configuration is
    function Into
      (Format_Options    : Format_Options_Type;
       Source_Filename   : String;
-      Language_Fallback : Supported_Languages)
-      return Basic_Format_Options_Type
+      Language_Fallback : Supported_Languages) return Basic_Format_Options_Type
    is (if Format_Options.Sources.Contains (Source_Filename)
        then Format_Options.Sources.Element (Source_Filename)
        else Format_Options.Language (Language_Fallback));
@@ -475,8 +459,7 @@ package body Gnatformat.Configuration is
    --------------
 
    procedure Overwrite
-     (Target : in out Format_Options_Type;
-      Source : Format_Options_Type)
+     (Target : in out Format_Options_Type; Source : Format_Options_Type)
    is
       use String_To_Basic_Format_Options_Hash_Maps;
 
@@ -537,8 +520,7 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Charset => (Is_Set => True, Value => Charset),
-             others      => <>));
+            (Charset => (Is_Set => True, Value => Charset), others => <>));
       end if;
    end With_Charset;
 
@@ -549,8 +531,7 @@ package body Gnatformat.Configuration is
    procedure With_End_Of_Line
      (Self            : in out Format_Options_Builder_Type;
       End_Of_Line     : End_Of_Line_Kind;
-      Source_Filename : String)
-   is
+      Source_Filename : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
          Self.Format_Options.Sources.Reference (Source_Filename).End_Of_Line :=
@@ -571,8 +552,7 @@ package body Gnatformat.Configuration is
    procedure With_End_Of_Line
      (Self        : in out Format_Options_Builder_Type;
       End_Of_Line : End_Of_Line_Kind;
-      Language    : Supported_Languages)
-   is
+      Language    : Supported_Languages) is
    begin
       Self.Format_Options.Language (Language).End_Of_Line :=
         (Is_Set => True, Value => End_Of_Line);
@@ -592,8 +572,7 @@ package body Gnatformat.Configuration is
       Ada_Attribute_Index : constant GPR2.Project.Attribute_Index.Object :=
         GPR2.Project.Attribute_Index.Create (GPR2.Ada_Language);
 
-      procedure Parse_Attribute
-        (Attribute  : GPR2.Project.Attribute.Object);
+      procedure Parse_Attribute (Attribute : GPR2.Project.Attribute.Object);
       --  Parses Attribute value by checking if it's one of the valid
       --  kinds and then converting to the expected value type. If parsed
       --  successfully, Self.Format_Options is updated accordingly.
@@ -602,9 +581,7 @@ package body Gnatformat.Configuration is
       -- Parse_Attribute --
       ---------------------
 
-      procedure Parse_Attribute
-        (Attribute  : GPR2.Project.Attribute.Object)
-      is
+      procedure Parse_Attribute (Attribute : GPR2.Project.Attribute.Object) is
          use type GPR2.Q_Optional_Attribute_Id;
 
          type Format_Option_Kind is
@@ -618,26 +595,33 @@ package body Gnatformat.Configuration is
             Unknown);
 
          type Attribute_Value_Type (Kind : Format_Option_Kind := Unknown) is
-           record
-             case Kind is
+         record
+            case Kind is
                when Charset =>
-                 Charset : Ada.Strings.Unbounded.Unbounded_String;
+                  Charset : Ada.Strings.Unbounded.Unbounded_String;
+
                when End_Of_Line =>
-                 End_Of_Line : End_Of_Line_Kind;
+                  End_Of_Line : End_Of_Line_Kind;
+
                when Ignore =>
-                 Ignore : Ada.Strings.Unbounded.Unbounded_String;
+                  Ignore : Ada.Strings.Unbounded.Unbounded_String;
+
                when Indentation =>
-                 Indentation : Positive;
+                  Indentation : Positive;
+
                when Indentation_Continuation =>
-                 Indentation_Continuation : Positive;
+                  Indentation_Continuation : Positive;
+
                when Indentation_Kind =>
-                 Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
+                  Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
+
                when Width =>
-                 Width : Positive;
+                  Width : Positive;
+
                when Unknown =>
-                 null;
-             end case;
-           end record;
+                  null;
+            end case;
+         end record;
 
          function Parse_Attribute_Value return Attribute_Value_Type;
          --  Parses Attribute value by checking if it's one of the valid
@@ -778,16 +762,12 @@ package body Gnatformat.Configuration is
 
                when Width =>
                   Gnatformat_Trace.Trace
-                    (Width'Image
-                     & " = "
-                     & Attribute_Value.Width'Image);
-                  Self.With_Width
-                    (Attribute_Value.Width, Ada_Language);
+                    (Width'Image & " = " & Attribute_Value.Width'Image);
+                  Self.With_Width (Attribute_Value.Width, Ada_Language);
 
                when Ignore =>
                   Gnatformat_Trace.Trace
-                    (Ignore'Image
-                     & " attribute must not have an index");
+                    (Ignore'Image & " attribute must not have an index");
 
                when Unknown =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
@@ -857,8 +837,7 @@ package body Gnatformat.Configuration is
       end Parse_Attribute;
 
    begin
-      Gnatformat_Trace.Trace
-        ("Parsing attribute """ & Attribute.Image & """");
+      Gnatformat_Trace.Trace ("Parsing attribute """ & Attribute.Image & """");
 
       if Attribute.Has_Index then
          case Attribute.Kind is
@@ -939,8 +918,7 @@ package body Gnatformat.Configuration is
    procedure With_Indentation
      (Self            : in out Format_Options_Builder_Type;
       Indentation     : Positive;
-      Source_Filename : String)
-   is
+      Source_Filename : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
          Self.Format_Options.Sources.Reference (Source_Filename).Indentation :=
@@ -961,8 +939,7 @@ package body Gnatformat.Configuration is
    procedure With_Indentation
      (Self        : in out Format_Options_Builder_Type;
       Indentation : Positive;
-      Language    : Supported_Languages)
-   is
+      Language    : Supported_Languages) is
    begin
       Self.Format_Options.Language (Language).Indentation :=
         (Is_Set => True, Value => Indentation);
@@ -975,8 +952,7 @@ package body Gnatformat.Configuration is
    procedure With_Indentation_Continuation
      (Self                     : in out Format_Options_Builder_Type;
       Indentation_Continuation : Positive;
-      Language                 : Supported_Languages)
-   is
+      Language                 : Supported_Languages) is
    begin
       Self.Format_Options.Language (Language).Indentation_Continuation :=
         (Is_Set => True, Value => Indentation_Continuation);
@@ -989,14 +965,10 @@ package body Gnatformat.Configuration is
    procedure With_Indentation_Continuation
      (Self                     : in out Format_Options_Builder_Type;
       Indentation_Continuation : Positive;
-      Source_Filename          : String)
-   is
+      Source_Filename          : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
-         Self
-           .Format_Options
-           .Sources
-           .Reference (Source_Filename)
+         Self.Format_Options.Sources.Reference (Source_Filename)
            .Indentation_Continuation :=
            (Is_Set => True, Value => Indentation_Continuation);
 
@@ -1005,7 +977,7 @@ package body Gnatformat.Configuration is
            (Source_Filename,
             (Indentation_Continuation =>
                (Is_Set => True, Value => Indentation_Continuation),
-             others            => <>));
+             others                   => <>));
       end if;
    end With_Indentation_Continuation;
 
@@ -1016,14 +988,12 @@ package body Gnatformat.Configuration is
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
       Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
-      Source_Filename  : String)
-   is
+      Source_Filename  : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
-         Self
-           .Format_Options
-           .Sources.Reference (Source_Filename)
-           .Indentation_Kind := (Is_Set => True, Value => Indentation_Kind);
+         Self.Format_Options.Sources.Reference (Source_Filename)
+           .Indentation_Kind :=
+           (Is_Set => True, Value => Indentation_Kind);
 
       else
          Self.Format_Options.Sources.Insert
@@ -1040,8 +1010,7 @@ package body Gnatformat.Configuration is
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
       Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
-      Language         : Supported_Languages)
-   is
+      Language         : Supported_Languages) is
    begin
       Self.Format_Options.Language (Language).Indentation_Kind :=
         (Is_Set => True, Value => Indentation_Kind);
@@ -1054,8 +1023,7 @@ package body Gnatformat.Configuration is
    procedure With_Width
      (Self            : in out Format_Options_Builder_Type;
       Width           : Positive;
-      Source_Filename : String)
-   is
+      Source_Filename : String) is
    begin
       if Self.Format_Options.Sources.Contains (Source_Filename) then
          Self.Format_Options.Sources.Reference (Source_Filename).Width :=
@@ -1064,8 +1032,7 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Width  => (Is_Set => True, Value => Width),
-             others => <>));
+            (Width => (Is_Set => True, Value => Width), others => <>));
       end if;
    end With_Width;
 
@@ -1076,8 +1043,7 @@ package body Gnatformat.Configuration is
    procedure With_Width
      (Self     : in out Format_Options_Builder_Type;
       Width    : Positive;
-      Language : Supported_Languages)
-   is
+      Language : Supported_Languages) is
    begin
       Self.Format_Options.Language (Language).Width :=
         (Is_Set => True, Value => Width);

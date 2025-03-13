@@ -21,7 +21,7 @@ with Prettier_Ada.Documents;
 package Gnatformat.Formatting is
 
    Internal_Error_Off_On_Invalid_Marker : exception;
-   Off_On_Invalid_Marker : exception;
+   Off_On_Invalid_Marker                : exception;
 
    function Format
      (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
@@ -44,10 +44,10 @@ package Gnatformat.Formatting is
    --  Configuration.
 
    function Range_Format
-     (Unit            : Libadalang.Analysis.Analysis_Unit;
-      Selection_Range : Langkit_Support.Slocs.Source_Location_Range;
-      Format_Options  : Gnatformat.Configuration.Format_Options_Type;
-      Configuration   :
+     (Unit                    : Libadalang.Analysis.Analysis_Unit;
+      Selection_Range         : Langkit_Support.Slocs.Source_Location_Range;
+      Format_Options          : Gnatformat.Configuration.Format_Options_Type;
+      Configuration           :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
           Gnatformat.Configuration.Default_Unparsing_Configuration;
       Use_Initial_Indentation : Boolean := False)

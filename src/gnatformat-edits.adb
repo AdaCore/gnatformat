@@ -36,8 +36,7 @@ package body Gnatformat.Edits is
      File_Name_To_Virtual_String_Maps.Map;
 
    function Apply_Edits
-     (Edits : Formatting_Edits_Type)
-      return File_Name_To_Virtual_String_Map;
+     (Edits : Formatting_Edits_Type) return File_Name_To_Virtual_String_Map;
    --  Apply Edits on memory
 
    procedure Compute_Line_Length
@@ -53,8 +52,7 @@ package body Gnatformat.Edits is
    -- Apply_Edits --
    -----------------
 
-   procedure Apply_Edits (Edits : Formatting_Edits_Type)
-   is
+   procedure Apply_Edits (Edits : Formatting_Edits_Type) is
       use File_Name_To_Virtual_String_Maps;
 
       File_Edits   : constant File_Name_To_Virtual_String_Map :=
@@ -93,8 +91,7 @@ package body Gnatformat.Edits is
    -----------------
 
    function Apply_Edits
-     (Edits : Formatting_Edits_Type)
-      return File_Name_To_Virtual_String_Map
+     (Edits : Formatting_Edits_Type) return File_Name_To_Virtual_String_Map
    is
       use Formatting_Edit_Hashed_Maps;
 
@@ -172,9 +169,13 @@ package body Gnatformat.Edits is
 
                   declare
                      Current_Line_Character_It :
-                       VSS.Strings.Cursors.Iterators.Characters.
-                         Character_Iterator :=
-                           Current_Line.After_Last_Character;
+                       VSS
+                         .Strings
+                         .Cursors
+                         .Iterators
+                         .Characters
+                         .Character_Iterator :=
+                         Current_Line.After_Last_Character;
 
                   begin
                      while Current_Line_Character_It.Backward loop
@@ -184,33 +185,35 @@ package body Gnatformat.Edits is
                         end if;
 
                         if Current_Text_Edit /= No_Text_Edit then
-                           if Current_Line_Number =
-                                Natural (Current_Text_Edit.Location.Start_Line)
-                             and then Current_Column_Number =
-                                        Natural
-                                          (Current_Text_Edit.Location.
-                                             Start_Column)
+                           if Current_Line_Number
+                             = Natural (Current_Text_Edit.Location.Start_Line)
+                             and then Current_Column_Number
+                                      = Natural
+                                          (Current_Text_Edit
+                                             .Location
+                                             .Start_Column)
                            then
                               Text_Edit_Ordered_Sets.Previous
                                 (Text_Edits_Cursor);
-                              if Text_Edit_Ordered_Sets.
-                                   Has_Element (Text_Edits_Cursor)
+                              if Text_Edit_Ordered_Sets.Has_Element
+                                   (Text_Edits_Cursor)
                               then
                                  Current_Text_Edit :=
-                                   Text_Edit_Ordered_Sets.
-                                     Element (Text_Edits_Cursor);
+                                   Text_Edit_Ordered_Sets.Element
+                                     (Text_Edits_Cursor);
                               else
                                  Current_Text_Edit := No_Text_Edit;
                               end if;
                               Inside_Text_Edit := False;
                            end if;
 
-                           if Current_Line_Number =
-                                Natural (Current_Text_Edit.Location.End_Line)
-                             and then Current_Column_Number =
-                                        Natural
-                                          (Current_Text_Edit.Location.
-                                             End_Column)
+                           if Current_Line_Number
+                             = Natural (Current_Text_Edit.Location.End_Line)
+                             and then Current_Column_Number
+                                      = Natural
+                                          (Current_Text_Edit
+                                             .Location
+                                             .End_Column)
                            then
                               Output_Buffer.Prepend
                                 (VSS.Strings.Conversions.To_Virtual_String
@@ -221,8 +224,8 @@ package body Gnatformat.Edits is
                            end if;
                         end if;
 
-                        if Current_Line_Character_It.Element =
-                          VSS.Characters.Latin.Character_Tabulation
+                        if Current_Line_Character_It.Element
+                          = VSS.Characters.Latin.Character_Tabulation
                         then
                            Current_Column_Number :=
                              @ - Current_Line_Tabs_Size.Last_Element;
@@ -240,8 +243,7 @@ package body Gnatformat.Edits is
             end;
 
             Result.Insert
-              (Formatting_Edit_Hashed_Maps.Key (Edits_Cursor),
-               Output_Buffer);
+              (Formatting_Edit_Hashed_Maps.Key (Edits_Cursor), Output_Buffer);
 
          exception
             when E : others =>
@@ -273,8 +275,7 @@ package body Gnatformat.Edits is
       Length := 0;
       Tabs_Length := Positive_Vectors.Empty_Vector;
       while Character_It.Forward loop
-         if Character_It.Element =
-              VSS.Characters.Latin.Character_Tabulation
+         if Character_It.Element = VSS.Characters.Latin.Character_Tabulation
          then
             Tabs_Length.Append (8 - (Length mod 8));
             Length := @ + (8 - (@ mod 8));
@@ -315,8 +316,7 @@ package body Gnatformat.Edits is
    procedure Insert_Text_Edit
      (Map         : in out Formatting_Edit_Hashed_Maps.Map;
       Source_Path : Source_Path_Type;
-      Text_Edit   : Text_Edit_Type)
-   is
+      Text_Edit   : Text_Edit_Type) is
    begin
       if Map.Contains (Source_Path) then
          Map.Reference (Source_Path).Insert (Text_Edit);
