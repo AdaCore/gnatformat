@@ -35,10 +35,10 @@ package body Gnatformat.Configuration is
       Implicit_Indentation_Continuation : Boolean := True)
       return Format_Options_Builder_Type
    is (Format_Options_Builder_Type'
-         (Project => Project,
-          Format_Options => <>,
+         (Project                           => Project,
+          Format_Options                    => <>,
           Implicit_Indentation_Continuation =>
-             Implicit_Indentation_Continuation));
+            Implicit_Indentation_Continuation));
 
    -----------------------------------------
    -- Create_Project_Format_Options_Cache --
@@ -139,8 +139,8 @@ package body Gnatformat.Configuration is
    function From_Project
      (Project : GPR2.Project.View.Object) return Format_Options_Type
    is
-      package Indexes_Hash is new Ada.Containers.Indefinite_Hashed_Sets
-        (String, Ada.Strings.Hash, "=");
+      package Indexes_Hash is new
+        Ada.Containers.Indefinite_Hashed_Sets (String, Ada.Strings.Hash, "=");
       subtype Indexes_Set is Indexes_Hash.Set;
 
       function Create_Implicit_Indentation_Continuation_Indexes
@@ -160,14 +160,13 @@ package body Gnatformat.Configuration is
          Implicit_Indexes : Indexes_Set := Indexes_Hash.Empty_Set;
       begin
          for Attribute of Indentation_Attributes loop
-            if not Project
-              .Attributes (Package_Id)
-              .Contains (Indentation_Continuation_Attribute_Id,
-                         GPR2.Project.Attribute_Index.Create
-                           (Attribute.Index.Value))
+            if not Project.Attributes (Package_Id).Contains
+                     (Indentation_Continuation_Attribute_Id,
+                      GPR2.Project.Attribute_Index.Create
+                        (Attribute.Index.Value))
             then
-               Indexes_Hash.Insert (Implicit_Indexes,
-                                    String (Attribute.Index.Value));
+               Indexes_Hash.Insert
+                 (Implicit_Indexes, String (Attribute.Index.Value));
             end if;
          end loop;
          return Implicit_Indexes;
@@ -180,18 +179,16 @@ package body Gnatformat.Configuration is
          Gnatformat_Trace.Trace ("Project has a Format package");
 
          --  Compute the implicit Indentation Continuation attribute indexes
-         Indexes := Create_Implicit_Indentation_Continuation_Indexes
-           (GPR2
-              .Project
-              .View
-            .Attributes (Project, Q_Indentation_Attribute_Id));
+         Indexes :=
+           Create_Implicit_Indentation_Continuation_Indexes
+             (GPR2.Project.View.Attributes
+                (Project, Q_Indentation_Attribute_Id));
 
          declare
             Format_Options_Builder : Format_Options_Builder_Type :=
               Create_Format_Options_Builder
-                ((Is_Set                            => True,
-                  Value                             => Project),
-                  Implicit_Indentation_Continuation => not Indexes.Is_Empty);
+                ((Is_Set => True, Value => Project),
+                 Implicit_Indentation_Continuation => not Indexes.Is_Empty);
          begin
 
             for Attribute of Project.Attributes (Package_Id) loop
@@ -991,31 +988,22 @@ package body Gnatformat.Configuration is
 
       if Self.Implicit_Indentation_Continuation then
          if Self.Format_Options.Sources.Contains (Source_Filename) then
-            if not Self
-                     .Format_Options
-                     .Sources.Reference (Source_Filename)
+            if not Self.Format_Options.Sources.Reference (Source_Filename)
                      .Indentation_Continuation
                      .Is_Set
             then
-               Self
-                 .Format_Options
-                 .Sources
-                 .Reference (Source_Filename)
+               Self.Format_Options.Sources.Reference (Source_Filename)
                  .Indentation_Continuation :=
-                   (Is_Set => True,
-                    Value => (if Indentation = 1 then 1 else Indentation - 1));
+                 (Is_Set => True,
+                  Value  => (if Indentation = 1 then 1 else Indentation - 1));
             end if;
          else
-            Self
-              .Format_Options
-              .Sources
-              .Insert
-                 (Source_Filename,
-                  (Indentation_Continuation =>
-                     (Is_Set => True,
-                      Value  =>
-                        (if Indentation = 1 then 1 else Indentation - 1)),
-                   others            => <>));
+            Self.Format_Options.Sources.Insert
+              (Source_Filename,
+               (Indentation_Continuation =>
+                  (Is_Set => True,
+                   Value  => (if Indentation = 1 then 1 else Indentation - 1)),
+                others                   => <>));
          end if;
       end if;
    end With_Indentation;
@@ -1033,16 +1021,14 @@ package body Gnatformat.Configuration is
         (Is_Set => True, Value => Indentation);
 
       if Self.Implicit_Indentation_Continuation
-      --  Avoid overwriting
-        and not Self
-                  .Format_Options
-                  .Language (Language)
+        --  Avoid overwriting
+        and not Self.Format_Options.Language (Language)
                   .Indentation_Continuation
                   .Is_Set
       then
          Self.Format_Options.Language (Language).Indentation_Continuation :=
            (Is_Set => True,
-            Value => (if Indentation = 1 then 1 else Indentation - 1));
+            Value  => (if Indentation = 1 then 1 else Indentation - 1));
       end if;
    end With_Indentation;
 

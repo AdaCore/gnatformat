@@ -454,12 +454,11 @@ private
       Cache : View_Id_To_Format_Options_Hashed_Map;
    end record;
 
-   type Format_Options_Builder_Type is tagged
-     record
-       Project                             : Optional_GPR2_Project_View;
-         Format_Options                    : Format_Options_Type;
-         Implicit_Indentation_Continuation : Boolean;
-     end record;
+   type Format_Options_Builder_Type is tagged record
+      Project                           : Optional_GPR2_Project_View;
+      Format_Options                    : Format_Options_Type;
+      Implicit_Indentation_Continuation : Boolean;
+   end record;
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
