@@ -237,9 +237,7 @@ package Gnatformat.Configuration is
      Optional_GPR2_Project_Views.Optional_Type;
 
    function Create_Format_Options_Builder
-     (Project                           : Optional_GPR2_Project_View :=
-        (Is_Set => False);
-      Implicit_Indentation_Continuation : Boolean := True)
+     (Project : Optional_GPR2_Project_View := (Is_Set => False))
       return Format_Options_Builder_Type;
    --  Format_Options_Builder_Type constructor.
    --
@@ -476,9 +474,8 @@ private
 
    type Format_Options_Builder_Type is tagged
      record
-       Project                             : Optional_GPR2_Project_View;
-         Format_Options                    : Format_Options_Type;
-         Implicit_Indentation_Continuation : Boolean;
+       Project        : Optional_GPR2_Project_View;
+       Format_Options : Format_Options_Type;
      end record;
 
    Default_Unparsing_Configuration :

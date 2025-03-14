@@ -1,3 +1,0 @@
-description: Test the Indentation and Indentation_Continuation attributes
-driver: gnatformat
-args: ["-P", "test/test.gpr", "--pipe"]
