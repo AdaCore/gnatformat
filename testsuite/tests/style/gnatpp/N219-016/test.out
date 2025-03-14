@@ -6,9 +6,9 @@ package Records is
   end record;
 
   for Uncompact_Type use
-    record
-      Field_1 at 123 range 456 .. 789;
-    end record;
+   record
+    Field_1 at 123 range 456 .. 789;
+   end record;
 
   type Status_Type is  -- IRS Table F-44
   -- another comment, aligned with 'record' here

@@ -10,6 +10,7 @@ with GNAT;
 with GNAT.Traceback.Symbolic;
 
 with GPR2;
+with GPR2.Project.Attribute.Set;
 with GPR2.Project.Attribute_Index;
 with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
@@ -29,9 +30,15 @@ package body Gnatformat.Configuration is
    -----------------------------------
 
    function Create_Format_Options_Builder
-     (Project : Optional_GPR2_Project_View := (Is_Set => False))
+     (Project                           : Optional_GPR2_Project_View :=
+        (Is_Set => False);
+      Implicit_Indentation_Continuation : Boolean := True)
       return Format_Options_Builder_Type
-   is (Format_Options_Builder_Type'(Project => Project, Format_Options => <>));
+   is (Format_Options_Builder_Type'
+         (Project                           => Project,
+          Format_Options                    => <>,
+          Implicit_Indentation_Continuation =>
+            Implicit_Indentation_Continuation));
 
    -----------------------------------------
    -- Create_Project_Format_Options_Cache --
@@ -132,18 +139,64 @@ package body Gnatformat.Configuration is
    function From_Project
      (Project : GPR2.Project.View.Object) return Format_Options_Type
    is
-      Format_Options_Builder : Format_Options_Builder_Type :=
-        Create_Format_Options_Builder ((Is_Set => True, Value => Project));
+      package Indexes_Hash is new
+        Ada.Containers.Indefinite_Hashed_Sets (String, Ada.Strings.Hash, "=");
+      subtype Indexes_Set is Indexes_Hash.Set;
+
+      function Create_Implicit_Indentation_Continuation_Indexes
+        (Indentation_Attributes : GPR2.Project.Attribute.Set.Object)
+         return Indexes_Set;
+      --  Creates the set of Indentation attribute indexes which needs an
+      --  implicit Indentation-Continuation attribute to be computated and set
+
+      ------------------------------------------------------
+      -- Create_Implicit_Indentation_Continuation_Indexes --
+      ------------------------------------------------------
+
+      function Create_Implicit_Indentation_Continuation_Indexes
+        (Indentation_Attributes : GPR2.Project.Attribute.Set.Object)
+         return Indexes_Set
+      is
+         Implicit_Indexes : Indexes_Set := Indexes_Hash.Empty_Set;
+      begin
+         for Attribute of Indentation_Attributes loop
+            if not Project.Attributes (Package_Id).Contains
+                     (Indentation_Continuation_Attribute_Id,
+                      GPR2.Project.Attribute_Index.Create
+                        (Attribute.Index.Value))
+            then
+               Indexes_Hash.Insert
+                 (Implicit_Indexes, String (Attribute.Index.Value));
+            end if;
+         end loop;
+         return Implicit_Indexes;
+      end Create_Implicit_Indentation_Continuation_Indexes;
+
+      Indexes : Indexes_Set := Indexes_Hash.Empty_Set;
 
    begin
       if Project.Has_Package (Package_Id) then
          Gnatformat_Trace.Trace ("Project has a Format package");
 
-         for Attribute of Project.Attributes (Package_Id) loop
-            Format_Options_Builder.With_From_Attribute (Attribute);
-         end loop;
+         --  Compute the implicit Indentation Continuation attribute indexes
+         Indexes :=
+           Create_Implicit_Indentation_Continuation_Indexes
+             (GPR2.Project.View.Attributes
+                (Project, Q_Indentation_Attribute_Id));
 
-         return Format_Options_Builder.Build;
+         declare
+            Format_Options_Builder : Format_Options_Builder_Type :=
+              Create_Format_Options_Builder
+                ((Is_Set => True, Value => Project),
+                 Implicit_Indentation_Continuation => not Indexes.Is_Empty);
+         begin
+
+            for Attribute of Project.Attributes (Package_Id) loop
+               Format_Options_Builder.With_From_Attribute (Attribute);
+            end loop;
+
+            return Format_Options_Builder.Build;
+         end;
 
       else
          Gnatformat_Trace.Trace ("Project does not have a Format package");
@@ -627,9 +680,9 @@ package body Gnatformat.Configuration is
          --  Parses Attribute value by checking if it's one of the valid
          --  kinds and then converting to the expected value type.
 
-         -------------------------
-         -- Get_Attribute_Value --
-         -------------------------
+         ---------------------------
+         -- Parse_Attribute_Value --
+         ---------------------------
 
          function Parse_Attribute_Value return Attribute_Value_Type is
             Q_Attribute_Id : constant GPR2.Q_Optional_Attribute_Id :=
@@ -694,6 +747,7 @@ package body Gnatformat.Configuration is
            Parse_Attribute_Value;
 
       begin
+
          if not Attribute.Index.Is_Defined then
             case Attribute_Value.Kind is
                when Ignore =>
@@ -741,6 +795,7 @@ package body Gnatformat.Configuration is
                     (Indentation'Image
                      & " = "
                      & Attribute_Value.Indentation'Image);
+
                   Self.With_Indentation
                     (Attribute_Value.Indentation, Ada_Language);
 
@@ -930,6 +985,27 @@ package body Gnatformat.Configuration is
             (Indentation => (Is_Set => True, Value => Indentation),
              others      => <>));
       end if;
+
+      if Self.Implicit_Indentation_Continuation then
+         if Self.Format_Options.Sources.Contains (Source_Filename) then
+            if not Self.Format_Options.Sources.Reference (Source_Filename)
+                     .Indentation_Continuation
+                     .Is_Set
+            then
+               Self.Format_Options.Sources.Reference (Source_Filename)
+                 .Indentation_Continuation :=
+                 (Is_Set => True,
+                  Value  => (if Indentation = 1 then 1 else Indentation - 1));
+            end if;
+         else
+            Self.Format_Options.Sources.Insert
+              (Source_Filename,
+               (Indentation_Continuation =>
+                  (Is_Set => True,
+                   Value  => (if Indentation = 1 then 1 else Indentation - 1)),
+                others                   => <>));
+         end if;
+      end if;
    end With_Indentation;
 
    ----------------------
@@ -943,6 +1019,17 @@ package body Gnatformat.Configuration is
    begin
       Self.Format_Options.Language (Language).Indentation :=
         (Is_Set => True, Value => Indentation);
+
+      if Self.Implicit_Indentation_Continuation
+        --  Avoid overwriting
+        and not Self.Format_Options.Language (Language)
+                  .Indentation_Continuation
+                  .Is_Set
+      then
+         Self.Format_Options.Language (Language).Indentation_Continuation :=
+           (Is_Set => True,
+            Value  => (if Indentation = 1 then 1 else Indentation - 1));
+      end if;
    end With_Indentation;
 
    -----------------------------------
