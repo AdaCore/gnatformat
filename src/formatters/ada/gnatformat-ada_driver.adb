@@ -45,6 +45,8 @@ with Langkit_Support.Generic_API.Unparsing;
 with Libadalang.Analysis;
 with Libadalang.Preprocessing;
 
+with Gitdiff;
+
 procedure Gnatformat.Ada_Driver is
 
    GPR_Options : GPR2.Options.Object;
@@ -54,8 +56,9 @@ procedure Gnatformat.Ada_Driver is
    package Langkit_Support_Unparsing
      renames Langkit_Support.Generic_API.Unparsing;
 
-   package Source_Lists is new Ada.Containers.Doubly_Linked_Lists
-     (Element_Type => GPR2.Build.Source.Object);
+   package Source_Lists is new
+     Ada.Containers.Doubly_Linked_Lists
+       (Element_Type => GPR2.Build.Source.Object);
 
    subtype Source_List is Source_Lists.List;
 
@@ -92,14 +95,12 @@ procedure Gnatformat.Ada_Driver is
    subtype Project_Source_Vector is Project_Source_Vectors.Vector;
 
    function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object)
-      return Project_Source_Vector;
+     (Project_Tree : GPR2.Project.Tree.Object) return Project_Source_Vector;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
    --  an Command_Line_Source_Vector.
 
    function Get_Project_Sources
-     (Project_Tree : GPR2.Project.Tree.Object)
-      return Source_List;
+     (Project_Tree : GPR2.Project.Tree.Object) return Source_List;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
    --  an GPR2.Project.Source.Set.Object.
 
@@ -120,8 +121,7 @@ procedure Gnatformat.Ada_Driver is
    ------------------------------
 
    function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object)
-      return Project_Source_Vector
+     (Project_Tree : GPR2.Project.Tree.Object) return Project_Source_Vector
    is
       Sources : Project_Source_Vector;
 
@@ -195,8 +195,7 @@ procedure Gnatformat.Ada_Driver is
    -------------------------
 
    function Get_Project_Sources
-     (Project_Tree : GPR2.Project.Tree.Object)
-      return Source_List
+     (Project_Tree : GPR2.Project.Tree.Object) return Source_List
    is
       Sources : Source_List;
 
@@ -259,10 +258,8 @@ procedure Gnatformat.Ada_Driver is
    begin
       Project_Tree.For_Each_Ada_Closure
         (Action            => Process_Unit'Access,
-         All_Sources       =>
-           Gnatformat.Command_Line.All_Sources.Get,
-         Root_Project_Only =>
-           Gnatformat.Command_Line.Root_Project_Only.Get,
+         All_Sources       => Gnatformat.Command_Line.All_Sources.Get,
+         Root_Project_Only => Gnatformat.Command_Line.Root_Project_Only.Get,
          Externally_Built  => False);
 
       return Sources;
@@ -283,10 +280,10 @@ procedure Gnatformat.Ada_Driver is
       Console.Set_User_Verbosity (Reporter, Important_Only);
 
       if not Project_Tree.Load
-        (Options          => GPR_Options,
-         Reporter         => Reporter,
-         Absent_Dir_Error => GPR2.No_Error,
-         With_Runtime     => True)
+               (Options          => GPR_Options,
+                Reporter         => Reporter,
+                Absent_Dir_Error => GPR2.No_Error,
+                With_Runtime     => True)
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -317,8 +314,7 @@ procedure Gnatformat.Ada_Driver is
       -- Find_Implicit_Project --
       ---------------------------
 
-      function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File
-      is
+      function Find_Implicit_Project_File return GNATCOLL.VFS.Virtual_File is
          Search        : Ada.Directories.Search_Type;
          Current_Entry : Ada.Directories.Directory_Entry_Type;
 
@@ -342,7 +338,7 @@ procedure Gnatformat.Ada_Driver is
 
             if Ada.Directories.Extension
                  (Ada.Directories.Simple_Name (Current_Entry))
-               = "gpr"
+              = "gpr"
             then
                if Result = GNATCOLL.VFS.No_File then
                   Gnatformat_Trace.Trace
@@ -389,7 +385,7 @@ procedure Gnatformat.Ada_Driver is
       Gnatformat_Trace.Trace ("Resolving project file");
 
       if Explicit_Project = GNATCOLL.VFS.No_File
-         or Explicit_Project.Display_Full_Name = ""
+        or Explicit_Project.Display_Full_Name = ""
       then
          Gnatformat_Trace.Trace ("No explicit project was provided");
 
@@ -422,18 +418,15 @@ begin
                (Unknown_Arguments => Unparsed_Arguments)
       then
          Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Failed to parse CLI arguments");
+           (Ada.Text_IO.Standard_Error, "Failed to parse CLI arguments");
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
       if not Gnatformat.Command_Line.GPR_Args.Parse_GPR2_Options
-        (Arguments => Unparsed_Arguments,
-         Options   => GPR_Options)
+               (Arguments => Unparsed_Arguments, Options => GPR_Options)
       then
          Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Failed to parse CLI GPR arguments");
+           (Ada.Text_IO.Standard_Error, "Failed to parse CLI GPR arguments");
          GNAT.OS_Lib.OS_Exit (1);
       end if;
    end;
@@ -475,13 +468,12 @@ begin
         constant Gnatformat.Configuration.Format_Options_Type :=
           Gnatformat.Command_Line.Configuration.Get;
 
-      Diagnostics             :
-        Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+      Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
 
       Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
         Gnatformat.Command_Line.Unparsing_Configuration.Get;
       Unparsing_Configuration      :
-        constant Langkit_Support_Unparsing.Unparsing_Configuration      :=
+        constant Langkit_Support_Unparsing.Unparsing_Configuration :=
           Gnatformat.Configuration.Load_Unparsing_Configuration
             (Unparsing_Configuration_File, Diagnostics);
 
@@ -489,6 +481,7 @@ begin
       if Project_File = GNATCOLL.VFS.No_File
         and Gnatformat.Command_Line.Sources.Get
             = Gnatformat.Command_Line.Sources.No_Results
+        and not Gnatformat.Command_Line.Gitdiff.Get.Is_Set
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -501,7 +494,7 @@ begin
       end if;
 
       if Project_File /= GNATCOLL.VFS.No_File
-         and not GNATCOLL.VFS.Is_Regular_File (Project_File)
+        and not GNATCOLL.VFS.Is_Regular_File (Project_File)
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -512,7 +505,7 @@ begin
       end if;
 
       if Unparsing_Configuration
-         = Langkit_Support_Unparsing.No_Unparsing_Configuration
+        = Langkit_Support_Unparsing.No_Unparsing_Configuration
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -586,9 +579,7 @@ begin
 
          Project_Format_Options_Cache :
            Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
-             Gnatformat
-               .Configuration
-               .Create_Project_Format_Options_Cache;
+             Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
          Print_Source_Simple_Name : Boolean := True;
          Print_New_Line           : Boolean := False;
@@ -597,6 +588,7 @@ begin
             case Success is
                when True =>
                   Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
+
                when False =>
                   Diagnostics : Unbounded_String_Vector;
             end case;
@@ -612,10 +604,8 @@ begin
 
          function Process_Project_Source
            (Source         : Project_Source_Record;
-            Format_Options :
-              Gnatformat.Configuration.Format_Options_Type :=
-                Gnatformat.Configuration.Default_Format_Options)
-            return Boolean;
+            Format_Options : Gnatformat.Configuration.Format_Options_Type :=
+              Gnatformat.Configuration.Default_Format_Options) return Boolean;
          --  Formats the source defined by Path.
          --  If Source is Visible, then its format options are fetched by using
          --  its owning view. If invisible, then Format_Options is used.
@@ -623,8 +613,7 @@ begin
          --  Otherwise writes it to disk.
 
          function Process_Standalone_Source
-           (Source   : GNATCOLL.VFS.Virtual_File;
-            Charset  : String)
+           (Source : GNATCOLL.VFS.Virtual_File; Charset : String)
             return Boolean;
          --  Formats the source defined by Source.
          --  If --pipe is used, then prints the formatted source to stdout.
@@ -643,8 +632,7 @@ begin
             Charset : constant String :=
               Ada.Strings.Unbounded.To_String
                 (Gnatformat.Configuration.Get_Charset
-                   (Project_Formatting_Config,
-                    Source.Display_Base_Name));
+                   (Project_Formatting_Config, Source.Display_Base_Name));
             Unit    : constant Libadalang.Analysis.Analysis_Unit :=
               LAL_Context.Get_From_File
                 (Source.Display_Full_Name (Normalize => True), Charset);
@@ -681,10 +669,8 @@ begin
 
          function Process_Project_Source
            (Source         : Project_Source_Record;
-            Format_Options :
-              Gnatformat.Configuration.Format_Options_Type :=
-                Gnatformat.Configuration.Default_Format_Options)
-            return Boolean
+            Format_Options : Gnatformat.Configuration.Format_Options_Type :=
+              Gnatformat.Configuration.Default_Format_Options) return Boolean
          is
             use type Ada.Exceptions.Exception_Id;
 
@@ -728,9 +714,7 @@ begin
                Gnatformat.Configuration.Overwrite
                  (View_Format_Options, CLI_Formatting_Config);
 
-               if Gnatformat
-                    .Configuration
-                    .Get_Ignore (View_Format_Options)
+               if Gnatformat.Configuration.Get_Ignore (View_Format_Options)
                     .Contains (Source_Simple_Name)
                then
                   Gnatformat_Trace.Trace
@@ -794,7 +778,7 @@ begin
                   else
                      if not Source.Visible then
                         Ada.Text_IO.Put_Line
-                        ("Warning: Formatting """
+                          ("Warning: Formatting """
                            & Source_Path_Name
                            & """ which is not visible to the provided "
                            & "project");
@@ -1044,6 +1028,10 @@ begin
                return False;
          end Process_Standalone_Source;
 
+         Base_Commit_ID :
+           constant Gnatformat.Configuration.Optional_Unbounded_String :=
+             Gnatformat.Command_Line.Gitdiff.Get;
+
       begin
          if Preprocessor_Data.Default_Config.Enabled then
             --  If Preprocessor_Data.Default_Config is enabled, then all
@@ -1067,7 +1055,7 @@ begin
             --- more than one source to format.
 
             Print_Source_Simple_Name :=
-               Gnatformat.Command_Line.Sources.Get'Length > 1;
+              Gnatformat.Command_Line.Sources.Get'Length > 1;
 
             if Project_Tree.Is_Defined then
                declare
@@ -1133,6 +1121,26 @@ begin
                end;
             end if;
 
+         elsif Base_Commit_ID.Is_Set then
+            declare
+               Charset :
+                 constant Gnatformat.Configuration.Optional_Unbounded_String :=
+                   Gnatformat.Command_Line.Charset.Get;
+            begin
+               Gitdiff.Format_New_Lines
+                 (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
+                  Gitdiff.Context'
+                    (Lal_Ctx          => LAL_Context,
+                     Options          =>
+                       Gnatformat.Command_Line.Configuration.Get,
+                     Unparsing_Config => Unparsing_Configuration,
+                     Charset          =>
+                       (if Charset.Is_Set
+                        then Charset.Value
+                        else
+                          Ada.Strings.Unbounded.To_Unbounded_String
+                            (Gnatformat.Configuration.Default_Charset))));
+            end;
          else
             declare
                Command_Line_Sources : constant Project_Source_Vector :=

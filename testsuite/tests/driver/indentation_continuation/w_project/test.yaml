@@ -1,0 +1,11 @@
+description: Test the indentation-continuation and --indentation-kind switches implicit value
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--indentation",
+    "5",
+    "--indentation-kind",
+    "tabs"
+  ]
