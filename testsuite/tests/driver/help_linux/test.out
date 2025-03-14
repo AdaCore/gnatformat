@@ -5,12 +5,13 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--indentation-kind INDENTATION-KIND] 
                  [--indentation-continuation INDENTATION-CONTINUATION] 
                  [--end-of-line END-OF-LINE] [--charset CHARSET] [--ignore 
-                 IGNORE] SOURCE [SOURCE ...] [-aP Search path [Search path...]] 
-                 [--autoconf autoconf [autoconf...]] [--config config] [--db db 
-                 [db...]] [--db-] [--implicit-with project [project...]] [-el] 
-                 [--no-project] [-P project] [--print-gpr-registry] [--root-dir 
-                 root-dir] [--relocate-build-tree relocate-build-tree] [--RTS 
-                 rts [rts...]] [--src-subdirs src-subdirs] [--subdirs subdirs] 
+                 IGNORE] [--gitdiff BASE_COMMIT] SOURCE [SOURCE ...] [-aP Search
+                  path [Search path...]] [--autoconf autoconf [autoconf...]] 
+                 [--config config] [--db db [db...]] [--db-] [--implicit-with 
+                 project [project...]] [-el] [--no-project] [-P project] 
+                 [--print-gpr-registry] [--root-dir root-dir] 
+                 [--relocate-build-tree relocate-build-tree] [--RTS rts 
+                 [rts...]] [--src-subdirs src-subdirs] [--subdirs subdirs] 
                  [--target target] [-X scenario [scenario...]] 
 
 GNATformat test (test) - Format Ada code
@@ -46,6 +47,7 @@ optional arguments:
    --charset                   Charset to use for source decoding (default value
                                 = iso-8859-1)
    --ignore                    Ignore file with the sources that will be ignored
+   --gitdiff                   Only format lines added since given commit
    -aP                         Add directory to the project search path
    --autoconf                  Specify/create the main config project file name
    --config                    Specify the configuration project file name

@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -18,6 +18,7 @@ with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
 
 with Gnatformat;
+with Gnatformat.Edits;
 with Gnatformat.Formatting;
 with Gnatformat.Configuration;
 
@@ -101,7 +102,8 @@ procedure Partial_Gnatformat is
          Default_Val => 0);
    end Args;
 
-   Edits : Gnatformat.Formatting.Formatted_Edits;
+   Edits : Gnatformat.Edits.Formatting_Edit_Type;
+
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
@@ -145,27 +147,29 @@ begin
       --  range is provided then the whole file will be reformatted.
       if Args.Unparsing_Configuration_File.Get /= GNATCOLL.VFS.No_File then
          declare
-            Diagnostics      : Diagnostics_Vectors.Vector;
-            Configuration    : constant Unparsing_Configuration :=
+            Diagnostics   : Diagnostics_Vectors.Vector;
+            Configuration : constant Unparsing_Configuration :=
               Gnatformat.Configuration.Load_Unparsing_Configuration
                 (Args.Unparsing_Configuration_File.Get, Diagnostics);
          begin
-            Edits := Gnatformat.Formatting.Range_Format
-              (Unit                  => Unit,
-               Input_Selection_Range => Selection_Range,
-               Options               => Default_Format_Options,
-               Unparsing_Config      => Configuration);
+            Edits :=
+              Gnatformat.Formatting.Range_Format
+                (Unit            => Unit,
+                 Selection_Range => Selection_Range,
+                 Format_Options  => Default_Format_Options,
+                 Configuration   => Configuration);
          end;
-      else
-         Edits := Gnatformat.Formatting.Range_Format
-           (Unit                  => Unit,
-            Input_Selection_Range => Selection_Range,
-            Options               => Default_Format_Options);
 
+      else
+         Edits :=
+           Gnatformat.Formatting.Range_Format
+             (Unit            => Unit,
+              Selection_Range => Selection_Range,
+              Format_Options  => Default_Format_Options);
       end if;
 
       --  Dumps the reformatted Ada source code to the output
-      Put_Line (Gnatformat.Formatting.Image (Edits));
+      Put_Line (Gnatformat.Edits.Image (Edits));
       Ada.Text_IO.New_Line;
 
    end;

@@ -11,6 +11,7 @@ package Gnatformat is
 
    Gnatformat_Trace : GNATCOLL.Traces.Trace_Handle :=
      GNATCOLL.Traces.Create ("GNATFORMAT", GNATCOLL.Traces.Off);
+
    Version    : constant String := "debug";
    Build_Date : constant String := "debug";
 

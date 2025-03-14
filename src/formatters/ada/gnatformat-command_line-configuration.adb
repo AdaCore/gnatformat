@@ -43,8 +43,8 @@ package body Gnatformat.Command_Line.Configuration is
       end if;
       if Width_Value.Is_Set then
          Gnatformat.Configuration.With_Width
-           (Self => Format_Options_Builder,
-            Width => Width_Value.Value,
+           (Self     => Format_Options_Builder,
+            Width    => Width_Value.Value,
             Language => Ada_Language);
       end if;
       if Indentation_Value.Is_Set then
@@ -61,6 +61,7 @@ package body Gnatformat.Command_Line.Configuration is
            (Indentation_Continuation => Indentation_Continuation_Value.Value,
             Language                 => Ada_Language);
       end if;
+
       if End_Of_Line_Value.Is_Set then
          Format_Options_Builder.With_End_Of_Line
            (End_Of_Line => End_Of_Line_Value.Value, Language => Ada_Language);

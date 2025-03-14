@@ -7,8 +7,7 @@ with Gnatformat.Configuration;
 
 package Gnatformat.Command_Line.Configuration is
 
-   function Get
-      return Gnatformat.Configuration.Format_Options_Type;
+   function Get return Gnatformat.Configuration.Format_Options_Type;
    --  Builds a Format_Options_Type from the command line arguments
 
 end Gnatformat.Command_Line.Configuration;

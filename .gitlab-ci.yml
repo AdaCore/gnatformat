@@ -6,6 +6,15 @@ workflow:
     # Run the generic CI on merge requests only
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
+include:
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/gnatformat@main # Using the version from the main branch until there is a release
+    inputs:
+      stage: check
+      anod-spec: gnatformat $ACI_TRACK_QUALIFIER
+      gnatformat-args: -P gnat/gnatformat_driver.gpr --check
+      install-gnatformat: True
+      install-gnatformat-extra-anod-args: -Qedge
+
 stages:
   - check
   - build
