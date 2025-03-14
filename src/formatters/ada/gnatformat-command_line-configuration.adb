@@ -61,7 +61,6 @@ package body Gnatformat.Command_Line.Configuration is
            (Indentation_Continuation => Indentation_Continuation_Value.Value,
             Language                 => Ada_Language);
       end if;
-
       if End_Of_Line_Value.Is_Set then
          Format_Options_Builder.With_End_Of_Line
            (End_Of_Line => End_Of_Line_Value.Value, Language => Ada_Language);
