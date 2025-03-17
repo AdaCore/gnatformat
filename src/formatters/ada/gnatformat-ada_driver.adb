@@ -134,14 +134,37 @@ procedure Gnatformat.Ada_Driver is
          Gnatformat_Trace.Trace ("Resolving " & Source.Display_Full_Name);
 
          declare
-            Resolved_Source : constant GPR2.Build.Source.Object :=
-              Project_Tree.Root_Project.Visible_Source
-                (GPR2.Simple_Name (Source.Base_Name));
+            Source_Simple_Name : constant GPR2.Filename_Type :=
+              GPR2.Simple_Name (Source.Base_Name);
+            Resolved_Source    : GPR2.Build.Source.Object :=
+              GPR2.Build.Source.Undefined;
 
          begin
+            --  If Project_Tree is an aggregate project
+            --  Project_Tree.Root_Project.Visible_Source raises an exception.
+            --  Project_Tree.Root_Project.Sources returns an empty iterable.
+            --  Therefore, iterate through each project looking for the source.
+
+            for View of Project_Tree.Namespace_Root_Projects loop
+               Resolved_Source := View.Visible_Source (Source_Simple_Name);
+
+               --  FIXME:
+               --  Here we use the simple name and ignore the path.
+               --  This means that if the user tries to format a source
+               --  "foo/a.adb" which does not exist, but a source
+               --  "bar/a.adb" exists, then "bar/a.adb" is formatted.
+               --  To fix the issue when base name != full name, not only check
+               --  if Resolved_Source != Undefined, but also check that if the
+               --  relative path of Resolved_Source to the cwd is the same as
+               --  base name.
+
+               exit when Resolved_Source /= GPR2.Build.Source.Undefined;
+            end loop;
+
+            --  This is an invisible source to the project
+            --  Only format if it exists on disk.
+
             if Resolved_Source = GPR2.Build.Source.Undefined then
-               --  This is an invisible source to the project
-               --  Only format if it exists on disk.
 
                if Source.Is_Regular_File then
                   Sources.Append
@@ -159,9 +182,10 @@ procedure Gnatformat.Ada_Driver is
                   General_Failed := True;
                end if;
 
+            --  This is an visible source to the project but externally
+            --  built. Do not format.
+
             elsif Resolved_Source.Owning_View.Is_Externally_Built then
-               --  This is an visible source to the project but externally
-               --  built. Do not format.
 
                Ada.Text_IO.Put_Line
                  (Ada.Text_IO.Standard_Error,
@@ -173,9 +197,9 @@ procedure Gnatformat.Ada_Driver is
 
                General_Failed := True;
 
-            else
-               --  This is an visible source to the project
+            --  This is an visible source to the project
 
+            else
                Sources.Append
                  (Project_Source_Record'
                     (File           =>
