@@ -1,0 +1,12 @@
+--  a.adb
+procedure A is
+begin
+   null;
+end A;
+
+--  b.adb
+procedure B is
+begin
+   null;
+end B;
+

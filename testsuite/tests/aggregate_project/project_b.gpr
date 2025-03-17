@@ -1,0 +1,3 @@
+project Project_B is
+   for Source_Dirs use ("project_b");
+end project_B;
