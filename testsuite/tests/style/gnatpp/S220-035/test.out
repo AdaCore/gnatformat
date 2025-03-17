@@ -340,7 +340,8 @@ package body Pp.Formatting is
         Comment_Filling_Enabled (Cmd)
         and then Kind (Comment_Tok) = Fillable_Comment;
       Text           : constant W_Str :=
-        (if Do_Filling then Filled_Text (Comment_Tok, Leading_Blanks)
+        (if Do_Filling
+         then Filled_Text (Comment_Tok, Leading_Blanks)
          else To_W_Str (Scanner.Text (Comment_Tok)));
 
       --  Start of processing for Insert_Comment_Text
@@ -354,8 +355,8 @@ package body Pp.Formatting is
          Comments_Only           => Arg (Cmd, Comments_Only),
          Comments_Gnat_Beginning => Arg (Cmd, Comments_Gnat_Beginning),
          Org                     => "Insert_Comment_Text");
-      --  It would be good to avoid dealing with text here, and avoid
-      --  recomputing the length all the time.
+   --  It would be good to avoid dealing with text here, and avoid
+   --  recomputing the length all the time.
    end Insert_Comment_Text;
 
    procedure Comment_Tokn_To_Buf
@@ -392,7 +393,8 @@ package body Pp.Formatting is
       Indentation        : constant W_Str :=
         (if Kind (Comment_Tok) in Whole_Line_Comment
          then
-           (if Kind (Prev_Tok) = Spaces then To_W_Str (Text (Prev_Tok))
+           (if Kind (Prev_Tok) = Spaces
+            then To_W_Str (Text (Prev_Tok))
             else "")
          else "");
       pragma
@@ -423,7 +425,8 @@ package body Pp.Formatting is
         and then Comment_Filling_Enabled (Cmd)
         and then Kind (Comment_Tok) = Fillable_Comment;
       Text_NL    : constant W_Str :=
-        (if Do_Filling then Filled_Text (Comment_Tok)
+        (if Do_Filling
+         then Filled_Text (Comment_Tok)
          else To_W_Str (Scanner.Text (Comment_Tok)));
       pragma Assert (Text_NL (Text_NL'Last) = NL);
       Text       : W_Str renames Text_NL (Text_NL'First .. Text_NL'Last - 1);
@@ -918,7 +921,8 @@ package body Pp.Formatting is
            | Line_Break_Token;
 
       function Txt (Tok : Tokn_Cursor) return String
-      is (if Kind (Tok) in Q then "``" & Str (Text (Tok)).S & "''"
+      is (if Kind (Tok) in Q
+          then "``" & Str (Text (Tok)).S & "''"
           else Str (Text (Tok)).S);
       --  Text to print. Put quotes around some kinds.
 
@@ -1044,13 +1048,13 @@ package body Pp.Formatting is
                            then
                              Leading_Blanks (Src_Tok)
                              = Leading_Blanks (Out_Tok));
-               --  ???This case will be needed if/when we turn end-of-line
-               --  comments that don't fit into whole-line comments. That
-               --  transformation seems questionable, because it would
-               --  damage idempotency: first run of gnatpp turns an
-               --  end-of-line comment into a whole-line-comment, and then a
-               --  second run considers it part of a comment paragraph and
-               --  fills it.
+            --  ???This case will be needed if/when we turn end-of-line
+            --  comments that don't fit into whole-line comments. That
+            --  transformation seems questionable, because it would
+            --  damage idempotency: first run of gnatpp turns an
+            --  end-of-line comment into a whole-line-comment, and then a
+            --  second run considers it part of a comment paragraph and
+            --  fills it.
             else
                R := False;
             end if;
@@ -1206,7 +1210,7 @@ package body Pp.Formatting is
                      end if;
                   end;
 
-                  --  Check for "end;" --> "end Some_Name;" case
+               --  Check for "end;" --> "end Some_Name;" case
 
                elsif Kind (Src_Tok) = ';'
                  and then Kind (Prev_Lexeme (Src_Tok)) = Res_End
@@ -1244,8 +1248,8 @@ package body Pp.Formatting is
                elsif Kind (Out_Tok) in EOL_Token then
                   Next_ss (Out_Tok);
 
-                  --  Else print out debugging information and crash. This avoids
-                  --  damaging the source code in case of bugs.
+               --  Else print out debugging information and crash. This avoids
+               --  damaging the source code in case of bugs.
 
                else
                   Raise_Token_Mismatch
@@ -1295,8 +1299,8 @@ package body Pp.Formatting is
             end;
          end;
 
-         --  In production mode, we don't print debugging information, but we
-         --  still raise the exception.
+      --  In production mode, we don't print debugging information, but we
+      --  still raise the exception.
 
       else
          Final_Check_Helper (Lines_Data_P, Src_Buf, Cmd);
@@ -1380,12 +1384,15 @@ package body Pp.Formatting is
         & ASCII.HT
         & " at "
         & (if Tab.Col = Positive'Last then "" else " Col = " & Image (Tab.Col))
-        & (if Tab.Num_Blanks = 0 then ""
+        & (if Tab.Num_Blanks = 0
+           then ""
            else " Blanks = " & Image (Tab.Num_Blanks))
         & (if Tab.Is_Fake then " FAKE" else "")
-        & (if Is_Null (Tab.Tree) then ""
+        & (if Is_Null (Tab.Tree)
+           then ""
            else "(Tr = " & T_Img (Tab.Tree) & ")")
-        & (if Is_Null (Tab.Parent) then ""
+        & (if Is_Null (Tab.Parent)
+           then ""
            else "(Pa = " & T_Img (Tab.Parent) & ")");
    end Tab_Image;
 
@@ -1739,7 +1746,8 @@ package body Pp.Formatting is
          --  calculated above.
 
          return
-           (if Without_Indent = 0 then 0
+           (if Without_Indent = 0
+            then 0
             else First.Indentation + Without_Indent);
       end Line_Len;
 
@@ -2183,9 +2191,9 @@ package body Pp.Formatting is
                          or else Kind (Src_Tok)
                                  in ';' | EOL_Token | Comment_Kind);
 
-                  --  Check for "end Some_Name;" --> "end;" case. This only happens
-                  --  when the --no-end-id switch was given. Here, the name was
-                  --  present in the source, so we insert it.
+               --  Check for "end Some_Name;" --> "end;" case. This only happens
+               --  when the --no-end-id switch was given. Here, the name was
+               --  present in the source, so we insert it.
 
                elsif not Arg (Cmd, End_Id)
                  and then Kind (New_Tok) = ';'
@@ -2207,8 +2215,8 @@ package body Pp.Formatting is
                          or else Kind (Src_Tok)
                                  in ';' | EOL_Token | Comment_Kind);
 
-                  --  Check for "private end" --> "end" case, with a possible
-                  --  comment between "private" and "end".
+               --  Check for "private end" --> "end" case, with a possible
+               --  comment between "private" and "end".
 
                elsif Kind (Src_Tok) = Res_Private
                  and then Kind (New_Tok) = Res_End
@@ -2219,7 +2227,7 @@ package body Pp.Formatting is
                          or else Kind (Next_Lexeme (Src_Tok)) = Res_End);
                   Next_ss (Src_Tok);
 
-                  --  Check for "T'((X, Y, Z))" --> "T'(X, Y, Z)" case
+               --  Check for "T'((X, Y, Z))" --> "T'(X, Y, Z)" case
 
                elsif Kind (Src_Tok) = '('
                  and then Kind (Prev_Lexeme (Src_Tok))
@@ -2936,9 +2944,9 @@ package body Pp.Formatting is
             if Kind (Prev (Prev (New_Tok))) = Start_Of_Input then
                Indentation := 0;
 
-               --  Otherwise, we indent as for the max of the preceding and following
-               --  line breaks, except when Look_Before is False (as it is for this
-               --  comment, which is followed by "else").
+            --  Otherwise, we indent as for the max of the preceding and following
+            --  line breaks, except when Look_Before is False (as it is for this
+            --  comment, which is followed by "else").
 
             else
                Indentation := After_Indentation;
@@ -3035,8 +3043,8 @@ package body Pp.Formatting is
                if LB.Tok = New_Tok then
                   Append_Tokn
                     (New_Tokns, False_End_Of_Line, "whole line extra");
-                  --  This is needed because every comment in New_Tokns must
-                  --  be followed by EOL_Token.
+               --  This is needed because every comment in New_Tokns must
+               --  be followed by EOL_Token.
 
                else
                   Cur_Indentation := Indentation;
@@ -3235,9 +3243,9 @@ package body Pp.Formatting is
                          or else Kind (Src_Tok)
                                  in ';' | EOL_Token | Comment_Kind);
 
-                  --  Check for "end Some_Name;" --> "end;" case. This only happens
-                  --  when the --no-end-id switch was given. Here, the name was
-                  --  present in the source, so we insert it.
+               --  Check for "end Some_Name;" --> "end;" case. This only happens
+               --  when the --no-end-id switch was given. Here, the name was
+               --  present in the source, so we insert it.
 
                elsif not Arg (Cmd, End_Id)
                  and then Kind (New_Tok) = ';'
@@ -3259,8 +3267,8 @@ package body Pp.Formatting is
                   pragma
                     Assert (Disable_Final_Check or else Kind (Src_Tok) = ';');
 
-                  --  Check for "private end" --> "end" case, with a possible
-                  --  comment between "private" and "end".
+               --  Check for "private end" --> "end" case, with a possible
+               --  comment between "private" and "end".
 
                elsif Kind (Src_Tok) = Res_Private
                  and then Kind (New_Tok) = Res_End
@@ -3271,7 +3279,7 @@ package body Pp.Formatting is
                          or else Kind (Next_Lexeme (Src_Tok)) = Res_End);
                   Insert_Private;
 
-                  --  Check for "T'((X, Y, Z))" --> "T'(X, Y, Z)" case
+               --  Check for "T'((X, Y, Z))" --> "T'(X, Y, Z)" case
 
                elsif Kind (Src_Tok) = '('
                  and then Kind (Prev_Lexeme (Src_Tok))
@@ -3292,13 +3300,13 @@ package body Pp.Formatting is
                elsif Kind (Src_Tok) = End_Of_Line_Comment then
                   Insert_End_Of_Line_Comment;
 
-                  --  If the source has a blank line at this point, send it to the
-                  --  output (unless Insert_Blank_Lines is True, in which case we
-                  --  want to ignore blank lines in the input, since a previous
-                  --  phase inserted them in the "right" place). But avoid
-                  --  multiple blank lines (unless either Preserve_Line_Breaks or
-                  --  Preserve_Blank_Lines is True) and blank lines just before
-                  --  End_Of_Input.
+               --  If the source has a blank line at this point, send it to the
+               --  output (unless Insert_Blank_Lines is True, in which case we
+               --  want to ignore blank lines in the input, since a previous
+               --  phase inserted them in the "right" place). But avoid
+               --  multiple blank lines (unless either Preserve_Line_Breaks or
+               --  Preserve_Blank_Lines is True) and blank lines just before
+               --  End_Of_Input.
 
                elsif Is_Blank_Line (Src_Tok)
                  and then not Arg (Cmd, Source_Line_Breaks)
@@ -3319,7 +3327,8 @@ package body Pp.Formatting is
                      end loop;
                      declare
                         Next_Tok_Kind : constant Opt_Token_Kind :=
-                          (if At_Last (Src_Tok) then Nil
+                          (if At_Last (Src_Tok)
+                           then Nil
                            else Kind (Next_ss (Src_Tok)));
                      begin
                         if Preserve_Blank_Lines (Cmd)
@@ -3334,15 +3343,15 @@ package body Pp.Formatting is
                      end;
                   end;
 
-                  --  Normally, we simply ignore EOL_Token in the input. But for
-                  --  --preserve-line-breaks or --source-line-breaks mode, if we
-                  --  see a line break in the input that is not yet in the output,
-                  --  we copy it over. We set the indentation to take into account
-                  --  surrounding indentation, plus line continuation if
-                  --  appropriate, plus "("-related indentation. If the next
-                  --  character in the output is already ' ', we subtract one from
-                  --  the indentation to make up for that. (There can never be two
-                  --  in a row.)
+               --  Normally, we simply ignore EOL_Token in the input. But for
+               --  --preserve-line-breaks or --source-line-breaks mode, if we
+               --  see a line break in the input that is not yet in the output,
+               --  we copy it over. We set the indentation to take into account
+               --  surrounding indentation, plus line continuation if
+               --  appropriate, plus "("-related indentation. If the next
+               --  character in the output is already ' ', we subtract one from
+               --  the indentation to make up for that. (There can never be two
+               --  in a row.)
 
                elsif Kind (Src_Tok) in EOL_Token then
                   pragma
@@ -3399,8 +3408,8 @@ package body Pp.Formatting is
                               Reset_Indentation;
                               New_Line_Start_Out := New_Tok;
 
-                              --  Source_Line_Breaks_Enabled is False, so tell
-                              --  New_To_Newer to use this line break.
+                           --  Source_Line_Breaks_Enabled is False, so tell
+                           --  New_To_Newer to use this line break.
 
                            else
                               LB.Enabled := True;
@@ -3413,9 +3422,9 @@ package body Pp.Formatting is
                            end if;
                         end;
 
-                        --  There is no line break in New_Tokns corresponding to
-                        --  the EOL_Token in the source, so create a new one using
-                        --  Append_Temp_Line_Break.
+                     --  There is no line break in New_Tokns corresponding to
+                     --  the EOL_Token in the source, so create a new one using
+                     --  Append_Temp_Line_Break.
 
                      else
                         declare
@@ -3459,11 +3468,11 @@ package body Pp.Formatting is
                   New_To_Newer;
                   New_Line_Start_Out := New_Tok;
 
-                  --  Else print out debugging information and crash. This
-                  --  avoids damaging the source code in case of bugs. However,
-                  --  if the Disable_Final_Check debug flag is set, try to
-                  --  continue by skipping one source token, or one output
-                  --  token.
+               --  Else print out debugging information and crash. This
+               --  avoids damaging the source code in case of bugs. However,
+               --  if the Disable_Final_Check debug flag is set, try to
+               --  continue by skipping one source token, or one output
+               --  token.
 
                elsif Disable_Final_Check then
                   Next_ss (Src_Tok);
@@ -3539,7 +3548,7 @@ package body Pp.Formatting is
                           (New_Tokns, Enabled => True, Index => Index);
 
                         LB.Tok := Nil_Tokn_Cursor;
-                        --  Tok is no longer needed
+                     --  Tok is no longer needed
 
                      end if;
                   end;
@@ -3880,8 +3889,8 @@ package body Pp.Formatting is
 
                            pragma
                              Assert (if Num_Lines = 1 then Tab.Num_Blanks = 0);
-                           --  Because of that fact, we can skip all this for
-                           --  1-line paragraphs.
+                        --  Because of that fact, we can skip all this for
+                        --  1-line paragraphs.
                         end;
                      end loop;
                   end;
@@ -3996,15 +4005,15 @@ package body Pp.Formatting is
                   return;
                end if;
 
-               --               Dbg_Out.Put ("\1: \t", Name);
-               --
-               --               for J in 1 .. Last_Index (X) loop
-               --                  if J /= 1 then
-               --                     Dbg_Out.Put ("; ");
-               --                  end if;
-               --                  Dbg_Out.Put ("\1", Tab_Image (Out_Buf, Tabs, X (J)));
-               --               end loop;
-               --               Dbg_Out.Put ("\n");
+            --               Dbg_Out.Put ("\1: \t", Name);
+            --
+            --               for J in 1 .. Last_Index (X) loop
+            --                  if J /= 1 then
+            --                     Dbg_Out.Put ("; ");
+            --                  end if;
+            --                  Dbg_Out.Put ("\1", Tab_Image (Out_Buf, Tabs, X (J)));
+            --               end loop;
+            --               Dbg_Out.Put ("\n");
             end Put_Tab_In_Line_Vector;
 
             procedure Put_Paragraph_Tabs is
