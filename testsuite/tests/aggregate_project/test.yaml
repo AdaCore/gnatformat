@@ -1,0 +1,3 @@
+description: Test that sources in aggregate projects are correctly resolved
+driver: gnatformat
+args: ["-P", "gnat/agg.gpr", "a.adb", "project_b/b.adb", "--pipe"]
