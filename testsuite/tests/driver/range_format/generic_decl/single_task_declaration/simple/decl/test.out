@@ -1,0 +1,4 @@
+test.adb(<SingleTaskDecl ["T"] test.adb:33:4-33:11>) - 33:1-33:11
+^
+   task T;$
+

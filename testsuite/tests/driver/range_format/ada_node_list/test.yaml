@@ -1,0 +1,10 @@
+description: AdaNodeList formatting with partial selection.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 2",
+    "-EL 5",
+    "--pipe",
+  ]

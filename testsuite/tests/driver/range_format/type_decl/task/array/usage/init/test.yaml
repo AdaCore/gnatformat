@@ -1,0 +1,10 @@
+description: ForLoopStmt formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 48",
+    "-EL 50",
+    "--pipe",
+  ]

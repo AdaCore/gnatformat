@@ -1,0 +1,10 @@
+description: StmtList formatting with partial selection.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 6",
+    "-EL 12",
+    "--pipe",
+  ]

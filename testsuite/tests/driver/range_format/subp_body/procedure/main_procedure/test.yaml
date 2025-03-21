@@ -1,0 +1,10 @@
+description: SubpBody formatting with partial selection a main procedure.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 1",
+    "-EL 10",
+    "--pipe",
+  ]

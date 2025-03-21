@@ -1,0 +1,4 @@
+test.ads(<ExceptionDecl ["Singular"] test.ads:21:1-21:22>) - 21:1-21:22
+^
+   Singular : exception;$
+

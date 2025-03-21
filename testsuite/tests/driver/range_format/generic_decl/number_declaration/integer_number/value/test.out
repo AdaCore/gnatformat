@@ -1,0 +1,4 @@
+test.ads(<NumberDecl ["Max"] test.ads:26:4-26:36>) - 26:1-26:36
+^
+   Max : constant := 500;$
+

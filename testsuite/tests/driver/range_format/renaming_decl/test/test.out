@@ -1,0 +1,4 @@
+test.adb(<ObjectDecl ["T"] test.adb:29:4-29:57>) - 29:1-29:57
+^
+   T : Degrees renames Measurements.Current_Temperature;$
+

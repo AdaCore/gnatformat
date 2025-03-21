@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Traverse_Tree"] test.ads:23:4-23:28>) - 23:1-23:28
+^
+   procedure Traverse_Tree;$
+

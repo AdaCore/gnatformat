@@ -1,0 +1,4 @@
+test.ads(<AbstractSubpDecl ["Empty"] test.ads:25:5-25:43>) - 25:1-25:43
+^
+   function Empty return Set is abstract;$
+

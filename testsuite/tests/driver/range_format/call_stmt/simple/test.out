@@ -1,0 +1,4 @@
+main.adb(<CallStmt main.adb:5:7-5:29>) - 5:1-5:29
+^
+      Put_Line (My_Var'Img);$
+

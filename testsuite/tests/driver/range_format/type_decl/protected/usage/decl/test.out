@@ -1,0 +1,4 @@
+test.adb(<ObjectDecl ["Obj"] test.adb:50:4-50:21>) - 50:1-50:21
+^
+   Obj : P_Obj_Type;$
+

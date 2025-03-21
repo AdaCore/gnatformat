@@ -1,0 +1,4 @@
+test.ads(<ConcreteTypeDecl ["Link"] test.ads:59:4-59:29>) - 59:1-59:29
+^
+   type Link is access Cell;$
+

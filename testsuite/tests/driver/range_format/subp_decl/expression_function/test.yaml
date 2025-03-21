@@ -1,0 +1,10 @@
+description: ExprFunction formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 32",
+    "-EL 34",
+    "--pipe",
+  ]

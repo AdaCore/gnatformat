@@ -1,0 +1,4 @@
+test.ads(<IncompleteTaggedTypeDecl ["Car"] test.ads:74:4-74:23>) - 74:1-74:23
+^
+   type Car is tagged;$
+

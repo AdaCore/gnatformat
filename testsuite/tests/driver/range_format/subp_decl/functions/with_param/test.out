@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Next_Frame"] test.ads:31:4-31:51>) - 31:1-31:51
+^
+   function Next_Frame (K : Positive) return Frame;$
+

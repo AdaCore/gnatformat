@@ -1,0 +1,12 @@
+description: SubpSpec formatting with partial selection of a long overriding procedure.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 8",
+    "-SC 20",
+    "-EL 8",
+    "-EC 22",
+    "--pipe",
+  ]

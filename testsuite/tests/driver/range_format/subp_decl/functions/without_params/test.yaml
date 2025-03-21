@@ -1,0 +1,10 @@
+description: SubpDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 28",
+    "-EL 29",
+    "--pipe",
+  ]
