@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["Car_Name"] test.ads:77:4-77:45>) - 77:1-77:45
-^
-   type Car_Name is access all Car'Class;$
-

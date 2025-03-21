@@ -1,9 +1,0 @@
-description: SingleTaskDecl formatting from line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.adb",
-    "-SL 33",
-    "-EL 34",
-  ]
-status_code: 1

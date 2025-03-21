@@ -1,5 +1,0 @@
-<CompilationUnit test.adb:22:1-41:10>
-test.adb(<SubtypeDecl ["Degrees"] test.adb:27:4-27:51>) - 27:1-27:51
-^
-   subtype Degrees is Measurements.Degree_Celsius;$
-

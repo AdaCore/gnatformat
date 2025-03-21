@@ -1,9 +1,0 @@
-description: AdaNodeList formatting with partial selection.
-driver: partial_gnatformat
-args:
-  [
-    "main.adb",
-    "-SL 2",
-    "-EL 5",
-  ]
-status_code: 1

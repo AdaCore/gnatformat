@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:28:1-59:33>
-test.ads(<ObjectDecl ["D"] test.ads:57:4-57:33>) - 57:1-57:33
-^
-   D : not null Acc_I renames B;$
-

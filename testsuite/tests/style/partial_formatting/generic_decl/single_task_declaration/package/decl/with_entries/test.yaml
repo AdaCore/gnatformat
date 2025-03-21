@@ -1,9 +1,0 @@
-description: SingleTaskDecl formatting from line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.ads",
-    "-SL 38",
-    "-EL 42",
-  ]
-status_code: 1

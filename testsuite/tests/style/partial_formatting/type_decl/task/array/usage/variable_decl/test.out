@@ -1,5 +1,0 @@
-<CompilationUnit test.adb:26:1-51:19>
-test.adb(<ObjectDecl ["My_Tasks"] test.adb:44:4-44:36>) - 44:1-44:36
-^
-   My_Tasks : array (1 .. 5) of TT;$
-

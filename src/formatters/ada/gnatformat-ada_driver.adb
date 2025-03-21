@@ -486,7 +486,10 @@ begin
       procedure Proceed_With_Range_Formatting;
       --  If range format mode is activated, process the selection and
       --  format it.
-      --  If --pipe is used, then prints the formatted source to stdout.
+      --  If --pipe is used, then prints the formatted source selection to
+      --  stdout.
+      --  TBD: implement the part applying the formatted selection to the
+      --       source file.
 
       -------------------------------------
       --  Proceed_With_Range_Formatting  --
