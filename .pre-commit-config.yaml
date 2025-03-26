@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: gnatformat
+        name: Run gnatformat
+        entry: gnatformat_edge
+        verbose: true
+        language: system
+        files: ".*\\.ad(b|s)"
+        args: ["-P", "gnat/gnatformat_driver.gpr"]
