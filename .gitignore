@@ -4,6 +4,9 @@ bin
 lib.*
 lib
 
+# Software and add-on packages that are not part of the checkout
+opt
+
 # Testsuite output
 tmp
 out

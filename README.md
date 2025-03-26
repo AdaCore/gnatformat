@@ -1,19 +1,19 @@
 # GNATformat
 
 This project implements an opinionated code formatter for the Ada language.
-It is based on the [Prettier-Ada](https://github.com/AdaCore/prettier-ada) library, 
+It is based on the [Prettier-Ada](https://github.com/AdaCore/prettier-ada) library,
 a port of the [Prettier](https://github.com/prettier/prettier) formatter engine
 to the Ada programming language.
 
 The intent of `gnatformat` is to format a valid Ada source code according to the coding
 style described in the [GNAT Coding Style](https://gcc.gnu.org/onlinedocs/gnat-style.pdf)
-guide. 
+guide.
 
 ## Usage
 
 `gnatformat` can be used as a command line tool or as a library.
 
-As a command line tool, for a given GNAT project, execute 
+As a command line tool, for a given GNAT project, execute
 
 ```
 gnatformat -P [project_name].gpr
@@ -63,6 +63,46 @@ PREFIX=/usr/local make install
 make test
 ```
 
+## Version control integration
+
+GNATformat suggests the usage of [pre-commit](https://pre-commit.com/).
+
+An example of a `.pre-commit-config.yaml` that you need to add to your repo is:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: gnatformat
+        name: Run gnatformat
+        entry: gnatformat
+        # Assumes that gnatformat exists on the PATH
+        language: system
+        files: ".*\\.ad(b|s)$"
+        # Assumes that Ada sources have a .ads or .adb extension
+        args:
+          - -P
+          - project.gpr
+        # Optional since GNATformat implicitly loads the projects if found
+        # and unique.
+```
+
+### How to deal with sources from multiple projects
+
+`pre-commit` will call GNATformat with the specified `args` plus a list of committed sources that match the `files` filter. If any of these sources is invisible to the specified project, it is still formatted with the default settings.
+
+The recommended approach to correctly deal with multiple projects is to create an aggregate project for formatting purposes only. For example:
+
+```ada
+--  format.gpr
+
+aggregate project Format is
+    for Project_files use ("project_a.gpr", "project_b.gpr");
+end Format;
+```
+
+GNATformat will correctly resolve each source to the correct project and apply the settings specified in it. If the source is not part of any project, it is still formatted with the default settings.
+
 ## Work in progress and contributing
 
 This project status is still work in progress.
@@ -70,7 +110,7 @@ This project status is still work in progress.
 In particular, the point that will be adressed soon are
 
 - the capability to choose other formatting layouts in addition to the default one
-- the possibility to be configured to support other custom styles.  
+- the possibility to be configured to support other custom styles.
 
 However, contributions are welcome! Please feel free to submit a pull request
 or open an issue if you find a bug or have a feature suggestion.
