@@ -11,8 +11,9 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  project [project...]] [-el] [--no-project] [-P project] 
                  [--print-gpr-registry] [--root-dir root-dir] 
                  [--relocate-build-tree relocate-build-tree] [--RTS rts 
-                 [rts...]] [--src-subdirs src-subdirs] [--subdirs subdirs] 
-                 [--target target] [-X scenario [scenario...]] 
+                 [rts...]] [--RTS rts-index] [--src-subdirs src-subdirs] 
+                 [--subdirs subdirs] [--target target] [-X scenario 
+                 [scenario...]] 
 
 GNATformat test (test) - Format Ada code
 
@@ -62,9 +63,9 @@ optional arguments:
    --root-dir                  Root directory of obj/lib/exec to relocate
    --relocate-build-tree       Root obj/lib/exec dirs are current-directory or 
                                dir
-   --RTS                        --RTS=<runtime> Use runtime <runtime> for 
-                               language Ada; --RTS:<lang>=<runtime> Use runtime 
-                               <runtime> for language <lang>
+   --RTS                       Use --RTS=<runtime> to specify the Ada runtime
+   --RTS                       Use --RTS:<lang>=<runtime> to specify the runtime
+                                for language <lang>
    --src-subdirs               prepend <obj>/dir to the list of source dirs for 
                                each project
    --subdirs                   Use dir as suffix to obj/lib/exec directories
