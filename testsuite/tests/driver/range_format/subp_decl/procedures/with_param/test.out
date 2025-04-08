@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Right_Indent"] test.ads:25:4-25:51>) - 25:1-25:51
+^
+   procedure Right_Indent (Margin : out Line_Size);$
+

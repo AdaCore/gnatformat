@@ -1,0 +1,10 @@
+description: NoTypeObjectRenamingDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 50",
+    "-EL 51",
+    "--pipe",
+  ]

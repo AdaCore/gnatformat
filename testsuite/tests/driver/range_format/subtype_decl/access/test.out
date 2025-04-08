@@ -1,0 +1,4 @@
+test.ads(<SubtypeDecl ["Binop_Ref"] test.ads:70:4-70:44>) - 70:1-70:44
+^
+   subtype Binop_Ref is not null Binop_Ptr;$
+

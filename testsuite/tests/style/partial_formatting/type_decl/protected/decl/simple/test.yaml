@@ -1,9 +1,0 @@
-description: ProtectedTypeDecl formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.adb",
-    "-SL 31",
-    "-EL 33",
-  ]
-status_code: 1

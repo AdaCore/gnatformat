@@ -1,0 +1,4 @@
+test.ads(<PackageRenamingDecl ["Package_Renaming_Declaration"] test.ads:26:1-26:67>) - 26:1-26:67
+^
+package Package_Renaming_Declaration renames Renaming_Declaration;$
+

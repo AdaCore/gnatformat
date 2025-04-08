@@ -1,0 +1,11 @@
+description: ObjDecl formatting with line selection.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 3",
+    "-SC 1",
+    "-EL 4",
+    "--pipe",
+  ]

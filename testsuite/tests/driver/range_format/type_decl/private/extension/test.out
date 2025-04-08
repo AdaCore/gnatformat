@@ -1,0 +1,4 @@
+test.ads(<ConcreteTypeDecl ["List"] test.ads:109:4-109:62>) - 109:1-109:62
+^
+   type List is new Ada.Finalization.Controlled with private;$
+

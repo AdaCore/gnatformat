@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:19:1-72:26>
-test.ads(<SubtypeDecl ["Square"] test.ads:37:4-37:47>) - 37:1-37:47
-^
-   subtype Square is Matrix (1 .. 10, 1 .. 10);$
-

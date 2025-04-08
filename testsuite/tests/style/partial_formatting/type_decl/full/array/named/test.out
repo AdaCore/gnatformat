@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["My_Int_Array"] test.ads:43:4-44:30>) - 43:1-44:30
-^
-   type My_Int_Array is array (Index) of My_Int;$
-

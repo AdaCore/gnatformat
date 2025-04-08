@@ -1,0 +1,10 @@
+description: SingleTaskDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 61",
+    "-EL 62",
+    "--pipe",
+  ]

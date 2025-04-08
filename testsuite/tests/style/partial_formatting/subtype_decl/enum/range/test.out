@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:19:1-72:26>
-test.ads(<SubtypeDecl ["Rainbow"] test.ads:24:4-24:47>) - 24:1-24:47
-^
-   subtype Rainbow is Color range Red .. Blue;$
-

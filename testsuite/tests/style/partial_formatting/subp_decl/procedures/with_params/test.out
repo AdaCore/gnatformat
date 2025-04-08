@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:21:1-42:28>
-test.ads(<SubpDecl ["Switch"] test.ads:26:4-26:45>) - 26:1-26:45
-^
-   procedure Switch (From, To : in out Link);$
-

@@ -1,0 +1,4 @@
+test.adb(<CallStmt test.adb:53:4-54:41>) - 53:1-54:41
+^
+   Put_Line ("Number is: " & Integer'Image (Obj.Get));$
+

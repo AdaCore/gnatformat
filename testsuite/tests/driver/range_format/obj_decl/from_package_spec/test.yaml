@@ -1,0 +1,12 @@
+description: With an Ada file and with an object declaration selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 7",
+    "-SC 2",
+    "-EL 7",
+    "-EC 10",
+    "--pipe",
+  ]

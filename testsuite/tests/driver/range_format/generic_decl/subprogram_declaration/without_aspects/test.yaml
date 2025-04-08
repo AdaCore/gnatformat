@@ -1,0 +1,10 @@
+description: GenericSubpDecl formatting from partial selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 22",
+    "-EL 25",
+    "--pipe",
+  ]

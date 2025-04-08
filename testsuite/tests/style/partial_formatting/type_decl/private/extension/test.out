@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["List"] test.ads:109:4-109:62>) - 109:1-109:62
-^
-   type List is new Ada.Finalization.Controlled with private;$
-

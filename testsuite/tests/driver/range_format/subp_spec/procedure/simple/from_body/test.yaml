@@ -1,0 +1,12 @@
+description: SubpSpec formatting with partial selection of a procedure from a SubpBody.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SC 4",
+    "-SL 2",
+    "-EL 4",
+    "-EC 13",
+    "--pipe",
+  ]

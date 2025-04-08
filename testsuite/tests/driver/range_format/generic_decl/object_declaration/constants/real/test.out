@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Tolerance"] test.ads:83:4-83:50>) - 83:1-83:50
+^
+   Tolerance : constant Real := Dispersion (1.15);$
+

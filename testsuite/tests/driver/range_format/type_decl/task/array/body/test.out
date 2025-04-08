@@ -1,0 +1,11 @@
+test.adb(<TaskBody ["TT"] test.adb:34:4-42:11>) - 34:1-42:11
+^
+   task body TT is
+      Task_N : Integer;
+   begin
+      accept Start (N : Integer) do
+         Task_N := N;
+      end Start;
+      Put_Line ("In task T: " & Integer'Image (Task_N));
+   end TT;$
+

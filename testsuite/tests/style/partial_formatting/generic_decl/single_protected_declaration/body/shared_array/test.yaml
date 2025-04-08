@@ -1,9 +1,0 @@
-description: ProtectedBOdy formatting from line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.adb",
-    "-SL 67",
-    "-EL 78",
-  ]
-status_code: 1

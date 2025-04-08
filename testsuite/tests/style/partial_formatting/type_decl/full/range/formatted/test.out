@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["My_Int"] test.ads:39:4-39:36>) - 39:1-39:36
-^
-   type My_Int is range 0 .. 1_000;$
-

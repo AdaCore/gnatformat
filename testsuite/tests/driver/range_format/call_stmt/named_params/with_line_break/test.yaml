@@ -1,0 +1,11 @@
+description: CallStmt formatting with line selection.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 4",
+    "-EL 4",
+    "-EC 90",
+    "--pipe",
+  ]

@@ -1,0 +1,11 @@
+description: NumberDecl formatting from line selection an integer number declaration.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 29",
+    "-EL 29",
+    "-EC 36",
+    "--pipe",
+  ]

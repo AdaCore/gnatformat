@@ -1,0 +1,13 @@
+description: SingleTaskDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 129",
+    "-EL 130",
+    "--pipe",
+  ]
+control:
+- [XFAIL, "True",
+   "unexpected output: waiting for issue #eng/libadalang/libadalang#1413"]

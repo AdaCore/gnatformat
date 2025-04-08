@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Arr"] test.ads:48:4-48:43>) - 48:1-48:43
+^
+   Arr : My_Int_Array := (2, 3, 5, 7, 11);$
+

@@ -1,0 +1,14 @@
+test.adb(<ProtectedBody ["Shared_Array"] test.adb:67:4-77:21>) - 67:1-77:21
+^
+   protected body Shared_Array is
+      function Component (N : in Index) return Item is
+      begin
+         return Table (N);
+      end Component;
+
+      procedure Set_Component (N : in Index; E : in Item) is
+      begin
+         Table (N) := E;
+      end Set_Component;
+   end Shared_Array;$
+

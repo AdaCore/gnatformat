@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["My_Car", "Your_Car", "Next_Car"] test.ads:95:4-95:53>) - 95:1-95:53
+^
+   My_Car, Your_Car, Next_Car : Car_Name := new Car;$
+

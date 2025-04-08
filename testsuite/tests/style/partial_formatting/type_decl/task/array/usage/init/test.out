@@ -1,7 +1,0 @@
-<CompilationUnit test.adb:26:1-51:19>
-test.adb(<ForLoopStmt test.adb:48:4-50:13>) - 48:1-50:13
-^
-   for I in My_Tasks'Range loop
-      My_Tasks (I).Start (I);
-   end loop;$
-

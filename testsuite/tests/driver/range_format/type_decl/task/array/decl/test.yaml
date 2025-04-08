@@ -1,0 +1,10 @@
+description: TaskTypeDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 30",
+    "-EL 32",
+    "--pipe",
+  ]

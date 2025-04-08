@@ -1,0 +1,10 @@
+description: GenericPackageInstantiation formatting from line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 29",
+    "-EL 30",
+    "--pipe",
+  ]
