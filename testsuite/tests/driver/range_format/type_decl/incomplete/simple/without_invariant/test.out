@@ -1,0 +1,4 @@
+test.ads(<IncompleteTypeDecl ["Cell"] test.ads:58:4-58:14>) - 58:1-58:14
+^
+   type Cell;$
+

@@ -1,0 +1,10 @@
+description: ConcreteTypeDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 61",
+    "-EL 63",
+    "--pipe",
+  ]

@@ -1,0 +1,10 @@
+description: SingleProtectedDecl formatting from line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 59",
+    "-EL 66",
+    "--pipe",
+  ]

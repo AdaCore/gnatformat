@@ -1,0 +1,4 @@
+test.ads(<NumberDecl ["Max_Line_Size"] test.ads:27:4-27:38>) - 27:1-27:38
+^
+   Max_Line_Size : constant := Max / 6;$
+

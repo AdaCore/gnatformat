@@ -1,0 +1,4 @@
+test.ads(<SubpRenamingDecl ["Predefined_Equal"] test.ads:32:4-32:67>) - 32:1-32:67
+^
+   function Predefined_Equal (X, Y : T) return Boolean renames "=";$
+

@@ -1,0 +1,10 @@
+description: AbstractSubpDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 29",
+    "-EL 31",
+    "--pipe",
+  ]

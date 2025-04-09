@@ -1,0 +1,10 @@
+description: GenericSubpInstantiation formatting from line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 25",
+    "-EL 26",
+    "--pipe",
+  ]

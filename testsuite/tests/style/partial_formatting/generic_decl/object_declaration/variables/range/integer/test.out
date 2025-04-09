@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:26:1-87:25>
-test.ads(<ObjectDecl ["Size"] test.ads:64:4-64:49>) - 64:1-64:49
-^
-   Size : Integer range 0 .. 10_000 := 0;$
-

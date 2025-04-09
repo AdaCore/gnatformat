@@ -1,9 +1,0 @@
-description: TaskBody formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.adb",
-    "-SL 63",
-    "-EL 65",
-  ]
-status_code: 1

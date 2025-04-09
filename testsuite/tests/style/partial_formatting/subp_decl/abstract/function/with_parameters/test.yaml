@@ -1,9 +1,0 @@
-description: AbstractSubpDecl formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.ads",
-    "-SL 27",
-    "-EL 28",
-  ]
-status_code: 1

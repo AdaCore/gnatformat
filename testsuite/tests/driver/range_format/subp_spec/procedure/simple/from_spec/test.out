@@ -1,0 +1,4 @@
+test.ads(<SubpSpec test.ads:2:4-5:19>) - 2:1-5:19
+^
+   procedure Example (A : Integer; B : Integer; C : Integer)$
+

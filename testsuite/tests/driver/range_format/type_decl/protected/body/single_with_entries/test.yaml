@@ -1,0 +1,10 @@
+description: ProtectedBody formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 38",
+    "-EL 43",
+    "--pipe",
+  ]

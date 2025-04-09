@@ -7,10 +7,13 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--indentation-kind INDENTATION-KIND] 
                  [--indentation-continuation INDENTATION-CONTINUATION] 
                  [--end-of-line END-OF-LINE] [--charset CHARSET] [--ignore 
-                 IGNORE] [--gitdiff BASE_COMMIT] SOURCE [SOURCE ...] [-aP Search
-                  path [Search path...]] [--autoconf autoconf [autoconf...]] 
-                 [--config config] [--db db [db...]] [--db-] [--implicit-with 
-                 project [project...]] [-el] [--no-project] [-P project] 
+                 IGNORE] [--gitdiff BASE_COMMIT] SOURCE [SOURCE ...] 
+                 [--range-format] [--start-line|-SL START-LINE] 
+                 [--start-column|-SC START-COLUMN] [--end-line|-EL END-LINE] 
+                 [--end-column|-EC END-COLUMN] [-aP Search path [Search 
+                 path...]] [--autoconf autoconf [autoconf...]] [--config config]
+                  [--db db [db...]] [--db-] [--implicit-with project 
+                 [project...]] [-el] [--no-project] [-P project] 
                  [--print-gpr-registry] [--root-dir root-dir] 
                  [--relocate-build-tree relocate-build-tree] [--RTS rts 
                  [rts...]] [--RTS rts-index] [--src-subdirs src-subdirs] 
@@ -51,6 +54,12 @@ optional arguments:
                                 = iso-8859-1)
    --ignore                    Ignore file with the sources that will be ignored
    --gitdiff                   Only format lines added since given commit
+   --range-format              Range formatting mode
+   --start-line, -SL           Selection start line number for range formatting
+   --start-column, -SC         Selection start column number for range 
+                               formatting
+   --end-line, -EL             Selection end line number for range formatting
+   --end-column, -EC           Selection end column number for range formatting
    -aP                         Add directory to the project search path
    --autoconf                  Specify/create the main config project file name
    --config                    Specify the configuration project file name

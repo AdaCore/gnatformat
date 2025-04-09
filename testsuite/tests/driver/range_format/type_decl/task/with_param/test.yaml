@@ -1,0 +1,10 @@
+description: TaskTypeDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 119",
+    "-EL 121",
+    "--pipe",
+  ]

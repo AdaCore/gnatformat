@@ -1,9 +1,0 @@
-description: ExprFunction formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.ads",
-    "-SL 32",
-    "-EL 34",
-  ]
-status_code: 1

@@ -1,9 +1,0 @@
-description: CallStmt formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.adb",
-    "-SL 53",
-    "-EL 54",
-  ]
-status_code: 1

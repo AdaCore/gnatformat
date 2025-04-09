@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Agent"] test.ads:141:4-141:22>) - 141:1-141:22
+^
+   Agent : Server;$
+

@@ -10,8 +10,6 @@ GNATFORMAT_LIBRARY_PROJECT = gnat/gnatformat.gpr
 
 GNATFORMAT_DRIVER_PROJECT = gnat/gnatformat_driver.gpr
 
-PARTIAL_GNATFORMAT_DRIVER_PROJECT = testsuite/partial_gnatformat/partial_gnatformat.gpr
-
 COVERAGE ?=
 COVERAGE_BUILD_FLAGS = \
 	--implicit-with=gnatcov_rts \
@@ -41,7 +39,7 @@ COMMON_INSTRUMENT_FLAGS = \
 	--projects=gnatformat
 
 .PHONY: all
-all: lib bin partial-gnatformat
+all: lib bin 
 
 .PHONY: lib
 lib:
@@ -113,29 +111,8 @@ ifneq ($(BUILD_MODE),dev)
 	strip "$(PREFIX)/bin/"*
 endif
 
-.PHONY: partial-gnatformat
-partial-gnatformat: partial-gnatformat-coverage-instrumentation
-	gprbuild \
-		-P$(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
-		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		$(COMMON_BUILD_FLAGS) ;
-
-.PHONY: install-partial-gnatformat
-install-partial-gnatformat:
-	gprinstall \
-		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		--prefix="$(PREFIX)" \
-		--install-name=partial_gnatformat \
-		--mode=usage \
-		-P$(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
-		-p \
-		-f ;
 ifneq ($(COVERAGE),)
 	mkdir -p $(PREFIX)/share/gnatformat/sids || true
-	cp testsuite/partial_gnatformat/obj/*.sid $(PREFIX)/share/gnatformat/sids/
 endif
 
 .PHONY: test
@@ -147,8 +124,6 @@ clean:
 	rm -rf bin;
 	rm -rf lib;
 	rm -rf obj;
-	rm -rf testsuite/partial_gnatformat/obj;
-	rm -rf testsuite/partial_gnatformat/bin;
 
 .PHONY: coverage-setup
 coverage-setup:
@@ -168,20 +143,8 @@ ifneq ($(COVERAGE),)
 		--projects=gnatformat_driver ;
 endif
 
-.PHONY: partial-gnatformat-coverage-instrumentation
-partial-gnatformat-coverage-instrumentation:
-ifneq ($(COVERAGE),)
-	rm -rf testsuite/partial_gnatformat/obj/*gnatcov-instr
-	rm -rf testsuite/partial_gnatformat/obj/*/*gnatcov-instr
-	gnatcov \
-		instrument \
-		-P $(PARTIAL_GNATFORMAT_DRIVER_PROJECT) \
-		$(COMMON_INSTRUMENT_FLAGS) \
-		--projects=partial_gnatformat ;
-endif
-
 .PHONY: coverage-run
-coverage-run: bin partial-gnatformat
+coverage-run: bin
 ifneq ($(COVERAGE),)
-	python testsuite/testsuite.py --gnatcov obj/ obj/$(LIBRARY_TYPE).$(BUILD_MODE) testsuite/partial_gnatformat/obj --gnatcov-source-root $(ROOT_DIR)
+	python testsuite/testsuite.py --gnatcov obj/ obj/$(LIBRARY_TYPE).$(BUILD_MODE) --gnatcov-source-root $(ROOT_DIR)
 endif

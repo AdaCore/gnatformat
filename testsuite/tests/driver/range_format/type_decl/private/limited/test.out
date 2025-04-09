@@ -1,0 +1,4 @@
+test.ads(<ConcreteTypeDecl ["File_Name"] test.ads:103:4-103:38>) - 103:1-103:38
+^
+   type File_Name is limited private;$
+

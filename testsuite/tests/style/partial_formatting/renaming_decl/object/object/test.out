@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:28:1-59:33>
-test.ads(<ObjectDecl ["Renamed_Head"] test.ads:44:4-44:37>) - 44:1-44:37
-^
-   Renamed_Head : Link renames Head;$
-

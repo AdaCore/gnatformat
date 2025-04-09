@@ -1,0 +1,5 @@
+main.adb(<AdaNodeList main.adb:2:4-5:15>) - 2:1-5:15
+^
+   Foo : Integer;
+   Bar : Integer;$
+

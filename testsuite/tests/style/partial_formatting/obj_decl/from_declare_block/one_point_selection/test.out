@@ -1,5 +1,0 @@
-<CompilationUnit main.adb:1:1-10:10>
-main.adb(<ObjectDecl ["A"] main.adb:5:4-5:16>) - 5:1-5:16
-^
-      A : Integer;$
-

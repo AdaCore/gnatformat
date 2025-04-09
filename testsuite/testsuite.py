@@ -97,43 +97,10 @@ class GNATformatDriver(DiffTestDriver):
             ReplaceBuildVersionAndDate(),
         ]
 
-
-class PartialGNATformat(DiffTestDriver):
-    """
-    Driver to run partial_gnatformat.
-
-    Usage Instructions:
-
-    1. Place a "test.yaml" file in the test directory with the following keys:
-       - description: A description of the test's purpose
-       - args: An array with the arguments to be passed to partial_gnatformat
-
-    2. Include a "test.out" text file in the test directory with the expected
-       results. If a "test.out" file is missing, it will be treated as empty.
-
-    This driver executes the partial_gnatformat binary with the arguments defined in
-    test.yaml and subsequently verifies its output against the expected output in the
-    "test.out" file.
-    """
-
-    def run(self):
-        # Run the "gnatformat" program...
-        argv = ["partial_gnatformat"] + self.test_env.get("args")
-        # ... on the input Ada source code file
-        self.shell(valgrind_wrap(self.env, argv), catch_error=False)
-
-    def shell(self, *args, **kwargs) -> ProcessResult:
-        if self.env.gnatcov:
-            return self.env.gnatcov.decorate_run(super().shell, self, *args, **kwargs)
-        else:
-            return super().shell(*args, **kwargs)
-
-
 class GNATformatTestsuite(Testsuite):
     tests_subdir = "tests"
     test_driver_map = {
         "gnatformat": GNATformatDriver,
-        "partial_gnatformat": PartialGNATformat,
     }
 
     def add_options(self, parser):

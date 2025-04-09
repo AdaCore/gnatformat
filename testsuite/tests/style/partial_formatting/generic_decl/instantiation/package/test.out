@@ -1,6 +1,0 @@
-<CompilationUnit test.ads:20:1-31:27>
-test.ads(<GenericPackageInstantiation ["Int_Vectors"] test.ads:29:4-29:81>) - 29:1-29:81
-^
-   package Int_Vectors is new
-     Generic_Package_Declaration (Integer, Table, "+");$
-

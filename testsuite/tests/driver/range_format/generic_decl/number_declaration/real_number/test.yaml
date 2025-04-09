@@ -1,0 +1,10 @@
+description: NumberDecl formatting from line selection a real number declaration.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 23",
+    "-EL 24",
+    "--pipe",
+  ]

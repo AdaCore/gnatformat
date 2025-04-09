@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Random"] test.ads:28:4-28:39>) - 28:1-28:39
+^
+   function Random return Probability;$
+

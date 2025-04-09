@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Find"] test.ads:33:4-33:71>) - 33:1-33:71
+^
+   function Find (B : aliased in out Barrel; Key : String) return Real;$
+

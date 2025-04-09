@@ -1,9 +1,0 @@
-description: IncompleteTypeDecl formatting for line selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.ads",
-    "-SL 73",
-    "-EL 74",
-  ]
-status_code: 1

@@ -1,0 +1,11 @@
+description: GenericPackageRenamingDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 31",
+    "-EL 31",
+    "-EC 82",
+    "--pipe",
+  ]

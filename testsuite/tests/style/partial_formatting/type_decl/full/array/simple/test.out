@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["Table"] test.ads:37:4-37:45>) - 37:1-37:45
-^
-   type Table is array (1 .. 10) of Integer;$
-

@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:28:1-59:33>
-test.ads(<NoTypeObjectRenamingDecl ["Uno"] test.ads:50:4-50:20>) - 50:1-50:20
-^
-   Uno renames One;$
-
