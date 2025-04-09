@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ObjectDecl ["Head"] test.ads:67:4-67:47>) - 67:1-67:47
-^
-   Head : Link := new Cell'(0, null, null);$
-

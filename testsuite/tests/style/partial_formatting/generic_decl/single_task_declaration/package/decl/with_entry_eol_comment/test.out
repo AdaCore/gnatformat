@@ -1,7 +1,0 @@
-<CompilationUnit test.ads:30:1-46:27>
-test.ads(<SingleTaskDecl ["Controller"] test.ads:34:4-36:19>) - 34:1-36:19
-^
-   task Controller is
-      entry Request (Level) (D : Item);  --  a family of entries
-   end Controller;$
-

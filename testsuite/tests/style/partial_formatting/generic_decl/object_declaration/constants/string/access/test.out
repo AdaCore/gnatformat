@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:26:1-87:25>
-test.ads(<ObjectDecl ["Hello_Msg"] test.ads:85:4-85:55>) - 85:1-85:55
-^
-   Hello_Msg : constant access String := Hello'Access;$
-

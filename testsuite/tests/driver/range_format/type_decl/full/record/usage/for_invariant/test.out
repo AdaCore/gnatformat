@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Someone"] test.ads:96:4-96:43>) - 96:1-96:43
+^
+   Someone : Person_Name := new Person (M);$
+

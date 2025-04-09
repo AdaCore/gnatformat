@@ -1,0 +1,4 @@
+test.ads(<ConcreteTypeDecl ["Column"] test.ads:36:4-36:33>) - 36:1-36:33
+^
+   type Column is range 1 .. 72;$
+

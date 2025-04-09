@@ -11,6 +11,8 @@ with GNATCOLL.VFS;
 with Gnatformat.Configuration;
 
 with GPR2.Options.Opt_Parse;
+--  with Langkit_Support;
+--  with Langkit_Support.Slocs;
 
 --  Gnatformat command line utilities
 
@@ -209,6 +211,53 @@ package Gnatformat.Command_Line is
         Arg_Type    => GNATCOLL.VFS.Virtual_File,
         Convert     => To_Virtual_File,
         Help        => "Source files to format");
+
+   --  Range formatting relocated here with the specific switches
+   package Range_Format is new
+     Parse_Flag
+       (Parser => Parser,
+        Long   => "--range-format",
+        Help   => "Range formatting mode");
+
+   package Start_Line is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-SL",
+        Long        => "--start-line",
+        Help        => "Selection start line number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
+
+   package Start_Column is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-SC",
+        Long        => "--start-column",
+        Help        => "Selection start column number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
+
+   package End_Line is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-EL",
+        Long        => "--end-line",
+        Help        => "Selection end line number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
+
+   package End_Column is new
+     Parse_Option
+       (Parser      => Parser,
+        Short       => "-EC",
+        Long        => "--end-column",
+        Help        => "Selection end column number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
 
    package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 

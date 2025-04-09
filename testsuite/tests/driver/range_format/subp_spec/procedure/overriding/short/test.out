@@ -1,0 +1,4 @@
+test.ads(<SubpSpec test.ads:8:15-8:54>) - 8:1-8:54
+^
+   procedure Bar (Self : Baz; I : Integer)$
+

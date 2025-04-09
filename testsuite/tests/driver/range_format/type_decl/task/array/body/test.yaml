@@ -1,0 +1,10 @@
+description: TaskBody formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 34",
+    "-EL 36",
+    "--pipe",
+  ]

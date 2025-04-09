@@ -1,0 +1,10 @@
+description: SingleTaskDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 133",
+    "-EL 134",
+    "--pipe",
+  ]

@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Teletype"] test.ads:142:4-142:39>) - 142:1-142:39
+^
+   Teletype : Keyboard_Driver (TTY_ID);$
+

@@ -1,0 +1,12 @@
+description: IfStmt formatting from cursor position.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 5",
+    "-SC 12",
+    "-EL 5",
+    "-EC 12",
+    "--pipe",
+  ]

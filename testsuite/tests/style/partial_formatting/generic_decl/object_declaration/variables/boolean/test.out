@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:26:1-87:25>
-test.ads(<ObjectDecl ["Sorted"] test.ads:65:4-65:35>) - 65:1-65:35
-^
-   Sorted : Boolean := False;$
-

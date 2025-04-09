@@ -1,0 +1,12 @@
+description: SubpSpec formatting with the selection of an abstract procedure.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 4",
+    "-SC 5",
+    "-EL 4",
+    "-EC 10",
+    "--pipe",
+  ]

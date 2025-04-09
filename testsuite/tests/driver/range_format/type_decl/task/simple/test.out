@@ -1,0 +1,7 @@
+test.ads(<TaskTypeDecl ["Server"] test.ads:115:4-118:15>) - 115:1-118:15
+^
+   task type Server is
+      entry Next_Work_Item (WI : in Work_Item);
+      entry Shut_Down;
+   end Server;$
+

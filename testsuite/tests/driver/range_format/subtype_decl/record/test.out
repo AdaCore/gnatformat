@@ -1,0 +1,4 @@
+test.ads(<SubtypeDecl ["Male"] test.ads:60:4-60:37>) - 60:1-60:37
+^
+   subtype Male is Person (Sex => M);$
+

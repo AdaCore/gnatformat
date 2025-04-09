@@ -1,0 +1,5 @@
+test.ads(<GenericPackageRenamingDecl ["Generic_Renaming_Declaration"] test.ads:31:1-31:81>) - 31:1-31:81
+^
+generic package Generic_Renaming_Declaration
+  renames Ada.Text_IO.Enumeration_IO;$
+

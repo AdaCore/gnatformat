@@ -1,0 +1,12 @@
+description: IncompleteTypeDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 58",
+    "-SC 3",
+    "-EL 58",
+    "-EC 10",
+    "--pipe",
+  ]

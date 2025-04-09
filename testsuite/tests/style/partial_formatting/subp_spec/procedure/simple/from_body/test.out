@@ -1,5 +1,0 @@
-<CompilationUnit test.adb:1:1-10:10>
-test.adb(<SubpSpec test.adb:2:4-5:19>) - 2:1-5:19
-^
-   procedure Example (A : Integer; B : Integer; C : Integer)$
-

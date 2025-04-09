@@ -1,9 +1,0 @@
-description: PackageDecl formatting with partial selection.
-driver: partial_gnatformat
-args:
-  [
-    "test.ads",
-    "-SL 25",
-    "-EL 39",
-  ]
-status_code: 1

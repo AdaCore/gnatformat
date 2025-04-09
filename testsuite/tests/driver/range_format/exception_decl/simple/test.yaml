@@ -1,0 +1,11 @@
+description: ExceptionDecl formatting from line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 21",
+    "-EL 21",
+    "-EC 21",
+    "--pipe",
+  ]

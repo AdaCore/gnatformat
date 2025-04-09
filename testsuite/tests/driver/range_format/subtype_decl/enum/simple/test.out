@@ -1,0 +1,4 @@
+test.ads(<SubtypeDecl ["Red_Blue"] test.ads:25:4-25:32>) - 25:1-25:32
+^
+   subtype Red_Blue is Rainbow;$
+

@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:20:1-32:37>
-test.ads(<AbstractSubpDecl ["Unit_Set"] test.ads:28:5-28:70>) - 28:1-28:70
-^
-   function Unit_Set (Element : Element_Type) return Set is abstract;$
-

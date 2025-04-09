@@ -1,0 +1,11 @@
+description: GenericPackageDecl formatting from partial selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 20",
+    "-EL 31",
+    "-EC 33",
+    "--pipe",
+  ]

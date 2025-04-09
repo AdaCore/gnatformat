@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:20:1-31:27>
-test.ads(<GenericSubpInstantiation ["Swap"] test.ads:25:4-25:44>) - 25:1-25:44
-^
-   procedure Swap is new Exchange (Integer);$
-

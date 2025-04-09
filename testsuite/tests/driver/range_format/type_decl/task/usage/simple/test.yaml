@@ -1,0 +1,10 @@
+description: ObjectDecl formatting for line selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 141",
+    "-EL 142",
+    "--pipe",
+  ]

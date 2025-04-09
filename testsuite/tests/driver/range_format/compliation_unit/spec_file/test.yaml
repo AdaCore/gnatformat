@@ -1,0 +1,12 @@
+description: With an Ada file and without selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 2",
+    "-SC 1",
+    "-EL 9",
+    "-EC 10",
+    "--pipe", 
+  ]

@@ -1,5 +1,0 @@
-<CompilationUnit test.ads:27:1-149:23>
-test.ads(<ConcreteTypeDecl ["Key"] test.ads:102:4-102:24>) - 102:1-102:24
-^
-   type Key is private;$
-

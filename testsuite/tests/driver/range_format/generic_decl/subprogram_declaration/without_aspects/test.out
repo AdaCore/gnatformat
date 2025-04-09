@@ -1,0 +1,6 @@
+test.ads(<GenericSubpDecl ["Exchange"] test.ads:22:4-24:43>) - 22:1-24:43
+^
+   generic
+      type Elem is private;
+   procedure Exchange (U, V : in out Elem);$
+

@@ -1,0 +1,10 @@
+description: SubtypeDecl formatting with partial selection.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 70",
+    "-EL 71",
+    "--pipe",
+  ]

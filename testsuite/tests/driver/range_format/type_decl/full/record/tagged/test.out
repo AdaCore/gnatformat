@@ -1,0 +1,7 @@
+test.ads(<ConcreteTypeDecl ["Car"] test.ads:79:4-82:15>) - 79:1-82:15
+^
+   type Car is tagged record
+      Number : Integer;
+      Owner  : Person_Name;
+   end record;$
+
