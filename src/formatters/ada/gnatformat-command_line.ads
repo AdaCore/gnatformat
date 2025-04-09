@@ -217,51 +217,47 @@ package Gnatformat.Command_Line is
      Parse_Flag
        (Parser => Parser,
         Long   => "--range-format",
-        Help   => "Selection formatting mode activated");
+        Help   => "Range formatting mode");
 
    package Start_Line is new
      Parse_Option
-        (Parser      => Parser,
-         Short       => "-SL",
-         Long        => "--start-line",
-         Help        =>
-            "Selection start line number for selection formatting mode",
-         Arg_Type    => Natural,
-         Convert     => Natural'Value,
-         Default_Val => 0);
+       (Parser      => Parser,
+        Short       => "-SL",
+        Long        => "--start-line",
+        Help        => "Selection start line number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
 
    package Start_Column is new
      Parse_Option
-        (Parser      => Parser,
-         Short       => "-SC",
-         Long        => "--start-column",
-         Help        =>
-            "Selection start column number for selection formatting mode",
-         Arg_Type    => Natural,
-         Convert     => Natural'Value,
-         Default_Val => 0);
+       (Parser      => Parser,
+        Short       => "-SC",
+        Long        => "--start-column",
+        Help        => "Selection start column number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
 
    package End_Line is new
      Parse_Option
-        (Parser      => Parser,
-         Short       => "-EL",
-         Long        => "--end-line",
-         Help        =>
-            "Selection end line number for selection formatting mode",
-         Arg_Type    => Natural,
-         Convert     => Natural'Value,
-         Default_Val => 0);
+       (Parser      => Parser,
+        Short       => "-EL",
+        Long        => "--end-line",
+        Help        => "Selection end line number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
 
    package End_Column is new
      Parse_Option
-        (Parser      => Parser,
-         Short       => "-EC",
-         Long        => "--end-column",
-         Help        =>
-            "Selection end column number for selection formatting mode",
-         Arg_Type    => Natural,
-         Convert     => Natural'Value,
-         Default_Val => 0);
+       (Parser      => Parser,
+        Short       => "-EC",
+        Long        => "--end-column",
+        Help        => "Selection end column number for range formatting",
+        Arg_Type    => Natural,
+        Convert     => Natural'Value,
+        Default_Val => 0);
 
    package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 
