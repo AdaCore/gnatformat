@@ -79,8 +79,8 @@ begin
       end if;
 
       if not Gnatformat.Command_Line.GPR_Args.Parse_GPR2_Options
-        (Arguments => Unparsed_Arguments,
-         Options   => Gnatformat.Project.GPR_Options)
+               (Arguments => Unparsed_Arguments,
+                Options   => Gnatformat.Project.GPR_Options)
       then
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error, "Failed to parse CLI GPR arguments");
@@ -129,23 +129,22 @@ begin
          Project_Tree : GPR2.Project.Tree.Object;
 
          CLI_Formatting_Config :
-         constant Gnatformat.Configuration.Format_Options_Type :=
-           Gnatformat.Command_Line.Configuration.Get;
+           constant Gnatformat.Configuration.Format_Options_Type :=
+             Gnatformat.Command_Line.Configuration.Get;
 
          Diagnostics : Diagnostics_Vectors.Vector;
 
-         Unparsing_Configuration_File :
-         constant GNATCOLL.VFS.Virtual_File :=
+         Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
            Gnatformat.Command_Line.Unparsing_Configuration.Get;
          Unparsing_Configuration      :
-         constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-           Gnatformat.Configuration.Load_Unparsing_Configuration
-             (Unparsing_Configuration_File, Diagnostics);
+           constant Langkit_Support_Unparsing.Unparsing_Configuration :=
+             Gnatformat.Configuration.Load_Unparsing_Configuration
+               (Unparsing_Configuration_File, Diagnostics);
 
       begin
          if Project_File = GNATCOLL.VFS.No_File
            and Gnatformat.Command_Line.Sources.Get
-             = Gnatformat.Command_Line.Sources.No_Results
+               = Gnatformat.Command_Line.Sources.No_Results
            and not Gnatformat.Command_Line.Gitdiff.Get.Is_Set
          then
             Ada.Text_IO.Put_Line
@@ -180,13 +179,10 @@ begin
 
          if not Diagnostics.Is_Empty then
             Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error,
-               "Failed to load formatting rules");
+              (Ada.Text_IO.Standard_Error, "Failed to load formatting rules");
             for Diagnostic of Diagnostics loop
                Gnatformat.Gnatformat_Trace.Trace
-                 (Langkit_Support
-                  .Diagnostics
-                  .To_Pretty_String (Diagnostic));
+                 (Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic));
             end loop;
             GNAT.OS_Lib.OS_Exit (1);
          end if;
@@ -203,15 +199,14 @@ begin
             -- Get_Preprocessor --
             ----------------------
 
-            function Get_Preprocessor_Data return Preprocessor_Data_Record
-            is
+            function Get_Preprocessor_Data return Preprocessor_Data_Record is
                Result : Preprocessor_Data_Record;
             begin
                if Project_Tree.Is_Defined then
                   Result.Preprocessor_Data :=
                     Libadalang
                       .Preprocessing
-                        .Extract_Preprocessor_Data_From_Project (Project_Tree);
+                      .Extract_Preprocessor_Data_From_Project (Project_Tree);
                   Result.Default_Config :=
                     Libadalang.Preprocessing.Default_Config
                       (Result.Preprocessor_Data);
@@ -246,8 +241,8 @@ begin
                 (File_Reader => Preprocessor_Data.File_Reader);
 
             Project_Format_Options_Cache :
-            Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
-              Gnatformat.Configuration.Create_Project_Format_Options_Cache;
+              Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
+                Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
             Print_Source_Simple_Name : Boolean := True;
             Print_New_Line           : Boolean := False;
@@ -265,17 +260,16 @@ begin
             function Format_Source
               (Source                    : GNATCOLL.VFS.Virtual_File;
                Project_Formatting_Config :
-               Gnatformat.Configuration.Format_Options_Type)
-                  return Format_Source_Result;
+                 Gnatformat.Configuration.Format_Options_Type)
+               return Format_Source_Result;
             --  Resolves the right format options for Path and formats it
             --  with Project_Formatting_Config.
 
             function Process_Project_Source
               (Source         : Gnatformat.Project.Project_Source_Record;
-               Format_Options :
-               Gnatformat.Configuration.Format_Options_Type :=
+               Format_Options : Gnatformat.Configuration.Format_Options_Type :=
                  Gnatformat.Configuration.Default_Format_Options)
-                  return Boolean;
+               return Boolean;
             --  Formats the source defined by Path.
             --  If Source is Visible, then its format options are fetched
             --  by using its owning view. If invisible, then Format_Options
@@ -285,7 +279,7 @@ begin
 
             function Process_Standalone_Source
               (Source : GNATCOLL.VFS.Virtual_File; Charset : String)
-                  return Boolean;
+               return Boolean;
             --  Formats the source defined by Source.
             --  If --pipe is used, then prints the formatted source to
             --  stdout. Otherwise writes it to disk.
@@ -297,18 +291,16 @@ begin
             function Format_Source
               (Source                    : GNATCOLL.VFS.Virtual_File;
                Project_Formatting_Config :
-               Gnatformat.Configuration.Format_Options_Type)
-                  return Format_Source_Result
+                 Gnatformat.Configuration.Format_Options_Type)
+               return Format_Source_Result
             is
                Charset : constant String :=
                  Ada.Strings.Unbounded.To_String
                    (Gnatformat.Configuration.Get_Charset
-                      (Project_Formatting_Config,
-                       Source.Display_Base_Name));
+                      (Project_Formatting_Config, Source.Display_Base_Name));
                Unit    : constant Libadalang.Analysis.Analysis_Unit :=
                  LAL_Context.Get_From_File
-                   (Source.Display_Full_Name (Normalize => True),
-                    Charset);
+                   (Source.Display_Full_Name (Normalize => True), Charset);
 
             begin
                if Unit.Has_Diagnostics then
@@ -316,8 +308,8 @@ begin
                      Diagnostics : constant Unbounded_String_Vector :=
                        [for Diagnotic of Unit.Diagnostics
                         => Ada.Strings.Unbounded.To_Unbounded_String
-                          (Langkit_Support.Diagnostics.To_Pretty_String
-                               (Diagnotic))];
+                             (Langkit_Support.Diagnostics.To_Pretty_String
+                                (Diagnotic))];
 
                   begin
                      return
@@ -342,10 +334,9 @@ begin
 
             function Process_Project_Source
               (Source         : Gnatformat.Project.Project_Source_Record;
-               Format_Options :
-               Gnatformat.Configuration.Format_Options_Type :=
+               Format_Options : Gnatformat.Configuration.Format_Options_Type :=
                  Gnatformat.Configuration.Default_Format_Options)
-                  return Boolean
+               return Boolean
             is
                use type Ada.Exceptions.Exception_Id;
 
@@ -359,7 +350,7 @@ begin
                  ("Processing project source " & Source_Simple_Name);
 
                if Libadalang.Preprocessing.Needs_Preprocessing
-                 (Preprocessor_Data.Preprocessor_Data, Source_Simple_Name)
+                    (Preprocessor_Data.Preprocessor_Data, Source_Simple_Name)
                then
                   if Print_New_Line then
                      Ada.Text_IO.New_Line;
@@ -377,22 +368,20 @@ begin
 
                declare
                   View_Format_Options :
-                  Gnatformat.Configuration.Format_Options_Type :=
-                    (case Source.Visible is
-                        when True =>
-                          Gnatformat.Configuration.Get
-                       (Project_Format_Options_Cache,
-                        Source.Visible_Source.Owning_View),
-                        when False => Format_Options);
+                    Gnatformat.Configuration.Format_Options_Type :=
+                      (case Source.Visible is
+                         when True =>
+                           Gnatformat.Configuration.Get
+                             (Project_Format_Options_Cache,
+                              Source.Visible_Source.Owning_View),
+                         when False => Format_Options);
 
                begin
                   Gnatformat.Configuration.Overwrite
                     (View_Format_Options, CLI_Formatting_Config);
 
-                  if Gnatformat
-                    .Configuration
-                      .Get_Ignore (View_Format_Options)
-                    .Contains (Source_Simple_Name)
+                  if Gnatformat.Configuration.Get_Ignore (View_Format_Options)
+                       .Contains (Source_Simple_Name)
                   then
                      Gnatformat_Trace.Trace
                        (Source_Simple_Name
@@ -511,8 +500,8 @@ begin
 
                   if Ada.Exceptions.Exception_Identity (E)
                     = Gnatformat
-                    .Formatting
-                      .Internal_Error_Off_On_Invalid_Marker'Identity
+                        .Formatting
+                        .Internal_Error_Off_On_Invalid_Marker'Identity
                   then
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
@@ -529,19 +518,18 @@ begin
 
             function Process_Standalone_Source
               (Source : GNATCOLL.VFS.Virtual_File; Charset : String)
-                  return Boolean
+               return Boolean
             is
                use type Ada.Exceptions.Exception_Id;
 
             begin
                Gnatformat_Trace.Trace
-                 ("Processing standalone source "
-                  & Source.Display_Base_Name);
+                 ("Processing standalone source " & Source.Display_Base_Name);
 
                declare
                   Unit : constant Libadalang.Analysis.Analysis_Unit :=
-                    LAL_Context.Get_From_File (Source.Display_Full_Name,
-                                               Charset);
+                    LAL_Context.Get_From_File
+                      (Source.Display_Full_Name, Charset);
 
                begin
                   if Unit.Has_Diagnostics then
@@ -571,12 +559,12 @@ begin
                   if Gnatformat.Command_Line.Pipe.Get then
                      declare
                         Formatted_Source :
-                        constant Ada.Strings.Unbounded.Unbounded_String :=
-                          Gnatformat.Formatting.Format
-                            (Unit           => Unit,
-                             Format_Options =>
-                               Gnatformat.Command_Line.Configuration.Get,
-                             Configuration  => Unparsing_Configuration);
+                          constant Ada.Strings.Unbounded.Unbounded_String :=
+                            Gnatformat.Formatting.Format
+                              (Unit           => Unit,
+                               Format_Options =>
+                                 Gnatformat.Command_Line.Configuration.Get,
+                               Configuration  => Unparsing_Configuration);
 
                      begin
                         if Print_New_Line then
@@ -590,21 +578,20 @@ begin
                              ("--  " & Source.Display_Base_Name);
                         end if;
 
-                        Ada.Strings.Unbounded.Text_IO.Put
-                          (Formatted_Source);
+                        Ada.Strings.Unbounded.Text_IO.Put (Formatted_Source);
                      end;
 
                   else
                      declare
                         Formatted_Source        :
-                        constant Ada.Strings.Unbounded.Unbounded_String :=
-                          Gnatformat.Formatting.Format
-                            (Unit           => Unit,
-                             Format_Options =>
-                               Gnatformat.Command_Line.Configuration.Get,
-                             Configuration  => Unparsing_Configuration);
+                          constant Ada.Strings.Unbounded.Unbounded_String :=
+                            Gnatformat.Formatting.Format
+                              (Unit           => Unit,
+                               Format_Options =>
+                                 Gnatformat.Command_Line.Configuration.Get,
+                               Configuration  => Unparsing_Configuration);
                         Formatted_Source_Access :
-                        Ada.Strings.Unbounded.Aux.Big_String_Access;
+                          Ada.Strings.Unbounded.Aux.Big_String_Access;
                         Formatted_Source_Length : Natural;
 
                         Source_File   : Ada.Streams.Stream_IO.File_Type;
@@ -614,18 +601,15 @@ begin
                         if Gnatformat.Command_Line.Check.Get then
                            declare
                               Original_Source_Size :
-                              constant Ada.Directories.File_Size :=
-                                Ada.Directories.Size (Source
-                                                      .Display_Full_Name);
+                                constant Ada.Directories.File_Size :=
+                                  Ada.Directories.Size
+                                    (Source.Display_Full_Name);
                               Original_Source      :
-                              Ada.Strings.Unbounded.String_Access :=
-                                new String
-                                  (1 .. Integer (Original_Source_Size));
+                                Ada.Strings.Unbounded.String_Access :=
+                                  new String
+                                        (1 .. Integer (Original_Source_Size));
 
-                              use type Ada
-                                .Strings
-                                  .Unbounded
-                                    .Unbounded_String;
+                              use type Ada.Strings.Unbounded.Unbounded_String;
                            begin
                               Ada.Streams.Stream_IO.Open
                                 (File => Source_File,
@@ -635,13 +619,11 @@ begin
                               Source_Stream :=
                                 Ada.Streams.Stream_IO.Stream (Source_File);
 
-                              String'Read (Source_Stream,
-                                           Original_Source.all);
+                              String'Read (Source_Stream, Original_Source.all);
 
                               Ada.Streams.Stream_IO.Close (Source_File);
 
-                              if Original_Source.all /= Formatted_Source
-                              then
+                              if Original_Source.all /= Formatted_Source then
                                  Gnatformat.Project.Set_General_Failed;
                                  Ada.Text_IO.Put_Line
                                    (Ada.Text_IO.Standard_Error,
@@ -702,8 +684,8 @@ begin
 
                   if Ada.Exceptions.Exception_Identity (E)
                     = Gnatformat
-                    .Formatting
-                      .Internal_Error_Off_On_Invalid_Marker'Identity
+                        .Formatting
+                        .Internal_Error_Off_On_Invalid_Marker'Identity
                   then
                      Ada.Text_IO.Put_Line
                        (Ada.Text_IO.Standard_Error,
@@ -715,8 +697,8 @@ begin
             end Process_Standalone_Source;
 
             Base_Commit_ID :
-            constant Gnatformat.Configuration.Optional_Unbounded_String :=
-              Gnatformat.Command_Line.Gitdiff.Get;
+              constant Gnatformat.Configuration.Optional_Unbounded_String :=
+                Gnatformat.Command_Line.Gitdiff.Get;
 
          begin
             if Preprocessor_Data.Default_Config.Enabled then
@@ -747,14 +729,14 @@ begin
                   declare
                      use Gnatformat.Project;
                      Command_Line_Sources :
-                     constant Gnatformat.Project.Project_Source_Vector :=
-                       Get_Command_Line_Sources (Project_Tree);
+                       constant Gnatformat.Project.Project_Source_Vector :=
+                         Get_Command_Line_Sources (Project_Tree);
 
                      Format_Options :
-                     Gnatformat.Configuration.Format_Options_Type :=
-                       Gnatformat.Configuration.Get
-                         (Project_Format_Options_Cache,
-                          Project_Tree.Root_Project);
+                       Gnatformat.Configuration.Format_Options_Type :=
+                         Gnatformat.Configuration.Get
+                           (Project_Format_Options_Cache,
+                            Project_Tree.Root_Project);
 
                   begin
                      Gnatformat.Configuration.Overwrite
@@ -762,7 +744,7 @@ begin
 
                      for Source of Command_Line_Sources loop
                         exit when
-                        not Process_Project_Source (Source, Format_Options)
+                          not Process_Project_Source (Source, Format_Options)
                           and not Gnatformat.Command_Line.Keep_Going.Get;
                      end loop;
                   end;
@@ -770,10 +752,10 @@ begin
                else
                   declare
                      Charset :
-                     constant Gnatformat
-                       .Configuration
-                         .Optional_Unbounded_String :=
-                           Gnatformat.Command_Line.Charset.Get;
+                       constant Gnatformat
+                                  .Configuration
+                                  .Optional_Unbounded_String :=
+                         Gnatformat.Command_Line.Charset.Get;
                   begin
                      for Source of Gnatformat.Command_Line.Sources.Get loop
                         if not Source.Is_Regular_File then
@@ -790,25 +772,23 @@ begin
                              (Ada.Text_IO.Standard_Error,
                               "Failed to find " & Source.Display_Base_Name);
 
-                           if not Gnatformat.Command_Line.Keep_Going.Get
-                           then
+                           if not Gnatformat.Command_Line.Keep_Going.Get then
                               exit;
                            end if;
 
                         else
                            exit when
-                           not Process_Standalone_Source
-                             (Source,
-                              (if Charset.Is_Set
-                               then
-                                  Ada.Strings.Unbounded.To_String
-                                 (Charset.Value)
-                               else
-                                  Gnatformat.Configuration.Default_Charset))
-                              and not Gnatformat
-                                .Command_Line
-                                  .Keep_Going
-                                    .Get;
+                             not Process_Standalone_Source
+                                   (Source,
+                                    (if Charset.Is_Set
+                                     then
+                                       Ada.Strings.Unbounded.To_String
+                                         (Charset.Value)
+                                     else
+                                       Gnatformat
+                                         .Configuration
+                                         .Default_Charset))
+                             and not Gnatformat.Command_Line.Keep_Going.Get;
                         end if;
                      end loop;
                   end;
@@ -817,8 +797,7 @@ begin
             elsif Base_Commit_ID.Is_Set then
                declare
                   use Gnatformat.Configuration;
-                  Charset :
-                  constant Optional_Unbounded_String :=
+                  Charset : constant Optional_Unbounded_String :=
                     Gnatformat.Command_Line.Charset.Get;
                begin
                   Gitdiff.Format_New_Lines
@@ -832,8 +811,8 @@ begin
                           (if Charset.Is_Set
                            then Charset.Value
                            else
-                              Ada.Strings.Unbounded.To_Unbounded_String
-                             (Default_Charset))));
+                             Ada.Strings.Unbounded.To_Unbounded_String
+                               (Default_Charset))));
                end;
             else
                declare
@@ -842,15 +821,15 @@ begin
                     [for Source of Get_Project_Sources (Project_Tree)
                      => Project_Source_Record'
                        (File           =>
-                            GNATCOLL.VFS.Create_From_UTF8
-                          (Source.Path_Name.String_Value),
+                          GNATCOLL.VFS.Create_From_UTF8
+                            (Source.Path_Name.String_Value),
                         Visible        => True,
                         Visible_Source => Source)];
 
                begin
                   for Source of Command_Line_Sources loop
                      exit when
-                     not Process_Project_Source (Source)
+                       not Process_Project_Source (Source)
                        and not Gnatformat.Command_Line.Keep_Going.Get;
                   end loop;
                end;

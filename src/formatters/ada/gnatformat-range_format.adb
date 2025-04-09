@@ -47,24 +47,24 @@ package body Gnatformat.Range_Format is
       Project_Tree : GPR2.Project.Tree.Object;
 
       CLI_Formatting_Config :
-      constant Gnatformat.Configuration.Format_Options_Type :=
-        Gnatformat.Command_Line.Configuration.Get;
+        constant Gnatformat.Configuration.Format_Options_Type :=
+          Gnatformat.Command_Line.Configuration.Get;
 
       Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
 
       Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
         Gnatformat.Command_Line.Unparsing_Configuration.Get;
       Unparsing_Configuration      :
-      constant Unparsing.Unparsing_Configuration :=
-        Gnatformat.Configuration.Load_Unparsing_Configuration
-          (Unparsing_Configuration_File, Diagnostics);
+        constant Unparsing.Unparsing_Configuration :=
+          Gnatformat.Configuration.Load_Unparsing_Configuration
+            (Unparsing_Configuration_File, Diagnostics);
 
       Sources : constant Gnatformat.Command_Line.Sources.Result_Array :=
         Gnatformat.Command_Line.Sources.Get;
 
       Project_Format_Options_Cache :
-      Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
-        Gnatformat.Configuration.Create_Project_Format_Options_Cache;
+        Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
+          Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
       Context : constant Libadalang.Analysis.Analysis_Context :=
         Libadalang.Analysis.Create_Context;
@@ -77,11 +77,9 @@ package body Gnatformat.Range_Format is
 
    begin
       --  Source line expected for range formatting
-      if Sources = Gnatformat.Command_Line.Sources.No_Results
-      then
+      if Sources = Gnatformat.Command_Line.Sources.No_Results then
          Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "One source file must be provided.");
+           (Ada.Text_IO.Standard_Error, "One source file must be provided.");
          Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -92,8 +90,7 @@ package body Gnatformat.Range_Format is
       --  Only one source file is expected to be provided
       if Sources'Length > 1 then
          Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Only one source file is expected.");
+           (Ada.Text_IO.Standard_Error, "Only one source file is expected.");
          Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
          Ada.Text_IO.Put_Line
            (Ada.Text_IO.Standard_Error,
@@ -147,8 +144,7 @@ package body Gnatformat.Range_Format is
 
             Format_Options : Gnatformat.Configuration.Format_Options_Type :=
               Gnatformat.Configuration.Get
-                (Project_Format_Options_Cache,
-                 Project_Tree.Root_Project);
+                (Project_Format_Options_Cache, Project_Tree.Root_Project);
 
             Source : constant Project_Source_Record :=
               Command_Line_Sources.First_Element;
@@ -156,26 +152,24 @@ package body Gnatformat.Range_Format is
             --  the given context
 
             Project_Formatting_Config :
-            Gnatformat.Configuration.Format_Options_Type :=
-              (case Source.Visible is
-                  when True =>
-                    Gnatformat.Configuration.Get
-                 (Project_Format_Options_Cache,
-                  Source.Visible_Source.Owning_View),
-                  when False => Format_Options);
+              Gnatformat.Configuration.Format_Options_Type :=
+                (case Source.Visible is
+                   when True =>
+                     Gnatformat.Configuration.Get
+                       (Project_Format_Options_Cache,
+                        Source.Visible_Source.Owning_View),
+                   when False => Format_Options);
 
             Charset : constant String :=
               Ada.Strings.Unbounded.To_String
                 (Gnatformat.Configuration.Get_Charset
-                   (Project_Formatting_Config,
-                    Source.File.Display_Base_Name));
+                   (Project_Formatting_Config, Source.File.Display_Base_Name));
 
-            Unit    : constant Libadalang.Analysis.Analysis_Unit :=
+            Unit : constant Libadalang.Analysis.Analysis_Unit :=
               Context.Get_From_File
-                (Source.File.Display_Full_Name (Normalize => True),
-                 Charset);
+                (Source.File.Display_Full_Name (Normalize => True), Charset);
 
-            Edits   : Gnatformat.Edits.Formatting_Edit_Type;
+            Edits : Gnatformat.Edits.Formatting_Edit_Type;
 
          begin
             Gnatformat.Configuration.Overwrite
@@ -199,25 +193,22 @@ package body Gnatformat.Range_Format is
             Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
             Ada.Text_IO.Put_Line
               (Ada.Text_IO.Standard_Error,
-               "Failed to find "
-               & Sources (Sources'First).Display_Base_Name);
+               "Failed to find " & Sources (Sources'First).Display_Base_Name);
             return;
          else
             declare
                use Gnatformat.Configuration;
-               Source : constant GNATCOLL.VFS.Virtual_File :=
+               Source  : constant GNATCOLL.VFS.Virtual_File :=
                  Sources (Sources'First);
-               Charset :
-               constant Optional_Unbounded_String :=
+               Charset : constant Optional_Unbounded_String :=
                  Gnatformat.Command_Line.Charset.Get;
                Unit    : constant Libadalang.Analysis.Analysis_Unit :=
                  Context.Get_From_File
                    (Source.Display_Full_Name (Normalize => True),
-                    (if Charset.Is_Set then
-                            Ada.Strings.Unbounded.To_String (Charset.Value)
-                     else
-                        Default_Charset));
-               Edits : Gnatformat.Edits.Formatting_Edit_Type;
+                    (if Charset.Is_Set
+                     then Ada.Strings.Unbounded.To_String (Charset.Value)
+                     else Default_Charset));
+               Edits   : Gnatformat.Edits.Formatting_Edit_Type;
             begin
                Edits :=
                  Gnatformat.Formatting.Range_Format

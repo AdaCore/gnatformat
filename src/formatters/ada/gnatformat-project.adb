@@ -32,8 +32,7 @@ package body Gnatformat.Project is
    --  General_Failed  --
    ----------------------
 
-   function General_Failed return Boolean
-   is
+   function General_Failed return Boolean is
    begin
       return General_Failed_Flag;
    end General_Failed;
