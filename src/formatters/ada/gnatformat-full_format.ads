@@ -4,29 +4,23 @@
 --
 --  Package with the public API for editing sources
 
-with GNATCOLL.VFS;
-
+with Gnatformat.Command_Line;
 with Gnatformat.Configuration;
 
 with GPR2.Project.Tree;
 
 with Langkit_Support.Generic_API.Unparsing;
-with Langkit_Support.Slocs;
 
-package Gnatformat.Range_Format is
+package Gnatformat.Full_Format is
+
    package Langkit_Support_Unparsing renames
      Langkit_Support.Generic_API.Unparsing;
 
-   procedure Range_Format
+   procedure Full_Format
      (Project_Tree            : GPR2.Project.Tree.Object;
-      Source                  : GNATCOLL.VFS.Virtual_File;
-      Selection_Range         : Langkit_Support.Slocs.Source_Location_Range;
       CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
-      Default_Charset         : String :=
-        Gnatformat.Configuration.Default_Charset;
-      Pipe                    : Boolean := False);
-   --  Range formats the Selection_Range of Source.
+      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array);
 
-end Gnatformat.Range_Format;
+end Gnatformat.Full_Format;

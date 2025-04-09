@@ -71,7 +71,8 @@ package Gnatformat.Command_Line is
         Short  => "-U",
         Name   => "Process all sources",
         Help   =>
-          "Process all files, not only those that are in the closure of mains");
+          "Process all files, not only those that are in the closure of "
+          & "mains");
 
    package Verbose is new
      Parse_Flag
@@ -156,7 +157,8 @@ package Gnatformat.Command_Line is
        (Parser      => Parser,
         Long        => "--indentation-continuation",
         Help        =>
-          "Continuation Line Indentation size (default value = indentation - 1)",
+          "Continuation Line Indentation size "
+          & "(default value = indentation - 1)",
         Arg_Type    => Gnatformat.Configuration.Optional_Positive,
         Convert     => To_Optional_Positive,
         Default_Val => Gnatformat.Configuration.Optional_Positives.None);
