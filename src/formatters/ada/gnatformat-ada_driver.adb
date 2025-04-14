@@ -32,7 +32,6 @@ with Gnatformat.Project;
 with GPR2;
 with GPR2.Build.Source;      use GPR2.Build.Source;
 with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
-with GPR2.Options;
 with GPR2.Project.Tree;
 
 with Langkit_Support.Diagnostics;
@@ -67,28 +66,9 @@ procedure Gnatformat.Ada_Driver is
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
-   declare
-      Unparsed_Arguments : GNATCOLL.Opt_Parse.XString_Vector;
-   begin
-      if not Gnatformat.Command_Line.Parser.Parse
-               (Unknown_Arguments => Unparsed_Arguments)
-      then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error, "Failed to parse CLI arguments");
-         GNAT.OS_Lib.OS_Exit (1);
-      end if;
-
-      if not Gnatformat.Command_Line.GPR_Args.Parse_GPR2_Options
-               (Arguments => Unparsed_Arguments,
-                Options   => Gnatformat.Project.GPR_Options)
-      then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error, "Failed to parse CLI GPR arguments");
-         GNAT.OS_Lib.OS_Exit (1);
-      end if;
-   end;
-
    if not Gnatformat.Command_Line.Parser.Parse then
+      Ada.Text_IO.Put_Line
+        (Ada.Text_IO.Standard_Error, "Failed to parse CLI arguments");
       GNAT.OS_Lib.OS_Exit (1);
    end if;
 
@@ -111,6 +91,8 @@ begin
 
    Gnatformat.Configuration.Elaborate_GPR2;
 
+   Gnatformat.Project.GPR_Options :=
+     Gnatformat.Command_Line.GPR_Args.Parsed_GPR2_Options;
    Gnatformat.Project.GPR_Options.Print_GPR_Registry;
 
    if Gnatformat.Command_Line.Range_Format.Get then
