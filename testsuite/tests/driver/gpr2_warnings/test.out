@@ -1,6 +1,5 @@
-foo.adb: warning: unit name "TEST" does not match source name
-test.gpr: warning: duplicated body for unit "TEST" in /foo.adb and /test.adb
---  foo.adb
+foo.adb: warning: unit name "TEST" does not match source name. The source will be ignored.
+--  test.adb
 with Test_Dep;
 
 procedure Test is

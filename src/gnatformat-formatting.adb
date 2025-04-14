@@ -223,16 +223,13 @@ package body Gnatformat.Formatting is
                   elsif Ada.Strings.Unbounded.Element (Source, J)
                     = Ada.Characters.Latin_1.CR
                   then
-                     --  FIXME:
-                     --  Uncomment the following if when
-                     --  eng/libadalang/langkit#887 is resolved.
                      --  When the end of line is set to CRLF, the unparsing
                      --  engine adds a CR after the comment, leading to the
                      --  sequence CR CR LF.
 
-                     --  if Next_Must_Be_LF then
-                     --     return False;
-                     --  end if;
+                     if Next_Must_Be_LF then
+                        return False;
+                     end if;
 
                      Next_Must_Be_LF := True;
 
