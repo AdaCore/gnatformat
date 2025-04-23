@@ -168,18 +168,21 @@ package body Gnatformat.Formatting is
          return Marker_Information_Vector
       is
          function Is_Whole_Line
-           (Marker_Start, Marker_End : Positive) return Boolean;
+           (Marker_Start, Marker_End : Positive;
+            Line_Start_Index         : out Positive) return Boolean;
          --  Checks if the marker delimited by Marker_Start and Marker_End is
          --  in a whole line, i.e., if after skipping leading and trailing
          --  spaces, the marker is preceded and succeded by LF or the CR LF
          --  sequence.
+         --  If so, sets Line_Start_Index to where the line starts in Source.
 
          -------------------
          -- Is_Whole_Line --
          -------------------
 
          function Is_Whole_Line
-           (Marker_Start, Marker_End : Positive) return Boolean
+           (Marker_Start, Marker_End : Positive;
+            Line_Start_Index         : out Positive) return Boolean
          is
             Source_Length : constant Natural :=
               Ada.Strings.Unbounded.Length (Source);
@@ -187,6 +190,8 @@ package body Gnatformat.Formatting is
             Next_Must_Be_LF : Boolean := False;
 
          begin
+            Line_Start_Index := 1; -- Base case
+
             --  Check that after skipping leading spaces, we find LF.
 
             if Marker_Start /= 1 then
@@ -198,6 +203,7 @@ package body Gnatformat.Formatting is
                   elsif Ada.Strings.Unbounded.Element (Source, J)
                     = Ada.Characters.Latin_1.LF
                   then
+                     Line_Start_Index := J + 1;
                      exit;
                   else
                      return False;
@@ -255,6 +261,9 @@ package body Gnatformat.Formatting is
                --  markers that come before the first Off marker are simply
                --  ignored.
 
+               Line_Start_Index : Positive;
+               --  Used to store the line start index of markers
+
             begin
                while From < Ada.Strings.Unbounded.Length (Source) loop
                   From :=
@@ -279,11 +288,14 @@ package body Gnatformat.Formatting is
                         + Ada.Strings.Unbounded.Length
                             (On_Off_Section_Markers
                                (On_Off_Section_Marker_Index) (Current_Marker))
-                        - 1)
+                        - 1,
+                        Line_Start_Index)
                   then
                      Markers_Information.Append
                        (Marker_Information_Record'
-                          (Positive (From),
+                          ((case Current_Marker is
+                              when On => From,
+                              when Off => Line_Start_Index),
                            On_Off_Section_Marker_Index,
                            Current_Marker));
 
@@ -304,7 +316,6 @@ package body Gnatformat.Formatting is
                            (Current_Marker));
                end loop;
             end;
-
          end loop;
 
          Marker_Info_Vector_Sorting.Sort (Markers_Information);

@@ -1,0 +1,5 @@
+description: |4
+    Test that the '--  begin read only' / '--  begin read only' section in
+    the middle of the source keep their indentation after formatting.
+driver: gnatformat
+args: ["--pipe", "test.adb"]
