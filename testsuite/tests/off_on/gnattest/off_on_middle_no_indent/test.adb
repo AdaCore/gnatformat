@@ -1,0 +1,9 @@
+procedure Test is
+--  begin read only
+   A :
+   constant B
+   := C;
+--  end read only
+   begin
+   null;
+end Test;
