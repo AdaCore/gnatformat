@@ -51,8 +51,16 @@ The specific options allowing to customize the formatting of your sources are:
   In the absence of this option, the default value is ``lf``.
 * ``--charset``: allows you to specify the charset to use for source decoding.
   In absence of this option, the default value is ``iso-8859-1``.
+* ``--ignore``: allows you to to specify a file with the source file names that must not be
+  formatted.
+* ``--gitdiff``: allows you to format only the lines added since a given commit.
+* ``--range-format``: allows to enter in selection range formatting mode.
+* ``--start-line, -SL``: allows to specify the selection's start line number for range formatting.
+* ``--start-column, -SC``: allows to specify the selection's start column number for range formatting.
+* ``--end-line, -EL``: allows to specify the selection's end line number for range formatting.
+* ``--end-column, -EC``: allows to specify the selection's end column number for range formatting.
 
-As a libray
+As a library
 -----------
 
 The formatting functionality is also available via a library.
