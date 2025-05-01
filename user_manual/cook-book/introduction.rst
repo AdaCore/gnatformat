@@ -35,7 +35,9 @@ https://gcc.gnu.org/onlinedocs/gnat-style.pdf
 
 For more information about the tool, the full manual is available at 
 
-  * in your installation folder, under :file:`<install_prefix>/share/doc/gnatformat/html`
+  * in your installation folder, under
+    :file:`<install_prefix>/share/doc/gnatformat/html`
+    :file:`<install_prefix>/share/doc/gnatformat/pdf`
 
   * online, at https://docs.adacore.com/live/wave/gnatformat/html/user-guide/index.html
 

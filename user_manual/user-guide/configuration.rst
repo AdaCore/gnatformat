@@ -28,6 +28,16 @@ The formatting of your sources can be customized by the following options:
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
 * ``--ignore`` is an option allowing to specify a file with the source file names that must not be
   formatted.
+* ``--gitdiff`` is an option to format only the lines added since a given commit.
+* ``--range-format`` is an option allowing to enter in selection range formatting mode.
+* ``--start-line, -SL`` is an option allowing to specify the selection's start line number for
+  range formatting.
+* ``--start-column, -SC`` is an option allowing to specify the selection's start column number for
+  range formatting.
+* ``--end-line, -EL`` is an option allowing to specify the selection's end line number for range
+  formatting.
+* ``--end-column, -EC`` is an option allowing to specify the selection's end column number for
+  range formatting.
 
 The tool allows as well the usage of a custom unparsing configuration file. This file can be
 specified instead of the default one using the ``--unparsing-configuration`` switch taking as
@@ -100,5 +110,5 @@ These regions are delimited by the following pairs of whole line comments:
 * ``--  begin read only`` / ``--  end read only``, for GNATtest users
 * ``--!pp off`` / ``--!pp on``, for GNATpp users
 
-Additionally, the user is allowed to specify just the "off" comment (e.g., ``--format off``), in
+Additionally, the user is allowed to specify just the "off" comment (e.g., ``--!format off``), in
 which case the rest of the file will not be formatted.
