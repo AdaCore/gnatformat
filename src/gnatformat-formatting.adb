@@ -909,7 +909,6 @@ package body Gnatformat.Formatting is
                    | Ada_Stmt
                    | Ada_Stmt_List
                    | Ada_Ada_Node_List
-                   --  | Ada_Subp_Spec
                    | Ada_Use_Type_Clause);
 
       function Is_Relevant_Parent_Node (Node : Ada_Node'Class) return Boolean
