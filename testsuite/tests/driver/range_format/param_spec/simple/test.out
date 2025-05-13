@@ -1,0 +1,4 @@
+test.ads(<SubpDecl ["Example"] test.ads:2:4-5:20>) - 2:1-5:20
+^
+   procedure Example (A : Integer; B : Integer; C : Integer);$
+
