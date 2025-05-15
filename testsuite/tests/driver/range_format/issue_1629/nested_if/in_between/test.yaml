@@ -1,0 +1,12 @@
+description: Testing nested if statement on the same line selection formatting.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 6",
+    "-SC 12",
+    "-EL 6",
+    "-EC 12",
+    "--pipe",
+  ]
