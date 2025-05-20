@@ -813,8 +813,6 @@ package body Gnatformat.Formatting is
          End_Column : Column_Number := 0;
          End_Line   : Line_Number := SL_Range.End_Line;
       begin
-         --  Ada.Text_IO.Put_Line ("MKU SL_Range = " & Image (SL_Range));
-
          if SL_Range.Start_Line = SL_Range.End_Line then
             End_Column :=
               Get_Line (Unit, Positive (SL_Range.Start_Line))'Length - 1;
@@ -837,8 +835,6 @@ package body Gnatformat.Formatting is
                end if;
             end if;
          end if;
-
-         --  Ada.Text_IO.Put_Line ("MKU End_Column = " & End_Column'Img);
 
          return
            Source_Location_Range'
