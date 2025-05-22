@@ -1,5 +1,6 @@
-test.ads(<SubpSpec test.ads:8:19-8:96>) - 8:1-8:96
+test.ads(<SubpDecl ["Bar"] test.ads:8:4-8:97>) - 8:1-8:97
 ^
+   not overriding
    procedure Bar
-     (Self : Baz; I : Integer; J : Integer; K, L, M, N, O, P : Integer)$
+     (Self : Baz; I : Integer; J : Integer; K, L, M, N, O, P : Integer);$
 

@@ -1,0 +1,8 @@
+test.adb(<IfStmt test.adb:6:4-9:11>) - 6:1-9:11
+^
+   if A then
+      if B then
+         null;
+      end if;
+   end if;$
+

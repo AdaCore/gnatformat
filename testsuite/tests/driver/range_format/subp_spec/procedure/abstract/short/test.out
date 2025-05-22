@@ -1,4 +1,4 @@
-test.ads(<SubpSpec test.ads:4:4-4:43>) - 4:1-4:43
+test.ads(<AbstractSubpDecl ["Bar"] test.ads:4:4-4:56>) - 4:1-4:56
 ^
-   procedure Bar (Self : Foo; I : Integer)$
+   procedure Bar (Self : Foo; I : Integer) is abstract;$
 
