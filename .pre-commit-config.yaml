@@ -7,4 +7,5 @@ repos:
         verbose: true
         language: system
         files: ".*\\.ad(b|s)"
+        exclude: "testsuite/tests/.*"
         args: ["-P", "gnat/gnatformat_driver.gpr"]
