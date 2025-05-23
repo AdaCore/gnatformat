@@ -45,8 +45,8 @@ with Gitdiff;
 
 procedure Gnatformat.Ada_Driver is
 
-   package Langkit_Support_Unparsing
-     renames Langkit_Support.Generic_API.Unparsing;
+   package Langkit_Support_Unparsing renames
+     Langkit_Support.Generic_API.Unparsing;
 
    type Preprocessor_Data_Record is record
       Preprocessor_Data : Libadalang.Preprocessing.Preprocessor_Data;
@@ -288,10 +288,10 @@ begin
                if Unit.Has_Diagnostics then
                   declare
                      Diagnostics : constant Unbounded_String_Vector :=
-                       [for Diagnotic of Unit.Diagnostics
-                        => Ada.Strings.Unbounded.To_Unbounded_String
-                             (Langkit_Support.Diagnostics.To_Pretty_String
-                                (Diagnotic))];
+                       [for Diagnotic of Unit.Diagnostics =>
+                          Ada.Strings.Unbounded.To_Unbounded_String
+                            (Langkit_Support.Diagnostics.To_Pretty_String
+                               (Diagnotic))];
 
                   begin
                      return
@@ -800,13 +800,13 @@ begin
                declare
                   use Gnatformat.Project;
                   Command_Line_Sources : constant Project_Source_Vector :=
-                    [for Source of Get_Project_Sources (Project_Tree)
-                     => Project_Source_Record'
-                       (File           =>
-                          GNATCOLL.VFS.Create_From_UTF8
-                            (Source.Path_Name.String_Value),
-                        Visible        => True,
-                        Visible_Source => Source)];
+                    [for Source of Get_Project_Sources (Project_Tree) =>
+                       Project_Source_Record'
+                         (File           =>
+                            GNATCOLL.VFS.Create_From_UTF8
+                              (Source.Path_Name.String_Value),
+                          Visible        => True,
+                          Visible_Source => Source)];
 
                begin
                   for Source of Command_Line_Sources loop

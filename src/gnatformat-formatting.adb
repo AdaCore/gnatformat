@@ -798,12 +798,64 @@ package body Gnatformat.Formatting is
              .As_Ada_Node;
       end Lookup;
 
+      function Widen_Initial_Selection
+        (Unit     : Libadalang.Analysis.Analysis_Unit;
+         SL_Range : Source_Location_Range) return Source_Location_Range;
+
+      -------------------------------
+      --  Widen_Initial_Selection  --
+      -------------------------------
+
+      function Widen_Initial_Selection
+        (Unit     : Libadalang.Analysis.Analysis_Unit;
+         SL_Range : Source_Location_Range) return Source_Location_Range
+      is
+         End_Column : Column_Number := 0;
+         End_Line   : Line_Number := SL_Range.End_Line;
+      begin
+         if SL_Range.Start_Line = SL_Range.End_Line then
+            End_Column :=
+              Get_Line (Unit, Positive (SL_Range.Start_Line))'Length - 1;
+         else
+            if SL_Range.End_Column /= 0 then
+               End_Column :=
+                 Get_Line (Unit, Positive (SL_Range.End_Line))'Length - 1;
+            else
+               --  In order when we are passing only the start and the end line
+               --  to range format selection without any start or end column
+               --  this means that the selection stops on the line preceeding
+               --  end line. For example, in the command line,
+               --      gnatformat test.ads --range-format -SL 39 -EL 40
+               --  this is meant to be a whole line selection formatting of the
+               --  line 39)
+               if SL_Range.End_Line = SL_Range.Start_Line + 1 then
+                  End_Column :=
+                    Get_Line (Unit, Positive (SL_Range.Start_Line))'Length;
+                  End_Line := SL_Range.Start_Line;
+               end if;
+            end if;
+         end if;
+
+         return
+           Source_Location_Range'
+             (Start_Line   => SL_Range.Start_Line,
+              End_Line     => End_Line,
+              Start_Column => 0,
+              End_Column   => End_Column);
+
+      end Widen_Initial_Selection;
+
+      Widen_SL_Range : constant Source_Location_Range :=
+        Widen_Initial_Selection (Unit, SL_Range);
+
       Crt_Start_Tok : constant Token_Reference :=
         Unit.Lookup_Token
-          (Source_Location'(SL_Range.Start_Line, SL_Range.Start_Column));
+          (Source_Location'
+             (Widen_SL_Range.Start_Line, Widen_SL_Range.Start_Column));
       Crt_End_Tok   : constant Token_Reference :=
         Unit.Lookup_Token
-          (Source_Location'(SL_Range.End_Line, SL_Range.End_Column));
+          (Source_Location'
+             (Widen_SL_Range.End_Line, Widen_SL_Range.End_Column));
 
       Crt_Start_Node : constant Ada_Node :=
         Lookup (Unit, Crt_Start_Tok, Forward);
@@ -939,6 +991,7 @@ package body Gnatformat.Formatting is
 
       --  Start of Get_Selection_Enclosing_Node
    begin
+
       Enclosing_Node := No_Ada_Node;
       Parent_Node := Crt_Start_Node;
 
