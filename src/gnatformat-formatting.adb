@@ -1480,6 +1480,16 @@ package body Gnatformat.Formatting is
             Text_Edit_Sloc.Start_Column := 1;
          end if;
 
+         if Libadalang.Analysis.Equals (Enclosing_Node, Unit.Root) then
+            --  If the selection range enclosing node is the compilation unit
+            --  the SLOC range of the text edit should be corrected in order
+            --  to take as start of selection the first line of the unit and
+            --  not the line where the first Ada node is located. This will
+            --  avoid header comments duplication and the text edits will be
+            --  applied from the first line of the unit.
+            Text_Edit_Sloc.Start_Line := 1;
+         end if;
+
          return
            Formatting_Edit_Type'
              (Unit           => Unit,
