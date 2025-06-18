@@ -1380,6 +1380,33 @@ package body Gnatformat.Formatting is
               Unparsing_Config => Configuration);
       end if;
 
+      --  If the selection starts after the
+
+      if Selection_Range.Start_Line > Unit.Root.Sloc_Range.End_Line then
+         Gnatformat_Trace.Trace
+           ("End of file selection is not allowed! "
+            & "Please change your selection and try again!");
+
+         declare
+            Diagnostics_Vector : Diagnostics_Vectors.Vector :=
+              Diagnostics_Array_To_Vector (Unit.Diagnostics);
+         begin
+            Langkit_Support.Diagnostics.Append
+              (Diagnostics => Diagnostics_Vector,
+               Sloc_Range  => Selection_Range,
+               Message     =>
+                 Langkit_Support.Text.To_Text
+                   ("End of file selection is not allowed!"));
+
+            return
+              Formatting_Edit_Type'
+                (Unit           => Unit,
+                 Text_Edit      => No_Text_Edit,
+                 Formatted_Node => Libadalang.Analysis.No_Ada_Node,
+                 Diagnostics    => Diagnostics_Vector);
+         end;
+      end if;
+
       --  If an input selection is provided then follow the steps to get a
       --  partial formatting of the file for the encolsing node of the given
       --  selection
