@@ -8,8 +8,6 @@ with Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Directories;
 
-with Gnatformat.Helpers;
-
 with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 with Langkit_Support.Text;
 with Libadalang.Common;
@@ -599,7 +597,8 @@ package body Gnatformat.Formatting is
           (Unit.Root, Configuration);
 
       Original_Source  : constant Ada.Strings.Unbounded.Unbounded_String :=
-        Gnatformat.Helpers.Read_To_Unbounded_String (Unit.Filename);
+        Ada.Strings.Unbounded.To_Unbounded_String
+          (Langkit_Support.Text.To_UTF8 (Unit.Text));
       Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
         Prettier_Ada.Documents.Format (Document, Format_Options);
 
