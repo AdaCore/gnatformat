@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024, AdaCore
+--  Copyright (C) 2024-2025, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -7,6 +7,7 @@ with "gnatformat_common";
 with "libadalang";
 with "prettier_ada";
 with "vss_text";
+with "vss_os";
 
 library project Gnatformat is
    type Library_Type_Type is ("static", "static-pic", "relocatable");
