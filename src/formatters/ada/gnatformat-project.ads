@@ -9,6 +9,8 @@ with Ada.Containers.Doubly_Linked_Lists;
 
 with GNATCOLL.VFS;
 
+with Gnatformat.Command_Line;
+
 with GPR2;
 with GPR2.Build.Source;      use GPR2.Build.Source;
 with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
@@ -37,13 +39,25 @@ package Gnatformat.Project is
       end case;
    end record;
 
+   No_Project_Source : constant Project_Source_Record :=
+     (Visible => False, File => GNATCOLL.VFS.No_File);
+
    package Project_Source_Vectors is new
      Ada.Containers.Vectors (Positive, Project_Source_Record);
 
    subtype Project_Source_Vector is Project_Source_Vectors.Vector;
 
-   function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object) return Project_Source_Vector;
+   function To_Project_Source
+     (Project_Tree : GPR2.Project.Tree.Object;
+      Source       : GNATCOLL.VFS.Virtual_File) return Project_Source_Record;
+   --  Transforms the GNATCOLL.VFS.Virtual_File into a Project_Source_Record
+   --  in the context of Project_Tree.
+   --  Returns No_Project_Source if Source is undefined or externally built.
+
+   function To_Project_Sources
+     (Project_Tree : GPR2.Project.Tree.Object;
+      Sources      : Gnatformat.Command_Line.Sources.Result_Array)
+      return Project_Source_Vector;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
    --  an Command_Line_Source_Vector.
 

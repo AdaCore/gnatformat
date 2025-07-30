@@ -6,8 +6,6 @@
 with Ada.Text_IO;
 with Ada.Directories;
 
-with Gnatformat.Command_Line;
-
 with GNAT.OS_Lib;
 
 with GPR2.Build.Compilation_Unit;
@@ -37,103 +35,121 @@ package body Gnatformat.Project is
       return General_Failed_Flag;
    end General_Failed;
 
-   ------------------------------
-   -- Get_Command_Line_Sources --
-   ------------------------------
+   -----------------------
+   -- To_Project_Source --
+   -----------------------
 
-   function Get_Command_Line_Sources
-     (Project_Tree : GPR2.Project.Tree.Object) return Project_Source_Vector
+   function To_Project_Source
+     (Project_Tree : GPR2.Project.Tree.Object;
+      Source       : GNATCOLL.VFS.Virtual_File) return Project_Source_Record is
+   begin
+      Gnatformat_Trace.Trace ("Resolving " & Source.Display_Full_Name);
+
+      declare
+         Source_Simple_Name : constant GPR2.Filename_Type :=
+           GPR2.Simple_Name (Source.Base_Name);
+         Resolved_Source    : GPR2.Build.Source.Object :=
+           GPR2.Build.Source.Undefined;
+
+      begin
+         --  If Project_Tree is an aggregate project
+         --  Project_Tree.Root_Project.Visible_Source raises an exception.
+         --  Project_Tree.Root_Project.Sources returns an empty iterable.
+         --  Therefore, iterate through each project looking for the source.
+
+         for View of Project_Tree.Namespace_Root_Projects loop
+            Resolved_Source := View.Visible_Source (Source_Simple_Name);
+
+            --  FIXME:
+            --  Here we use the simple name and ignore the path.
+            --  This means that if the user tries to format a source
+            --  "foo/a.adb" which does not exist, but a source
+            --  "bar/a.adb" exists, then "bar/a.adb" is formatted.
+            --  To fix the issue when base name != full name, not only check
+            --  if Resolved_Source != Undefined, but also check that if the
+            --  relative path of Resolved_Source to the cwd is the same as
+            --  base name.
+
+            exit when Resolved_Source /= GPR2.Build.Source.Undefined;
+         end loop;
+
+         --  This is an invisible source to the project
+         --  Only format if it exists on disk.
+
+         if Resolved_Source = GPR2.Build.Source.Undefined then
+
+            if Source.Is_Regular_File then
+               return Project_Source_Record'(File => Source, Visible => False);
+
+            else
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  "Failed to find " & Source.Display_Base_Name);
+
+               return No_Project_Source;
+            end if;
+
+         --  This is an visible source to the project but externally
+         --  built. Do not format.
+
+         elsif Resolved_Source.Owning_View.Is_Externally_Built then
+
+            Ada.Text_IO.Put_Line
+              (Ada.Text_IO.Standard_Error,
+               Source.Display_Base_Name & " is an externally built source");
+
+            return No_Project_Source;
+
+         --  This is an visible source to the project
+
+         else
+            return
+              Project_Source_Record'
+                (File           =>
+                   GNATCOLL.VFS.Create_From_UTF8
+                     (Resolved_Source.Path_Name.String_Value),
+                 Visible        => True,
+                 Visible_Source => Resolved_Source);
+         end if;
+      end;
+   end To_Project_Source;
+
+   ------------------------
+   -- To_Project_Sources --
+   ------------------------
+
+   function To_Project_Sources
+     (Project_Tree : GPR2.Project.Tree.Object;
+      Sources      : Gnatformat.Command_Line.Sources.Result_Array)
+      return Project_Source_Vector
    is
-      Sources : Project_Source_Vector;
+      Project_Sources : Project_Source_Vector;
 
    begin
       Gnatformat_Trace.Trace ("Getting command line sources");
 
       Project_Tree.Update_Sources;
 
-      for Source of Gnatformat.Command_Line.Sources.Get loop
-         Gnatformat_Trace.Trace ("Resolving " & Source.Display_Full_Name);
-
+      for Source of Sources loop
          declare
-            Source_Simple_Name : constant GPR2.Filename_Type :=
-              GPR2.Simple_Name (Source.Base_Name);
-            Resolved_Source    : GPR2.Build.Source.Object :=
-              GPR2.Build.Source.Undefined;
+            Project_Source : constant Project_Source_Record :=
+              To_Project_Source (Project_Tree, Source);
 
          begin
-            --  If Project_Tree is an aggregate project
-            --  Project_Tree.Root_Project.Visible_Source raises an exception.
-            --  Project_Tree.Root_Project.Sources returns an empty iterable.
-            --  Therefore, iterate through each project looking for the source.
-
-            for View of Project_Tree.Namespace_Root_Projects loop
-               Resolved_Source := View.Visible_Source (Source_Simple_Name);
-
-               --  FIXME:
-               --  Here we use the simple name and ignore the path.
-               --  This means that if the user tries to format a source
-               --  "foo/a.adb" which does not exist, but a source
-               --  "bar/a.adb" exists, then "bar/a.adb" is formatted.
-               --  To fix the issue when base name != full name, not only check
-               --  if Resolved_Source != Undefined, but also check that if the
-               --  relative path of Resolved_Source to the cwd is the same as
-               --  base name.
-
-               exit when Resolved_Source /= GPR2.Build.Source.Undefined;
-            end loop;
-
-            --  This is an invisible source to the project
-            --  Only format if it exists on disk.
-
-            if Resolved_Source = GPR2.Build.Source.Undefined then
-
-               if Source.Is_Regular_File then
-                  Sources.Append
-                    (Project_Source_Record'(File => Source, Visible => False));
-
-               else
-                  Ada.Text_IO.Put_Line
-                    (Ada.Text_IO.Standard_Error,
-                     "Failed to find " & Source.Display_Base_Name);
-
-                  if not Gnatformat.Command_Line.Keep_Going.Get then
-                     GNAT.OS_Lib.OS_Exit (1);
-                  end if;
-
-                  Set_General_Failed;
-               end if;
-
-            --  This is an visible source to the project but externally
-            --  built. Do not format.
-
-            elsif Resolved_Source.Owning_View.Is_Externally_Built then
-
-               Ada.Text_IO.Put_Line
-                 (Ada.Text_IO.Standard_Error,
-                  Source.Display_Base_Name & " is an externally built source");
-
+            if Project_Source = No_Project_Source then
                if not Gnatformat.Command_Line.Keep_Going.Get then
                   GNAT.OS_Lib.OS_Exit (1);
                end if;
-
                Set_General_Failed;
 
-            --  This is an visible source to the project
-
             else
-               Sources.Append
-                 (Project_Source_Record'
-                    (File           =>
-                       GNATCOLL.VFS.Create_From_UTF8
-                         (Resolved_Source.Path_Name.String_Value),
-                     Visible        => True,
-                     Visible_Source => Resolved_Source));
+               Project_Sources.Append (Project_Source);
             end if;
          end;
       end loop;
 
-      return Sources;
-   end Get_Command_Line_Sources;
+      return Project_Sources;
+   end To_Project_Sources;
 
    -------------------------
    -- Get_Project_Sources --
