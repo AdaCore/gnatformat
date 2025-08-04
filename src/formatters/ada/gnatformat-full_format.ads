@@ -4,6 +4,7 @@
 --
 --  Package with the public API for editing sources
 
+with Gnatformat.Abstract_Writers;
 with Gnatformat.Command_Line;
 with Gnatformat.Configuration;
 
@@ -17,13 +18,13 @@ package Gnatformat.Full_Format is
      Langkit_Support.Generic_API.Unparsing;
 
    procedure Full_Format
-     (Project_Tree            : GPR2.Project.Tree.Object;
+     (Writer                  : in out Abstract_Writers.Abstract_Writer'Class;
+      Project_Tree            : GPR2.Project.Tree.Object;
       CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
       Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
       Format_Options          : Gnatformat.Configuration.Format_Options_Type;
-      Pipe                    : Boolean;
       Check                   : Boolean;
       Keep_Going              : Boolean;
       Charset                 : String;

@@ -8,8 +8,6 @@ with Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
-with Ada.Strings.Unbounded.Text_IO;
-with Ada.Text_IO;
 
 with GNAT.OS_Lib;
 with GNAT.Traceback.Symbolic;
@@ -42,13 +40,13 @@ package body Gnatformat.Full_Format is
    subtype Unbounded_String_Vector is Unbounded_String_Vectors.Vector;
 
    procedure Full_Format
-     (Project_Tree            : GPR2.Project.Tree.Object;
+     (Writer                  : in out Abstract_Writers.Abstract_Writer'Class;
+      Project_Tree            : GPR2.Project.Tree.Object;
       CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
       Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
       Format_Options          : Gnatformat.Configuration.Format_Options_Type;
-      Pipe                    : Boolean;
       Check                   : Boolean;
       Keep_Going              : Boolean;
       Charset                 : String;
@@ -111,9 +109,6 @@ package body Gnatformat.Full_Format is
       Project_Format_Options_Cache :
         Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
           Gnatformat.Configuration.Create_Project_Format_Options_Cache;
-
-      Print_Source_Simple_Name : Boolean := True;
-      Print_New_Line           : Boolean := False;
 
       type Format_Source_Result (Success : Boolean) is record
          case Success is
@@ -215,13 +210,7 @@ package body Gnatformat.Full_Format is
          if Libadalang.Preprocessing.Needs_Preprocessing
               (Preprocessor_Data.Preprocessor_Data, Source_Simple_Name)
          then
-            if Print_New_Line then
-               Ada.Text_IO.New_Line;
-            else
-               Print_New_Line := True;
-            end if;
-
-            Ada.Text_IO.Put_Line
+            Writer.Print_Warning
               ("--  "
                & Source_Simple_Name
                & " was skipped because it requires preprocessing");
@@ -257,100 +246,65 @@ package body Gnatformat.Full_Format is
                  Format_Source (Source.File, View_Format_Options);
 
             begin
-               if Pipe then
-                  case Result.Success is
-                     when True =>
-                        if Print_New_Line then
-                           Ada.Text_IO.New_Line;
-                        else
-                           Print_New_Line := True;
-                        end if;
-
-                        if not Source.Visible then
-                           Ada.Text_IO.Put_Line
-                             ("--  Warning: Formatting """
-                              & Source_Path_Name
-                              & """ which is not visible to the "
-                              & "provided project");
-                        end if;
-                        if Print_Source_Simple_Name then
-                           Ada.Text_IO.Put_Line ("--  " & Source_Simple_Name);
-                        end if;
-
-                        Ada.Strings.Unbounded.Text_IO.Put
-                          (Result.Formatted_Source);
-
-                     when False =>
-                        Gnatformat.Project.Set_General_Failed;
-
-                        if Print_New_Line then
-                           Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-                        else
-                           Print_New_Line := True;
-                        end if;
-
-                        Ada.Text_IO.Put_Line
-                          (Ada.Text_IO.Standard_Error,
-                           "--  " & Source_Simple_Name & " failed to format");
-                        for Diagnostic of Result.Diagnostics loop
-                           Ada.Strings.Unbounded.Text_IO.Put_Line
-                             (Ada.Text_IO.Standard_Error, Diagnostic);
-                        end loop;
-
-                        return False;
-                  end case;
-
-               else
-                  if not Source.Visible then
-                     Ada.Text_IO.Put_Line
-                       ("Warning: Formatting """
-                        & Source_Path_Name
-                        & """ which is not visible to the provided "
-                        & "project");
-                  end if;
-                  if Check then
-                     declare
-                        use Ada.Strings.Unbounded;
-
-                        Original_Source : constant Unbounded_String :=
-                          Gnatformat.Helpers.Read_To_Unbounded_String
-                            (Source_Path_Name);
-                     begin
-                        if Original_Source /= Result.Formatted_Source then
-                           Gnatformat.Project.Set_General_Failed;
-                           Ada.Text_IO.Put_Line
-                             (Ada.Text_IO.Standard_Error,
-                              Source_Simple_Name
-                              & " is not correctly formatted");
-                        end if;
-                     end;
-
-                  else
-                     Gnatformat.Helpers.Write
-                       (Source_Path_Name, Result.Formatted_Source);
-                  end if;
+               if not Source.Visible then
+                  Writer.Print_Warning
+                    ("--  Warning: Formatting """
+                     & Source_Path_Name
+                     & """ which is not visible to the provided project");
                end if;
-            end;
 
-            return True;
+               case Result.Success is
+                  when True =>
+
+                     if Check then
+                        declare
+                           use Ada.Strings.Unbounded;
+
+                           Original_Source : constant Unbounded_String :=
+                             Gnatformat.Helpers.Read_To_Unbounded_String
+                               (Source_Path_Name);
+                        begin
+                           if Original_Source /= Result.Formatted_Source then
+                              Gnatformat.Project.Set_General_Failed;
+                              Writer.Print_Error
+                                (Source_Simple_Name
+                                 & " is not correctly formatted",
+                                 False);
+                           end if;
+                        end;
+
+                     else
+                        Writer.Print_Source_Name ("--  " & Source_Simple_Name);
+
+                        Writer.Print_Source
+                          (Source_Path_Name, Result.Formatted_Source);
+                     end if;
+
+                     return True;
+
+                  when False =>
+                     Gnatformat.Project.Set_General_Failed;
+
+                     Writer.Print_Error
+                       ("--  " & Source_Simple_Name & " failed to format");
+
+                     for Diagnostic of Result.Diagnostics loop
+                        Writer.Print_Error
+                          (Ada.Strings.Unbounded.To_String (Diagnostic),
+                           False);
+                     end loop;
+
+                     return False;
+               end case;
+            end;
          end;
 
       exception
          when E : others =>
             Gnatformat.Project.Set_General_Failed;
 
-            if Print_New_Line then
-               Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-            else
-               Print_New_Line := True;
-            end if;
-
-            Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error,
-               "Failed to format " & Source_Path_Name);
-            Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error,
-               Ada.Exceptions.Exception_Message (E));
+            Writer.Print_Error ("Failed to format " & Source_Path_Name);
+            Writer.Print_Error (Ada.Exceptions.Exception_Message (E), False);
             Gnatformat_Trace.Trace (Ada.Exceptions.Exception_Information (E));
             Gnatformat_Trace.Trace
               (GNAT.Traceback.Symbolic.Symbolic_Traceback (E));
@@ -360,10 +314,10 @@ package body Gnatformat.Full_Format is
                   .Formatting
                   .Internal_Error_Off_On_Invalid_Marker'Identity
             then
-               Ada.Text_IO.Put_Line
-                 (Ada.Text_IO.Standard_Error,
-                  "This error was an internal bug, please consider "
-                  & "reporting it with the --verbose traces");
+               Writer.Print_Error
+                 ("This error was an internal bug, please consider "
+                  & "reporting it with the --verbose traces",
+                  False);
             end if;
 
             return False;
@@ -390,84 +344,52 @@ package body Gnatformat.Full_Format is
             if Unit.Has_Diagnostics then
                Gnatformat.Project.Set_General_Failed;
 
-               if Print_New_Line then
-                  Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-               else
-                  Print_New_Line := True;
-               end if;
-
-               Ada.Text_IO.Put_Line
-                 (Ada.Text_IO.Standard_Error,
-                  "--  " & Source.Display_Full_Name & " failed to format");
+               Writer.Print_Error
+                 ("--  " & Source.Display_Full_Name & " failed to format");
                for Diagnostic of Unit.Diagnostics loop
-                  Ada.Text_IO.Put_Line
-                    (Ada.Text_IO.Standard_Error,
-                     Langkit_Support.Diagnostics.To_Pretty_String
-                       (Diagnostic));
+                  Writer.Print_Error
+                    (Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic),
+                     False);
                end loop;
 
                return False;
             end if;
 
-            if Pipe then
-               declare
-                  Formatted_Source :
-                    constant Ada.Strings.Unbounded.Unbounded_String :=
-                      Gnatformat.Formatting.Format
-                        (Unit           => Unit,
-                         Format_Options => Format_Options,
-                         Configuration  => Unparsing_Configuration);
+            declare
+               Formatted_Source :
+                 constant Ada.Strings.Unbounded.Unbounded_String :=
+                   Gnatformat.Formatting.Format
+                     (Unit           => Unit,
+                      Format_Options => Format_Options,
+                      Configuration  => Unparsing_Configuration);
 
-               begin
-                  if Print_New_Line then
-                     Ada.Text_IO.New_Line;
-                  else
-                     Print_New_Line := True;
-                  end if;
+            begin
+               if Check then
+                  declare
+                     Original_Source : Ada.Strings.Unbounded.Unbounded_String;
 
-                  if Print_Source_Simple_Name then
-                     Ada.Text_IO.Put_Line ("--  " & Source.Display_Base_Name);
-                  end if;
+                     use type Ada.Strings.Unbounded.Unbounded_String;
+                  begin
+                     Original_Source :=
+                       Gnatformat.Helpers.Read_To_Unbounded_String
+                         (Source.Display_Full_Name);
 
-                  Ada.Strings.Unbounded.Text_IO.Put (Formatted_Source);
-               end;
+                     if Original_Source /= Formatted_Source then
+                        Gnatformat.Project.Set_General_Failed;
+                        Writer.Print_Error
+                          (Source.Display_Full_Name
+                           & " is not correctly formatted",
+                           False);
+                     end if;
+                  end;
 
-            else
-               declare
-                  Formatted_Source :
-                    constant Ada.Strings.Unbounded.Unbounded_String :=
-                      Gnatformat.Formatting.Format
-                        (Unit           => Unit,
-                         Format_Options => Format_Options,
-                         Configuration  => Unparsing_Configuration);
+               else
+                  Writer.Print_Source_Name ("--  " & Source.Display_Base_Name);
 
-               begin
-                  if Check then
-                     declare
-                        Original_Source :
-                          Ada.Strings.Unbounded.Unbounded_String;
-
-                        use type Ada.Strings.Unbounded.Unbounded_String;
-                     begin
-                        Original_Source :=
-                          Gnatformat.Helpers.Read_To_Unbounded_String
-                            (Source.Display_Full_Name);
-
-                        if Original_Source /= Formatted_Source then
-                           Gnatformat.Project.Set_General_Failed;
-                           Ada.Text_IO.Put_Line
-                             (Ada.Text_IO.Standard_Error,
-                              Source.Display_Full_Name
-                              & " is not correctly formatted");
-                        end if;
-                     end;
-
-                  else
-                     Gnatformat.Helpers.Write
-                       (Source.Display_Full_Name, Formatted_Source);
-                  end if;
-               end;
-            end if;
+                  Writer.Print_Source
+                    (Source.Display_Full_Name, Formatted_Source);
+               end if;
+            end;
 
             return True;
          end;
@@ -476,18 +398,9 @@ package body Gnatformat.Full_Format is
          when E : others =>
             Gnatformat.Project.Set_General_Failed;
 
-            if Print_New_Line then
-               Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-            else
-               Print_New_Line := True;
-            end if;
-
-            Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error,
-               "Failed to format " & Source.Display_Full_Name);
-            Ada.Text_IO.Put_Line
-              (Ada.Text_IO.Standard_Error,
-               Ada.Exceptions.Exception_Message (E));
+            Writer.Print_Error
+              ("Failed to format " & Source.Display_Full_Name);
+            Writer.Print_Error (Ada.Exceptions.Exception_Message (E), False);
             Gnatformat_Trace.Trace (Ada.Exceptions.Exception_Information (E));
             Gnatformat_Trace.Trace
               (GNAT.Traceback.Symbolic.Symbolic_Traceback (E));
@@ -497,10 +410,10 @@ package body Gnatformat.Full_Format is
                   .Formatting
                   .Internal_Error_Off_On_Invalid_Marker'Identity
             then
-               Ada.Text_IO.Put_Line
-                 (Ada.Text_IO.Standard_Error,
-                  "This error was an internal bug, please consider "
-                  & "reporting it with the --verbose traces");
+               Writer.Print_Error
+                 ("This error was an internal bug, please consider "
+                  & "reporting it with the --verbose traces",
+                  False);
             end if;
 
             return False;
@@ -517,18 +430,16 @@ package body Gnatformat.Full_Format is
          --  Therefore, do not format anything and suggest the usage
          --  of '-gnatep'
 
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Projects with global preprocessor symbols are not "
+         Writer.Print_Error
+           ("Projects with global preprocessor symbols are not "
             & "supported. Please use the -gnatep switch with a "
-            & "proprocessor data file.");
+            & "proprocessor data file.",
+            False);
          Gnatformat.Project.Set_General_Failed;
 
       elsif Command_Line_Sources'Length > 0 then
          --  Only print the source simple name as a comment if there's
          --- more than one source to format.
-
-         Print_Source_Simple_Name := Command_Line_Sources'Length > 1;
 
          if Project_Tree.Is_Defined then
             declare
@@ -557,15 +468,8 @@ package body Gnatformat.Full_Format is
                if not Source.Is_Regular_File then
                   Gnatformat.Project.Set_General_Failed;
 
-                  if Print_New_Line then
-                     Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-                  else
-                     Print_New_Line := True;
-                  end if;
-
-                  Ada.Text_IO.Put_Line
-                    (Ada.Text_IO.Standard_Error,
-                     "Failed to find " & Source.Display_Base_Name);
+                  Writer.Print_Error
+                    ("Failed to find " & Source.Display_Base_Name);
 
                   if not Keep_Going then
                      exit;
