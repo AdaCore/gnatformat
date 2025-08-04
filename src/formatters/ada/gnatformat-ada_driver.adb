@@ -189,6 +189,7 @@ begin
             CLI_Formatting_Config,
             Unparsing_Configuration,
             Sources,
+            Format_Options => Gnatformat.Command_Line.Configuration.Get,
             Pipe           => Gnatformat.Command_Line.Pipe.Get,
             Check          => Gnatformat.Command_Line.Check.Get,
             Keep_Going     => Gnatformat.Command_Line.Keep_Going.Get,

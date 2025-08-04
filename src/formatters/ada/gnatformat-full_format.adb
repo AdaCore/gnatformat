@@ -16,7 +16,6 @@ with GNAT.Traceback.Symbolic;
 
 with GNATCOLL.VFS;
 
-with Gnatformat.Command_Line.Configuration;
 with Gnatformat.Formatting;
 with Gnatformat.Helpers;
 with Gnatformat.Project;
@@ -48,6 +47,7 @@ package body Gnatformat.Full_Format is
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
       Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
+      Format_Options          : Gnatformat.Configuration.Format_Options_Type;
       Pipe                    : Boolean;
       Check                   : Boolean;
       Keep_Going              : Boolean;
@@ -415,8 +415,7 @@ package body Gnatformat.Full_Format is
                     constant Ada.Strings.Unbounded.Unbounded_String :=
                       Gnatformat.Formatting.Format
                         (Unit           => Unit,
-                         Format_Options =>
-                           Gnatformat.Command_Line.Configuration.Get,
+                         Format_Options => Format_Options,
                          Configuration  => Unparsing_Configuration);
 
                begin
@@ -439,8 +438,7 @@ package body Gnatformat.Full_Format is
                     constant Ada.Strings.Unbounded.Unbounded_String :=
                       Gnatformat.Formatting.Format
                         (Unit           => Unit,
-                         Format_Options =>
-                           Gnatformat.Command_Line.Configuration.Get,
+                         Format_Options => Format_Options,
                          Configuration  => Unparsing_Configuration);
 
                begin
@@ -586,7 +584,7 @@ package body Gnatformat.Full_Format is
            (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
             Gitdiff.Context'
               (Lal_Ctx          => LAL_Context,
-               Options          => Gnatformat.Command_Line.Configuration.Get,
+               Options          => Format_Options,
                Unparsing_Config => Unparsing_Configuration,
                Charset          =>
                  Ada.Strings.Unbounded.To_Unbounded_String (Charset)));
