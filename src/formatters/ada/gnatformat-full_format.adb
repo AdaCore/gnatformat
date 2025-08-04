@@ -56,7 +56,9 @@ package body Gnatformat.Full_Format is
       Pipe                    : Boolean;
       Check                   : Boolean;
       Keep_Going              : Boolean;
-      Charset                 : String)
+      Charset                 : String;
+      Base_Commit_ID          :
+        Gnatformat.Configuration.Optional_Unbounded_String)
    is
       type Preprocessor_Data_Record is record
          Preprocessor_Data : Libadalang.Preprocessing.Preprocessor_Data;
@@ -547,10 +549,6 @@ package body Gnatformat.Full_Format is
 
             return False;
       end Process_Standalone_Source;
-
-      Base_Commit_ID :
-        constant Gnatformat.Configuration.Optional_Unbounded_String :=
-          Gnatformat.Command_Line.Gitdiff.Get;
 
    begin
       if Preprocessor_Data.Default_Config.Enabled then

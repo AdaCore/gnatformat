@@ -25,6 +25,8 @@ package Gnatformat.Full_Format is
       Pipe                    : Boolean;
       Check                   : Boolean;
       Keep_Going              : Boolean;
-      Charset                 : String);
+      Charset                 : String;
+      Base_Commit_ID          :
+        Gnatformat.Configuration.Optional_Unbounded_String);
 
 end Gnatformat.Full_Format;
