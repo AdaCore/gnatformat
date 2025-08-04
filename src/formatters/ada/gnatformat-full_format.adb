@@ -6,13 +6,8 @@
 
 with Ada.Containers;
 with Ada.Containers.Vectors;
-with Ada.Directories;
 with Ada.Exceptions;
-with Ada.Streams.Stream_IO;
 with Ada.Strings.Unbounded;
-pragma Warnings (Off, "-gnatwi");
-with Ada.Strings.Unbounded.Aux;
-pragma Warnings (On, "-gnatwi");
 with Ada.Strings.Unbounded.Text_IO;
 with Ada.Text_IO;
 
@@ -440,75 +435,38 @@ package body Gnatformat.Full_Format is
 
             else
                declare
-                  Formatted_Source        :
+                  Formatted_Source :
                     constant Ada.Strings.Unbounded.Unbounded_String :=
                       Gnatformat.Formatting.Format
                         (Unit           => Unit,
                          Format_Options =>
                            Gnatformat.Command_Line.Configuration.Get,
                          Configuration  => Unparsing_Configuration);
-                  Formatted_Source_Access :
-                    Ada.Strings.Unbounded.Aux.Big_String_Access;
-                  Formatted_Source_Length : Natural;
-
-                  Source_File   : Ada.Streams.Stream_IO.File_Type;
-                  Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
 
                begin
                   if Check then
                      declare
-                        Original_Source_Size :
-                          constant Ada.Directories.File_Size :=
-                            Ada.Directories.Size (Source.Display_Full_Name);
-                        Original_Source      :
-                          Ada.Strings.Unbounded.String_Access :=
-                            new String (1 .. Integer (Original_Source_Size));
+                        Original_Source :
+                          Ada.Strings.Unbounded.Unbounded_String;
 
                         use type Ada.Strings.Unbounded.Unbounded_String;
                      begin
-                        Ada.Streams.Stream_IO.Open
-                          (File => Source_File,
-                           Mode => Ada.Streams.Stream_IO.In_File,
-                           Name => Source.Display_Full_Name);
+                        Original_Source :=
+                          Gnatformat.Helpers.Read_To_Unbounded_String
+                            (Source.Display_Full_Name);
 
-                        Source_Stream :=
-                          Ada.Streams.Stream_IO.Stream (Source_File);
-
-                        String'Read (Source_Stream, Original_Source.all);
-
-                        Ada.Streams.Stream_IO.Close (Source_File);
-
-                        if Original_Source.all /= Formatted_Source then
+                        if Original_Source /= Formatted_Source then
                            Gnatformat.Project.Set_General_Failed;
                            Ada.Text_IO.Put_Line
                              (Ada.Text_IO.Standard_Error,
                               Source.Display_Full_Name
                               & " is not correctly formatted");
                         end if;
-
-                        Ada.Strings.Unbounded.Free (Original_Source);
                      end;
 
                   else
-                     Ada.Strings.Unbounded.Aux.Get_String
-                       (Formatted_Source,
-                        Formatted_Source_Access,
-                        Formatted_Source_Length);
-
-                     Ada.Streams.Stream_IO.Create
-                       (File => Source_File,
-                        Mode => Ada.Streams.Stream_IO.Out_File,
-                        Name => Source.Display_Full_Name);
-
-                     Source_Stream :=
-                       Ada.Streams.Stream_IO.Stream (Source_File);
-
-                     String'Write
-                       (Source_Stream,
-                        Formatted_Source_Access.all
-                          (1 .. Formatted_Source_Length));
-
-                     Ada.Streams.Stream_IO.Close (Source_File);
+                     Gnatformat.Helpers.Write
+                       (Source.Display_Full_Name, Formatted_Source);
                   end if;
                end;
             end if;
