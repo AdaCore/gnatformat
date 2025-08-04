@@ -27,8 +27,7 @@ with Gnatformat.Helpers;
 with Gnatformat.Project;
 
 with GPR2;
-with GPR2.Build.Source;      use GPR2.Build.Source;
-with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
+with GPR2.Build.Source; use GPR2.Build.Source;
 
 with Langkit_Support.Diagnostics;
 with Langkit_Support.File_Readers;
@@ -53,7 +52,8 @@ package body Gnatformat.Full_Format is
       CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
-      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array)
+      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
+      Charset                 : String)
    is
       type Preprocessor_Data_Record is record
          Preprocessor_Data : Libadalang.Preprocessing.Preprocessor_Data;
@@ -596,64 +596,41 @@ package body Gnatformat.Full_Format is
             end;
 
          else
-            declare
-               Charset :
-                 constant Gnatformat.Configuration.Optional_Unbounded_String :=
-                   Gnatformat.Command_Line.Charset.Get;
-            begin
-               for Source of Command_Line_Sources loop
-                  if not Source.Is_Regular_File then
-                     Gnatformat.Project.Set_General_Failed;
+            for Source of Command_Line_Sources loop
+               if not Source.Is_Regular_File then
+                  Gnatformat.Project.Set_General_Failed;
 
-                     if Print_New_Line then
-                        Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-                     else
-                        Print_New_Line := True;
-                     end if;
-
-                     Ada.Text_IO.Put_Line
-                       (Ada.Text_IO.Standard_Error,
-                        "Failed to find " & Source.Display_Base_Name);
-
-                     if not Gnatformat.Command_Line.Keep_Going.Get then
-                        exit;
-                     end if;
-
+                  if Print_New_Line then
+                     Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
                   else
-                     exit when
-                       not Process_Standalone_Source
-                             (Source,
-                              (if Charset.Is_Set
-                               then
-                                 Ada.Strings.Unbounded.To_String
-                                   (Charset.Value)
-                               else Gnatformat.Configuration.Default_Charset))
-                       and not Gnatformat.Command_Line.Keep_Going.Get;
+                     Print_New_Line := True;
                   end if;
-               end loop;
-            end;
+
+                  Ada.Text_IO.Put_Line
+                    (Ada.Text_IO.Standard_Error,
+                     "Failed to find " & Source.Display_Base_Name);
+
+                  if not Gnatformat.Command_Line.Keep_Going.Get then
+                     exit;
+                  end if;
+
+               else
+                  exit when
+                    not Process_Standalone_Source (Source, Charset)
+                    and not Gnatformat.Command_Line.Keep_Going.Get;
+               end if;
+            end loop;
          end if;
 
       elsif Base_Commit_ID.Is_Set then
-         declare
-            use Gnatformat.Configuration;
-            Charset : constant Optional_Unbounded_String :=
-              Gnatformat.Command_Line.Charset.Get;
-         begin
-            Gitdiff.Format_New_Lines
-              (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
-               Gitdiff.Context'
-                 (Lal_Ctx          => LAL_Context,
-                  Options          =>
-                    Gnatformat.Command_Line.Configuration.Get,
-                  Unparsing_Config => Unparsing_Configuration,
-                  Charset          =>
-                    (if Charset.Is_Set
-                     then Charset.Value
-                     else
-                       Ada.Strings.Unbounded.To_Unbounded_String
-                         (Default_Charset))));
-         end;
+         Gitdiff.Format_New_Lines
+           (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
+            Gitdiff.Context'
+              (Lal_Ctx          => LAL_Context,
+               Options          => Gnatformat.Command_Line.Configuration.Get,
+               Unparsing_Config => Unparsing_Configuration,
+               Charset          =>
+                 Ada.Strings.Unbounded.To_Unbounded_String (Charset)));
 
       else
          declare

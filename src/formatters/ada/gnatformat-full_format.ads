@@ -21,6 +21,7 @@ package Gnatformat.Full_Format is
       CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
-      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array);
+      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
+      Charset                 : String);
 
 end Gnatformat.Full_Format;

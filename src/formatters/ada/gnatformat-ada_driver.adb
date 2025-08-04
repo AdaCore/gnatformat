@@ -19,8 +19,6 @@ with Gnatformat.Range_Format;
 with Gnatformat.Project;
 
 with GPR2;
-with GPR2.Build.Source;      use GPR2.Build.Source;
-with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
 with GPR2.Options;
 with GPR2.Project.Tree;
 
@@ -32,6 +30,17 @@ procedure Gnatformat.Ada_Driver is
 
    package Langkit_Support_Unparsing renames
      Langkit_Support.Generic_API.Unparsing;
+
+   function Charset return String
+   is (declare
+         CLI_Charset :
+           constant Gnatformat.Configuration.Optional_Unbounded_String :=
+             Gnatformat.Command_Line.Charset.Get;
+       begin
+         (if CLI_Charset.Is_Set
+          then Ada.Strings.Unbounded.To_String (CLI_Charset.Value)
+          else Gnatformat.Configuration.Default_Charset));
+   --  Return charset from command line option or default one if none.
 
 begin
    GNATCOLL.Traces.Parse_Config_File;
@@ -171,17 +180,7 @@ begin
                  (Gnatformat.Command_Line.End_Column.Get)),
             CLI_Formatting_Config   => CLI_Formatting_Config,
             Unparsing_Configuration => Unparsing_Configuration,
-            Default_Charset         =>
-              (declare
-                 CLI_Charset :
-                   constant Gnatformat
-                              .Configuration
-                              .Optional_Unbounded_String :=
-                     Gnatformat.Command_Line.Charset.Get;
-               begin
-                 (if CLI_Charset.Is_Set
-                  then Ada.Strings.Unbounded.To_String (CLI_Charset.Value)
-                  else Gnatformat.Configuration.Default_Charset)),
+            Default_Charset         => Charset,
             Pipe                    => Gnatformat.Command_Line.Pipe.Get);
 
       else
@@ -189,7 +188,8 @@ begin
            (Project_Tree,
             CLI_Formatting_Config,
             Unparsing_Configuration,
-            Sources);
+            Sources,
+            Charset => Charset);
       end if;
    end;
 end Gnatformat.Ada_Driver;
