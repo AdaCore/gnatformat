@@ -22,6 +22,9 @@ package Gnatformat.Full_Format is
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
       Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
+      Pipe                    : Boolean;
+      Check                   : Boolean;
+      Keep_Going              : Boolean;
       Charset                 : String);
 
 end Gnatformat.Full_Format;

@@ -53,6 +53,9 @@ package body Gnatformat.Full_Format is
       Unparsing_Configuration :
         Langkit_Support_Unparsing.Unparsing_Configuration;
       Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
+      Pipe                    : Boolean;
+      Check                   : Boolean;
+      Keep_Going              : Boolean;
       Charset                 : String)
    is
       type Preprocessor_Data_Record is record
@@ -257,7 +260,7 @@ package body Gnatformat.Full_Format is
                  Format_Source (Source.File, View_Format_Options);
 
             begin
-               if Gnatformat.Command_Line.Pipe.Get then
+               if Pipe then
                   case Result.Success is
                      when True =>
                         if Print_New_Line then
@@ -308,7 +311,7 @@ package body Gnatformat.Full_Format is
                         & """ which is not visible to the provided "
                         & "project");
                   end if;
-                  if Gnatformat.Command_Line.Check.Get then
+                  if Check then
                      declare
                         use Ada.Strings.Unbounded;
 
@@ -409,7 +412,7 @@ package body Gnatformat.Full_Format is
                return False;
             end if;
 
-            if Gnatformat.Command_Line.Pipe.Get then
+            if Pipe then
                declare
                   Formatted_Source :
                     constant Ada.Strings.Unbounded.Unbounded_String :=
@@ -450,7 +453,7 @@ package body Gnatformat.Full_Format is
                   Source_Stream : Ada.Streams.Stream_IO.Stream_Access;
 
                begin
-                  if Gnatformat.Command_Line.Check.Get then
+                  if Check then
                      declare
                         Original_Source_Size :
                           constant Ada.Directories.File_Size :=
@@ -591,7 +594,7 @@ package body Gnatformat.Full_Format is
                for Source of Command_Line_Project_Sources loop
                   exit when
                     not Process_Project_Source (Source, Format_Options)
-                    and not Gnatformat.Command_Line.Keep_Going.Get;
+                    and not Keep_Going;
                end loop;
             end;
 
@@ -610,14 +613,14 @@ package body Gnatformat.Full_Format is
                     (Ada.Text_IO.Standard_Error,
                      "Failed to find " & Source.Display_Base_Name);
 
-                  if not Gnatformat.Command_Line.Keep_Going.Get then
+                  if not Keep_Going then
                      exit;
                   end if;
 
                else
                   exit when
                     not Process_Standalone_Source (Source, Charset)
-                    and not Gnatformat.Command_Line.Keep_Going.Get;
+                    and not Keep_Going;
                end if;
             end loop;
          end if;
@@ -647,8 +650,7 @@ package body Gnatformat.Full_Format is
          begin
             for Source of Project_Sources loop
                exit when
-                 not Process_Project_Source (Source)
-                 and not Gnatformat.Command_Line.Keep_Going.Get;
+                 not Process_Project_Source (Source) and not Keep_Going;
             end loop;
          end;
       end if;

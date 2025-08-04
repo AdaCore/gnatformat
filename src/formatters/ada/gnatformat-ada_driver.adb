@@ -189,7 +189,10 @@ begin
             CLI_Formatting_Config,
             Unparsing_Configuration,
             Sources,
-            Charset => Charset);
+            Pipe       => Gnatformat.Command_Line.Pipe.Get,
+            Check      => Gnatformat.Command_Line.Check.Get,
+            Keep_Going => Gnatformat.Command_Line.Keep_Going.Get,
+            Charset    => Charset);
       end if;
    end;
 end Gnatformat.Ada_Driver;
