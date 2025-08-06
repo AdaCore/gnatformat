@@ -11,16 +11,17 @@ with GNAT.OS_Lib;
 with GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS; use GNATCOLL.VFS;
 
-with Gnatformat.Command_Line;
+with Gnatformat.Abstract_Writers;
 with Gnatformat.Command_Line.Configuration;
+with Gnatformat.Command_Line;
 with Gnatformat.Configuration;
+with Gnatformat.Console_Writers;
+with Gnatformat.File_Writers;
 with Gnatformat.Full_Format;
-with Gnatformat.Range_Format;
 with Gnatformat.Project;
+with Gnatformat.Range_Format;
 
 with GPR2;
-with GPR2.Build.Source;      use GPR2.Build.Source;
-with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
 with GPR2.Options;
 with GPR2.Project.Tree;
 
@@ -32,6 +33,17 @@ procedure Gnatformat.Ada_Driver is
 
    package Langkit_Support_Unparsing renames
      Langkit_Support.Generic_API.Unparsing;
+
+   function Charset return String
+   is (declare
+         CLI_Charset :
+           constant Gnatformat.Configuration.Optional_Unbounded_String :=
+             Gnatformat.Command_Line.Charset.Get;
+       begin
+         (if CLI_Charset.Is_Set
+          then Ada.Strings.Unbounded.To_String (CLI_Charset.Value)
+          else Gnatformat.Configuration.Default_Charset));
+   --  Return charset from command line option or default one if none.
 
 begin
    GNATCOLL.Traces.Parse_Config_File;
@@ -86,6 +98,13 @@ begin
 
       Sources : constant Gnatformat.Command_Line.Sources.Result_Array :=
         Gnatformat.Command_Line.Sources.Get;
+
+      Writer : Gnatformat.Abstract_Writers.Abstract_Writer'Class :=
+        (if Gnatformat.Command_Line.Pipe.Get
+         then
+           Gnatformat.Console_Writers.Writer
+             (Single_File => Sources'Length = 1)
+         else Gnatformat.File_Writers.Writer);
 
       use type Gnatformat.Command_Line.Sources.Result_Array;
       use type Langkit_Support_Unparsing.Unparsing_Configuration;
@@ -171,25 +190,21 @@ begin
                  (Gnatformat.Command_Line.End_Column.Get)),
             CLI_Formatting_Config   => CLI_Formatting_Config,
             Unparsing_Configuration => Unparsing_Configuration,
-            Default_Charset         =>
-              (declare
-                 CLI_Charset :
-                   constant Gnatformat
-                              .Configuration
-                              .Optional_Unbounded_String :=
-                     Gnatformat.Command_Line.Charset.Get;
-               begin
-                 (if CLI_Charset.Is_Set
-                  then Ada.Strings.Unbounded.To_String (CLI_Charset.Value)
-                  else Gnatformat.Configuration.Default_Charset)),
+            Default_Charset         => Charset,
             Pipe                    => Gnatformat.Command_Line.Pipe.Get);
 
       else
          Gnatformat.Full_Format.Full_Format
-           (Project_Tree,
+           (Writer,
+            Project_Tree,
             CLI_Formatting_Config,
             Unparsing_Configuration,
-            Sources);
+            Sources,
+            Format_Options => Gnatformat.Command_Line.Configuration.Get,
+            Check          => Gnatformat.Command_Line.Check.Get,
+            Keep_Going     => Gnatformat.Command_Line.Keep_Going.Get,
+            Charset        => Charset,
+            Base_Commit_ID => Gnatformat.Command_Line.Gitdiff.Get);
       end if;
    end;
 end Gnatformat.Ada_Driver;
