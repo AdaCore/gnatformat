@@ -5,6 +5,10 @@ library project Docs is
    for Library_Dir use "lib";
    for Library_Kind use "Static";
 
+   package Compiler is
+      for Driver ("Python") use "";
+   end Compiler;
+
    package Naming is
       for Implementation_Suffix ("Python") use ".py";
    end Naming;
