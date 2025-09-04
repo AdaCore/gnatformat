@@ -1,4 +1,4 @@
-description: SubpSpec formatting with partial selection of a procedure from a SubpBody.
+description: SubpSpec formatting with partial selection of a procedure from a SubpBody. SubpBody formatting is expected.
 driver: gnatformat
 args:
   [

@@ -1,0 +1,5 @@
+test.ads(<AbstractSubpDecl ["Get_Property"] test.ads:3:7-4:71>) - 3:1-4:71
+^
+   function Get_Property (This : Editor_Overlay; Name : String) return String
+   is abstract;$
+

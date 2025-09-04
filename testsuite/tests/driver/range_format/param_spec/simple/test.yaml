@@ -1,0 +1,12 @@
+description: Testing ParamSpec selection formatting with partial selection. The SubpDecl is expected to be formatted instead of the selected ParamSpec.
+driver: gnatformat
+args:
+  [
+    "test.ads",
+    "--range-format",
+    "-SL 4",
+    "-SC 10",
+    "-EL 4",
+    "-EC 12",
+    "--pipe",
+  ]
