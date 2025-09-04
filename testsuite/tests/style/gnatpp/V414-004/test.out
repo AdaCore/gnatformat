@@ -5,7 +5,7 @@ begin
    case V is
       pragma List (On);
 
-      when A =>
+      when A      =>
          I := 1;
 
       when others =>
