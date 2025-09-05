@@ -28,10 +28,10 @@ begin
    end loop;
 
    case Int is
-      when 0 =>
+      when 0      =>
          null;
 
-      when 1 =>
+      when 1      =>
          null;
 
       when others =>
