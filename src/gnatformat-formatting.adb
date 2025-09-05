@@ -760,6 +760,10 @@ package body Gnatformat.Formatting is
       --  is returned. Returns No_Ada_Node if no node is found or if
       --  Token = No_Token.
 
+      function Expected_Basic_Decl (Kind : Ada_Node_Kind_Type) return Boolean;
+      --  Checking for the node is an expected Ada_Basic_Decl filtering some
+      --  node kinds that are excluded from the relevant parents.
+
       ------------
       -- Lookup --
       ------------
@@ -865,18 +869,46 @@ package body Gnatformat.Formatting is
       --  Crt_Start_Node and Crt_End_Node
       Parent_Node : Ada_Node := No_Ada_Node;
 
+      ----------------------------
+      --   Expected_Basic_Decl  --
+      ----------------------------
+
+      function Expected_Basic_Decl (Kind : Ada_Node_Kind_Type) return Boolean
+      is
+         function Excluded_Basic_Decl
+           (Kind : Ada_Node_Kind_Type) return Boolean
+         is (Kind
+             in Ada_Abstract_State_Decl
+              | Ada_Anonymous_Expr_Decl
+              | Ada_Component_Decl
+              | Ada_Discriminant_Spec
+              | Ada_Param_Spec
+              | Ada_Synthetic_Formal_Param_Decl
+              | Ada_Generic_Package_Internal
+              | Ada_Enum_Literal_Decl
+              | Ada_Synthetic_Char_Enum_Lit
+              | Ada_Generic_Subp_Internal
+              | Ada_Entry_Index_Spec
+              | Ada_Exception_Handler
+              | Ada_For_Loop_Var_Decl
+              | Ada_Label_Decl
+              | Ada_Named_Stmt_Decl);
+      begin
+         return
+           (Kind in Ada_Basic_Decl and then not Excluded_Basic_Decl (Kind));
+      end Expected_Basic_Decl;
+
       function Is_Relevant_Parent_Kind
         (Kind : Ada_Node_Kind_Type) return Boolean
-      is (Kind
-          in Ada_Decl_Block
-           | Ada_Type_Decl
-           | Ada_Compilation_Unit
-           | Ada_Stmt
-           | Ada_Stmt_List
-           | Ada_Ada_Node_List
-           | Ada_Basic_Decl
-           | Ada_Subp_Spec
-           | Ada_Use_Type_Clause);
+      is (Expected_Basic_Decl (Kind)
+          or else Kind
+                  in Ada_Decl_Block
+                   | Ada_Type_Decl
+                   | Ada_Compilation_Unit
+                   | Ada_Stmt
+                   | Ada_Stmt_List
+                   | Ada_Ada_Node_List
+                   | Ada_Use_Type_Clause);
 
       function Is_Relevant_Parent_Node (Node : Ada_Node'Class) return Boolean
       is (not Node.Is_Null and then Is_Relevant_Parent_Kind (Node.Kind));
