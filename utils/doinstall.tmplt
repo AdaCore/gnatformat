@@ -82,7 +82,7 @@ standard_installation () {
 
    # Perform the real installation.
    mkdir -p "$prefix"
-   (tar cf - bin lib share \
+   (tar cf - bin lib include share \
       | (cd "$prefix"; tar xf -)) 2>&1 | tee $tmpout
 
    # Check that installation was OK
