@@ -412,7 +412,12 @@ private
            Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)));
 
    Undefined_Basic_Format_Options : constant Basic_Format_Options_Type :=
-     (others => <>);
+     (Width                    => (Is_Set => False),
+      Indentation              => (Is_Set => False),
+      Indentation_Kind         => (Is_Set => False),
+      Indentation_Continuation => (Is_Set => False),
+      End_Of_Line              => (Is_Set => False),
+      Charset                  => (Is_Set => False));
 
    package String_To_Basic_Format_Options_Hash_Maps is new
      Ada.Containers.Indefinite_Hashed_Maps
@@ -432,11 +437,17 @@ private
         [others => Undefined_Basic_Format_Options];
       Sources         : String_To_Basic_Format_Options_Hash_Map :=
         String_To_Basic_Format_Options_Hash_Maps.Empty_Map;
+      --  Empty_Map for Sources has the same meaning as undefined
       Ignored_Sources : Optional_String_Hashed_Set := (Is_Set => False);
    end record;
 
    Default_Format_Options : constant Format_Options_Type :=
      (Language        => [others => Default_Basic_Format_Options],
+      Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
+      Ignored_Sources => (Is_Set => False));
+
+   Undefined_Format_Options : constant Format_Options_Type :=
+     (Language        => [others => Undefined_Basic_Format_Options],
       Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
       Ignored_Sources => (Is_Set => False));
 
