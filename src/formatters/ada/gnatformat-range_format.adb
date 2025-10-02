@@ -54,7 +54,7 @@ package body Gnatformat.Range_Format is
             Project_Formatting_Config :
               Gnatformat.Configuration.Format_Options_Type :=
                 (case Project_Source.Visible is
-                   when True =>
+                   when True  =>
                      Gnatformat.Configuration.Get
                        (Project_Format_Options_Cache,
                         Project_Source.Visible_Source.Owning_View),

@@ -364,14 +364,14 @@ package body Gnatformat.Configuration is
       Indentation_Kind         :
         constant Prettier_Ada.Documents.Indentation_Kind :=
           (case Self.Indentation_Kind.Is_Set is
-             when True =>
+             when True  =>
                (case Self.Indentation_Kind.Value is
                   when Spaces => Prettier_Ada.Documents.Spaces,
-                  when Tabs => Prettier_Ada.Documents.Tabs),
+                  when Tabs   => Prettier_Ada.Documents.Tabs),
              when False =>
                (case Default_Basic_Format_Options.Indentation_Kind.Value is
                   when Spaces => Prettier_Ada.Documents.Spaces,
-                  when Tabs => Prettier_Ada.Documents.Tabs));
+                  when Tabs   => Prettier_Ada.Documents.Tabs));
       Indentation_Continuation : constant Positive :=
         Self.Indentation_Continuation
         or Default_Basic_Format_Options.Indentation_Continuation.Value;
@@ -381,13 +381,13 @@ package body Gnatformat.Configuration is
       End_Of_Line              :
         constant Prettier_Ada.Documents.End_Of_Line_Kind :=
           (case Self.End_Of_Line.Is_Set is
-             when True =>
+             when True  =>
                (case Self.End_Of_Line.Value is
-                  when LF => Prettier_Ada.Documents.LF,
+                  when LF   => Prettier_Ada.Documents.LF,
                   when CRLF => Prettier_Ada.Documents.CRLF),
              when False =>
                (case Default_Basic_Format_Options.End_Of_Line.Value is
-                  when LF => Prettier_Ada.Documents.LF,
+                  when LF   => Prettier_Ada.Documents.LF,
                   when CRLF => Prettier_Ada.Documents.CRLF));
 
    begin
@@ -750,7 +750,7 @@ package body Gnatformat.Configuration is
 
          if not Attribute.Index.Is_Defined then
             case Attribute_Value.Kind is
-               when Ignore =>
+               when Ignore  =>
                   Gnatformat_Trace.Trace
                     (Ignore'Image
                      & " = "
@@ -764,7 +764,7 @@ package body Gnatformat.Configuration is
                when Unknown =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
 
-               when others =>
+               when others  =>
                   Gnatformat_Trace.Trace
                     (Attribute_Value.Kind'Image
                      & " attribute must have an index");
@@ -774,7 +774,7 @@ package body Gnatformat.Configuration is
             Gnatformat_Trace.Trace ("Ada attribute " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Charset =>
+               when Charset                  =>
                   Gnatformat_Trace.Trace
                     (Charset'Image
                      & " = "
@@ -782,7 +782,7 @@ package body Gnatformat.Configuration is
                          (Attribute_Value.Charset));
                   Self.With_Charset (Attribute_Value.Charset, Ada_Language);
 
-               when End_Of_Line =>
+               when End_Of_Line              =>
                   Gnatformat_Trace.Trace
                     (End_Of_Line'Image
                      & " = "
@@ -790,7 +790,7 @@ package body Gnatformat.Configuration is
                   Self.With_End_Of_Line
                     (Attribute_Value.End_Of_Line, Ada_Language);
 
-               when Indentation =>
+               when Indentation              =>
                   Gnatformat_Trace.Trace
                     (Indentation'Image
                      & " = "
@@ -807,7 +807,7 @@ package body Gnatformat.Configuration is
                   Self.With_Indentation_Continuation
                     (Attribute_Value.Indentation_Continuation, Ada_Language);
 
-               when Indentation_Kind =>
+               when Indentation_Kind         =>
                   Gnatformat_Trace.Trace
                     (Indentation_Kind'Image
                      & " = "
@@ -815,16 +815,16 @@ package body Gnatformat.Configuration is
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Ada_Language);
 
-               when Width =>
+               when Width                    =>
                   Gnatformat_Trace.Trace
                     (Width'Image & " = " & Attribute_Value.Width'Image);
                   Self.With_Width (Attribute_Value.Width, Ada_Language);
 
-               when Ignore =>
+               when Ignore                   =>
                   Gnatformat_Trace.Trace
                     (Ignore'Image & " attribute must not have an index");
 
-               when Unknown =>
+               when Unknown                  =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
             end case;
 
@@ -833,7 +833,7 @@ package body Gnatformat.Configuration is
               ("Source attribute for " & Attribute.Index.Text);
 
             case Attribute_Value.Kind is
-               when Charset =>
+               when Charset                  =>
                   Gnatformat_Trace.Trace
                     (Charset'Image
                      & " = "
@@ -842,7 +842,7 @@ package body Gnatformat.Configuration is
                   Self.With_Charset
                     (Attribute_Value.Charset, Attribute.Index.Text);
 
-               when End_Of_Line =>
+               when End_Of_Line              =>
                   Gnatformat_Trace.Trace
                     (End_Of_Line'Image
                      & " = "
@@ -850,7 +850,7 @@ package body Gnatformat.Configuration is
                   Self.With_End_Of_Line
                     (Attribute_Value.End_Of_Line, Attribute.Index.Text);
 
-               when Indentation =>
+               when Indentation              =>
                   Gnatformat_Trace.Trace
                     (Indentation'Image
                      & " = "
@@ -867,7 +867,7 @@ package body Gnatformat.Configuration is
                     (Attribute_Value.Indentation_Continuation,
                      Attribute.Index.Text);
 
-               when Indentation_Kind =>
+               when Indentation_Kind         =>
                   Gnatformat_Trace.Trace
                     (Indentation_Kind'Image
                      & " = "
@@ -875,17 +875,17 @@ package body Gnatformat.Configuration is
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Attribute.Index.Text);
 
-               when Width =>
+               when Width                    =>
                   Gnatformat_Trace.Trace
                     (Width'Image & " = " & Attribute_Value.Width'Image);
                   Self.With_Width
                     (Attribute_Value.Width, Attribute.Index.Text);
 
-               when Ignore =>
+               when Ignore                   =>
                   Gnatformat_Trace.Trace
                     (Ignore'Image & " attribute must not have an index");
 
-               when Unknown =>
+               when Unknown                  =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
             end case;
          end if;
@@ -899,7 +899,7 @@ package body Gnatformat.Configuration is
             when GPR2.Project.Registry.Attribute.Single =>
                Parse_Attribute (Attribute);
 
-            when GPR2.Project.Registry.Attribute.List =>
+            when GPR2.Project.Registry.Attribute.List   =>
                Gnatformat_Trace.Trace
                  ("Attribute does not have a single value");
          end case;

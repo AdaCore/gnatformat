@@ -222,7 +222,7 @@ package body Gnatformat.Full_Format is
             View_Format_Options :
               Gnatformat.Configuration.Format_Options_Type :=
                 (case Source.Visible is
-                   when True =>
+                   when True  =>
                      Gnatformat.Configuration.Get
                        (Project_Format_Options_Cache,
                         Source.Visible_Source.Owning_View),
@@ -254,7 +254,7 @@ package body Gnatformat.Full_Format is
                end if;
 
                case Result.Success is
-                  when True =>
+                  when True  =>
 
                      if Check then
                         declare
