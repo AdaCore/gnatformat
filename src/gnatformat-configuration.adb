@@ -36,7 +36,7 @@ package body Gnatformat.Configuration is
       return Format_Options_Builder_Type
    is (Format_Options_Builder_Type'
          (Project                           => Project,
-          Format_Options                    => <>,
+          Format_Options                    => Undefined_Format_Options,
           Implicit_Indentation_Continuation =>
             Implicit_Indentation_Continuation));
 
@@ -129,7 +129,6 @@ package body Gnatformat.Configuration is
          Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Charset_Attribute_Id, "Ignore file with the sources to ignore");
-
    end Elaborate_GPR2;
 
    -----------------
@@ -201,7 +200,7 @@ package body Gnatformat.Configuration is
       else
          Gnatformat_Trace.Trace ("Project does not have a Format package");
 
-         return Default_Format_Options;
+         return Undefined_Format_Options;
       end if;
    end From_Project;
 
@@ -573,7 +572,8 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Charset => (Is_Set => True, Value => Charset), others => <>));
+            (Undefined_Basic_Format_Options
+             with delta Charset => (Is_Set => True, Value => Charset)));
       end if;
    end With_Charset;
 
@@ -593,8 +593,9 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (End_Of_Line => (Is_Set => True, Value => End_Of_Line),
-             others      => <>));
+            (Undefined_Basic_Format_Options
+             with delta
+               End_Of_Line => (Is_Set => True, Value => End_Of_Line)));
       end if;
    end With_End_Of_Line;
 
@@ -982,8 +983,9 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Indentation => (Is_Set => True, Value => Indentation),
-             others      => <>));
+            (Undefined_Basic_Format_Options
+             with delta
+               Indentation => (Is_Set => True, Value => Indentation)));
       end if;
 
       if Self.Implicit_Indentation_Continuation then
@@ -1000,10 +1002,12 @@ package body Gnatformat.Configuration is
          else
             Self.Format_Options.Sources.Insert
               (Source_Filename,
-               (Indentation_Continuation =>
-                  (Is_Set => True,
-                   Value  => (if Indentation = 1 then 1 else Indentation - 1)),
-                others                   => <>));
+               (Undefined_Basic_Format_Options
+                with delta
+                  Indentation_Continuation =>
+                    (Is_Set => True,
+                     Value  =>
+                       (if Indentation = 1 then 1 else Indentation - 1))));
          end if;
       end if;
    end With_Indentation;
@@ -1062,9 +1066,10 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Indentation_Continuation =>
-               (Is_Set => True, Value => Indentation_Continuation),
-             others                   => <>));
+            (Undefined_Basic_Format_Options
+             with delta
+               Indentation_Continuation =>
+                 (Is_Set => True, Value => Indentation_Continuation)));
       end if;
    end With_Indentation_Continuation;
 
@@ -1085,8 +1090,10 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Indentation_Kind => (Is_Set => True, Value => Indentation_Kind),
-             others           => <>));
+            (Undefined_Basic_Format_Options
+             with delta
+               Indentation_Kind =>
+                 (Is_Set => True, Value => Indentation_Kind)));
       end if;
    end With_Indentation_Kind;
 
@@ -1119,7 +1126,8 @@ package body Gnatformat.Configuration is
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
-            (Width => (Is_Set => True, Value => Width), others => <>));
+            (Undefined_Basic_Format_Options
+             with delta Width => (Is_Set => True, Value => Width)));
       end if;
    end With_Width;
 
