@@ -1,0 +1,5 @@
+description: Test --gitdiff option error handling
+driver: gnatformat
+args: ["--gitdiff", "--help"]
+status_code: 1
+
