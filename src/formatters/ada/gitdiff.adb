@@ -138,43 +138,53 @@ package body Gitdiff is
 
       Matches : Match_Array (0 .. 5);
    begin
-      Match (Matcher, Diff_Text, Matches, Cursor);
+      loop
+         Match (Matcher, Diff_Text, Matches, Cursor);
 
-      if Matches (0) = No_Match then
-         return (Kind => None);
-      end if;
+         if Matches (0) = No_Match then
+            return (Kind => None);
+         end if;
 
-      Cursor := Matches (0).Last + 1;
+         Cursor := Matches (0).Last + 1;
 
-      if Matches (1) /= No_Match then
-         --  The first option was matched: we have a new file.
-         return
-           (Kind      => File,
-            File_Name =>
-              To_Unbounded_String
-                (Diff_Text (Matches (2).First .. Matches (2).Last)));
-      elsif Matches (3) /= No_Match then
-         --  The second option was matched: we have a hunk for the current
-         --  file.
-         declare
-            First_Line : constant Positive :=
-              Positive'Value
-                (Diff_Text (Matches (4).First .. Matches (4).Last));
-            Last_Line  : constant Positive :=
-              First_Line
-              + (if Matches (5) = No_Match
-                 then 0
-                 else
-                   Positive'Value
-                     (Diff_Text (Matches (5).First .. Matches (5).Last))
-                   - 1);
-         begin
-            return (Hunk, First_Line, Last_Line);
-         end;
-      else
-         --  Something's wrong with git's output if we get here
-         raise Git_Command_Failed;
-      end if;
+         if Matches (1) /= No_Match then
+            --  The first option was matched: we have a new file.
+            return
+              (Kind      => File,
+               File_Name =>
+                 To_Unbounded_String
+                   (Diff_Text (Matches (2).First .. Matches (2).Last)));
+         elsif Matches (3) /= No_Match then
+            --  The second option was matched: we have a hunk for the current
+            --  file.
+            declare
+               First_Line : constant Natural :=
+                 Positive'Value
+                   (Diff_Text (Matches (4).First .. Matches (4).Last));
+
+               Line_Count : constant Natural :=
+                 (if Matches (5) = No_Match
+                  then 1
+                  else
+                    Natural'Value
+                      (Diff_Text (Matches (5).First .. Matches (5).Last)));
+            begin
+               --  The meaning of the first new line in git diff's output when
+               --  there are no new lines is unclear. In particular, it is
+               --  sometimes 0, with which we cannot build a Diff_Elem. Since
+               --  there is nothing to format anyway in that case, we simply
+               --  skip the hunk.
+               if Line_Count = 0 then
+                  null;
+               else
+                  return (Hunk, First_Line, First_Line + Line_Count - 1);
+               end if;
+            end;
+         else
+            --  Something's wrong with git's output if we get here
+            raise Git_Command_Failed;
+         end if;
+      end loop;
    end Get_Next;
 
    type File_State is record
