@@ -484,14 +484,22 @@ package body Gnatformat.Full_Format is
          end if;
 
       elsif Base_Commit_ID.Is_Set then
-         Gitdiff.Format_New_Lines
-           (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
-            Gitdiff.Context'
-              (Lal_Ctx          => LAL_Context,
-               Options          => Format_Options,
-               Unparsing_Config => Unparsing_Configuration,
-               Charset          =>
-                 Ada.Strings.Unbounded.To_Unbounded_String (Charset)));
+         begin
+            Gitdiff.Format_New_Lines
+              (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
+               Gitdiff.Context'
+                 (Lal_Ctx          => LAL_Context,
+                  Options          => Format_Options,
+                  Unparsing_Config => Unparsing_Configuration,
+                  Charset          =>
+                    Ada.Strings.Unbounded.To_Unbounded_String (Charset)));
+         exception
+            when E : others =>
+               Writer.Print_Error
+                 ("Failed to generate git diff: make sure to specify a valid commit ID",
+                  True);
+               Gnatformat.Project.Set_General_Failed;
+         end;
 
       else
          declare
