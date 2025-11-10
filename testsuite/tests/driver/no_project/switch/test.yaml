@@ -1,0 +1,4 @@
+description:
+  "Test that GNATformat does not load a project when --no-project is provided"
+driver: gnatformat
+args: ["--no-project", "src/test.adb", "test.adb", "--pipe"]
