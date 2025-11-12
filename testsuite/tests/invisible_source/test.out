@@ -6,7 +6,7 @@ end Foo;
 
 --  Warning: Formatting "invisible_src/bar.adb" which is not visible to the provided project
 
---  bar.adb
+--  invisible_src/bar.adb
 procedure Bar is
 begin
     null;

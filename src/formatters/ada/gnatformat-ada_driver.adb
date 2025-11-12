@@ -79,8 +79,12 @@ begin
    Gnatformat.Project.GPR_Options.Print_GPR_Registry;
 
    declare
+      No_Project   : constant Boolean :=
+        Gnatformat.Project.GPR_Options.No_Project;
       Project_File : constant GNATCOLL.VFS.Virtual_File :=
-        Gnatformat.Project.Resolve_Project_File;
+        (if No_Project
+         then GNATCOLL.VFS.No_File
+         else Gnatformat.Project.Resolve_Project_File);
       Project_Tree : GPR2.Project.Tree.Object;
 
       CLI_Formatting_Config :
@@ -126,7 +130,7 @@ begin
       else
          --  Confirm that either a project and/or sources files were provided
 
-         if Project_File = GNATCOLL.VFS.No_File
+         if (No_Project or Project_File = GNATCOLL.VFS.No_File)
            and Sources = Gnatformat.Command_Line.Sources.No_Results
            and not Gnatformat.Command_Line.Gitdiff.Get.Is_Set
          then
@@ -171,7 +175,11 @@ begin
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
-      if Project_File /= GNATCOLL.VFS.No_File then
+      if No_Project then
+         Gnatformat.Gnatformat_Trace.Trace
+           ("Proceeding with no project loaded");
+
+      elsif Project_File /= GNATCOLL.VFS.No_File then
          Gnatformat.Project.Load_Project (Project_Tree, Project_File);
       end if;
 
