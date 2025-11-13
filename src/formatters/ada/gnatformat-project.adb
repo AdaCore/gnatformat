@@ -48,6 +48,12 @@ package body Gnatformat.Project is
       declare
          Source_Simple_Name : constant GPR2.Filename_Type :=
            GPR2.Simple_Name (Source.Base_Name);
+         Source_Full_Name   : constant String :=
+           (if Source.Is_Absolute_Path
+            then Source.Display_Full_Name (Normalize => True)
+            else
+              GNATCOLL.VFS.Join (GNATCOLL.VFS.Get_Current_Dir, Source)
+                .Display_Full_Name (Normalize => True));
          Resolved_Source    : GPR2.Build.Source.Object :=
            GPR2.Build.Source.Undefined;
 
@@ -59,16 +65,6 @@ package body Gnatformat.Project is
 
          for View of Project_Tree.Namespace_Root_Projects loop
             Resolved_Source := View.Visible_Source (Source_Simple_Name);
-
-            --  FIXME:
-            --  Here we use the simple name and ignore the path.
-            --  This means that if the user tries to format a source
-            --  "foo/a.adb" which does not exist, but a source
-            --  "bar/a.adb" exists, then "bar/a.adb" is formatted.
-            --  To fix the issue when base name != full name, not only check
-            --  if Resolved_Source != Undefined, but also check that if the
-            --  relative path of Resolved_Source to the cwd is the same as
-            --  base name.
 
             exit when Resolved_Source /= GPR2.Build.Source.Undefined;
          end loop;
@@ -88,6 +84,16 @@ package body Gnatformat.Project is
 
                return No_Project_Source;
             end if;
+
+         --  There is a visible source to the project with the same simple name
+         --  but Source actually refers to a regular file not part of the
+         --  project.
+
+         elsif Source.Is_Regular_File
+           and Source_Full_Name /= String (Resolved_Source.Path_Name.Value)
+         then
+
+            return Project_Source_Record'(File => Source, Visible => False);
 
          --  This is an visible source to the project but externally
          --  built. Do not format.

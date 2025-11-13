@@ -205,7 +205,9 @@ package body Gnatformat.Full_Format is
 
       begin
          Gnatformat_Trace.Trace
-           ("Processing project source " & Source_Simple_Name);
+           (if Source.Visible
+            then "Processing project source " & Source_Simple_Name
+            else "Processing source " & Source_Path_Name);
 
          if Libadalang.Preprocessing.Needs_Preprocessing
               (Preprocessor_Data.Preprocessor_Data, Source_Simple_Name)
@@ -274,7 +276,11 @@ package body Gnatformat.Full_Format is
                         end;
 
                      else
-                        Writer.Print_Source_Name ("--  " & Source_Simple_Name);
+                        Writer.Print_Source_Name
+                          ("--  "
+                           & (if Source.Visible
+                              then Source_Simple_Name
+                              else Source.File.Display_Full_Name));
 
                         Writer.Print_Source
                           (Source_Path_Name, Result.Formatted_Source);
@@ -496,7 +502,8 @@ package body Gnatformat.Full_Format is
          exception
             when E : others =>
                Writer.Print_Error
-                 ("Failed to generate git diff: make sure to specify a valid commit ID",
+                 ("Failed to generate git diff: make sure to specify a valid "
+                  & "commit ID",
                   True);
                Gnatformat.Project.Set_General_Failed;
          end;

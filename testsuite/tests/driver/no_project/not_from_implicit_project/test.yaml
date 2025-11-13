@@ -1,0 +1,5 @@
+description: |
+  "Test that GNATformat correctly resolves files that do not belong to the "
+  "project but have the same name as a file that belongs to the project."
+driver: gnatformat
+args: ["-P", "test.gpr", "src/test.adb", "test.adb", "--pipe"]

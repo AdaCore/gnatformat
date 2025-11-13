@@ -30,7 +30,7 @@ package Gnatformat.Command_Line is
 
    function To_Virtual_File
      (File_Name : String) return GNATCOLL.VFS.Virtual_File
-   is (GNATCOLL.VFS.Create_From_UTF8 (File_Name));
+   is (GNATCOLL.VFS.Create_From_UTF8 (File_Name, Normalize => False));
    --  Creates a file from its display name
 
    function To_Optional_Positive
