@@ -10,7 +10,7 @@ end Main;
 --  test_a.ads failed to format
 2:4: Cannot parse <sub_object_decl>
 2:57: Cannot parse <regular_aggregate>
-2:61: Expected 'others', got ')'
+2:61: Expected '[', got ')'
 2:61: Expected ';', got ')'
 2:61: Skipped token )
 2:62: Skipped token ;

@@ -1,4 +1,4 @@
 test.ads(<NumberDecl ["Power_16"] test.ads:28:4-28:38>) - 28:1-28:38
 ^
-   Power_16 : constant := 2**16;$
+   Power_16 : constant := 2 ** 16;$
 
