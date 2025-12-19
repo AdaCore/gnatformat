@@ -14,3 +14,5 @@
 .. |ALS|            replace:: :program:`Ada Language Server`
 
 .. |github|         replace:: :program:`GitHub`
+
+.. |GNATcheck|      replace:: :program:`GNATcheck`
