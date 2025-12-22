@@ -29,10 +29,10 @@ The available global options are:
 * ``--no-subprojects``: only process the root project, not the subprojects.
 * ``-U``: process all files, not only those that are in the closure of mains.
 * ``--verbose``: prints additional logs.
-* ``--version, -v``: shows the version of the tool.  
+* ``--version, -v``: shows the version of the tool.
 * ``--check``: exit with error code 1 if the input is not formatted correctly and
-  print the name of files that would be formatted.  
-* ``--pipe, -p``: print the result to stdout instead of editing the files on disk.  
+  print the name of files that would be formatted.
+* ``--pipe, -p``: print the result to stdout instead of editing the files on disk.
 * ``--keep-going, -k``: print the result to stdout instead of editing the files on disk.
 
 The specific options allowing to customize the formatting of your sources are:
@@ -61,13 +61,13 @@ The specific options allowing to customize the formatting of your sources are:
 * ``--end-column, -EC``: allows to specify the selection's end column number for range formatting.
 
 As a library
------------
+------------
 
 The formatting functionality is also available via a library.
 
 In order to use it as a libray, the API is located in the (:file:`gnatformat-formattng.ads`)
 and the entry point is the function ``Gnatformat.Formatting.Format`` having the following interface::
-  
+
   function Format
      (Unit           : Libadalang.Analysis.Analysis_Unit;
       Format_Options : Gnatformat.Configuration.Format_Options_Type;
@@ -87,8 +87,7 @@ where:
   that implements the formatting rules according to the coding style described in the |GNAT-Style|
   guide.
 
-This entry point can be used in order to integrate with other tools.   
+This entry point can be used in order to integrate with other tools.
 
 On our side, the ``gnatformat`` library is included in the |ALS| and can therefore be used through
-IDEs like |GNATStudio| and |VSCode|. 
-
+IDEs like |GNATStudio| and |VSCode|.
