@@ -1,0 +1,16 @@
+--  Warning: Formatting "src\test.adb" which is not visible to the provided project
+
+--  src\test.adb
+procedure Test is
+begin
+      null;
+      -- not from project
+      null;
+end Test;
+
+--  test.adb
+procedure Test is
+begin
+      null;
+end Test;
+
