@@ -3,3 +3,4 @@ description: |
   "project but have the same name as a file that belongs to the project."
 driver: gnatformat
 args: ["-P", "test.gpr", "src/test.adb", "test.adb", "--pipe"]
+windows_baseline_file: test_win.out # Required because the test output contains paths
