@@ -9,10 +9,9 @@ from __future__ import annotations
 
 import sys
 from os import sep
+from typing import override
 
 import e3.env
-import e3.testsuite
-import e3.testsuite.driver
 from e3.testsuite import Testsuite
 from e3.testsuite.driver.classic import ProcessResult, TestAbortWithFailure
 from e3.testsuite.driver.diff import (
@@ -96,6 +95,31 @@ class GNATformatDriver(DiffTestDriver):
             ReplacePath(self.working_dir() + sep),
             ReplaceBuildVersionAndDate(),
         ]
+
+    @property
+    @override
+    def baseline_file(self) -> tuple[str, bool]:
+        """Return the test output baseline file.
+
+        :return: The name of the text file (relative to test directories) that
+            contains the expected test output and whether the baseline is a
+            regexp.
+        """
+
+        default_filename = self.test_env.get("baseline_file", "test.out")
+
+        # On Windows, mostly due to the directory separator, it can be useful
+        # to use a different baseline.
+        filename = (
+            self.test_env.get("windows_baseline_file", default_filename)
+            if sys.platform == "win32"
+            else default_filename
+        )
+
+        is_regexp = self.test_env.get("baseline_regexp", False)
+
+        return (filename, is_regexp)
+
 
 class GNATformatTestsuite(Testsuite):
     tests_subdir = "tests"
