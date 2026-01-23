@@ -1,7 +1,7 @@
 .. include:: ../defines.hrst
 
 Getting Started with |GNATformat|
-====================================
+=================================
 
 Prerequisites
 -------------
