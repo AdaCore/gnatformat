@@ -61,7 +61,7 @@ The specific options allowing to customize the formatting of your sources are:
 * ``--end-column, -EC``: allows to specify the selection's end column number for range formatting.
 
 As a library
------------
+------------
 
 The formatting functionality is also available via a library.
 

@@ -50,12 +50,13 @@ the way that |GNATformat| is able to automatically address them.
 | Uncommented_End_Record                    | Not applicable             |
 +-------------------------------------------+----------------------------+
 
+
 where:
 
   * `Not applicable` means that |GNATformat| cannot do anything about it,
     
-  * `Yes, |GNAT| style checks` means that |GNATformat| address automatically the
-    `-gnaty` checks listed in the `GNATformat and the |GNAT| style checks (-gnaty)`
+  * `Yes, GNAT style checks` means that |GNATformat| address automatically the
+    `-gnaty` checks listed in the `GNATformat and the GNAT style checks (-gnaty)`
     section of the current documentation.
     
     
