@@ -26,3 +26,12 @@
     user-guide/usage
     user-guide/configuration
 
+|GNATformat| Formatting options accross GNAT tools
+==================================================
+
+.. toctree::
+    :numbered:
+    :maxdepth: 3
+
+    style-checks/gnat_style_checks
+    style-checks/gnatcheck_style_checks
