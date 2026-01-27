@@ -13,7 +13,7 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--end-column|-EC END-COLUMN] [-aP Search path [Search 
                  path...]] [--autoconf autoconf [autoconf...]] [--config config]
                   [--db db [db...]] [--db-] [--implicit-with project 
-                 [project...]] [-el] [--no-project] [-P project] 
+                 [project...]] [-eL] [--no-project] [-P project] 
                  [--print-gpr-registry] [--root-dir root-dir] 
                  [--relocate-build-tree relocate-build-tree] [--RTS rts 
                  [rts...]] [--RTS rts-index] [--src-subdirs src-subdirs] 
@@ -67,7 +67,7 @@ optional arguments:
    --db-                       Do not load the standard knowledge base
    --implicit-with             Add the given projects as a dependency on all 
                                loaded projects
-   -el                         Follows symlinks for project files
+   -eL                         Follows symlinks for project files
    --no-project                Do not use a project file
    -P                          The project file
    --print-gpr-registry        Print the GPR registry
