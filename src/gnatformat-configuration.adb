@@ -916,7 +916,12 @@ package body Gnatformat.Configuration is
 
    procedure With_Ignore
      (Self   : in out Format_Options_Builder_Type;
-      Ignore : GNATCOLL.VFS.Virtual_File) is
+      Ignore : GNATCOLL.VFS.Virtual_File)
+   is
+
+      function Is_Not_Comment_Line (Str : String) return Boolean
+      is (Str'Length /= 0 and then Str (Str'First .. Str'First + 2) /= "-- ");
+
    begin
       declare
          Resolved_Ignore : constant GNATCOLL.VFS.Virtual_File :=
@@ -948,9 +953,17 @@ package body Gnatformat.Configuration is
                Name => Resolved_Ignore.Display_Full_Name);
 
             while not Ada.Text_IO.End_Of_File (Ignore_File) loop
-               Self.Format_Options.Ignored_Sources.Value.Include
-                 (Ada.Strings.Unbounded.To_String
-                    (Ada.Text_IO.Unbounded_IO.Get_Line (Ignore_File)));
+               declare
+                  Current_Line : constant String :=
+                    Ada.Strings.Unbounded.To_String
+                      (Ada.Text_IO.Unbounded_IO.Get_Line (Ignore_File));
+               begin
+                  if Is_Not_Comment_Line (Current_Line) then
+                     Self.Format_Options.Ignored_Sources.Value.Include
+                       (Current_Line);
+                  end if;
+               end;
+
             end loop;
 
             Ada.Text_IO.Close (Ignore_File);
@@ -1026,9 +1039,10 @@ package body Gnatformat.Configuration is
 
       if Self.Implicit_Indentation_Continuation
         --  Avoid overwriting
-        and not Self.Format_Options.Language (Language)
-                  .Indentation_Continuation
-                  .Is_Set
+        and
+          not Self.Format_Options.Language (Language)
+                .Indentation_Continuation
+                .Is_Set
       then
          Self.Format_Options.Language (Language).Indentation_Continuation :=
            (Is_Set => True,

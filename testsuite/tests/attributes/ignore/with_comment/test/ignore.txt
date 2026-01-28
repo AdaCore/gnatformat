@@ -1,2 +1,2 @@
-test_5.ads
 --  this is a whole line comment
+test_dep.ads

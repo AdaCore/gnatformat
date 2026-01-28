@@ -45,8 +45,8 @@ package body Gitdiff is
    begin
       return
         Start_Sloc (Possibly_Containing) <= Start_Sloc (Possibly_Contained)
-        and then End_Sloc (Possibly_Contained)
-                 <= End_Sloc (Possibly_Containing);
+        and then
+          End_Sloc (Possibly_Contained) <= End_Sloc (Possibly_Containing);
    end Contains;
 
    function Are_Disjoint
@@ -338,8 +338,7 @@ package body Gitdiff is
 
       CD_To_Toplevel;
 
-      Iterate_Over_Files :
-      while File_Name /= Null_Unbounded_String loop
+      Iterate_Over_Files : while File_Name /= Null_Unbounded_String loop
          declare
             use Ada.Directories;
             S : constant String := To_String (File_Name);
