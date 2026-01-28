@@ -9,3 +9,9 @@ repos:
         files: ".*\\.ad(b|s)"
         exclude: "testsuite/tests/.*"
         args: ["-P", "gnat/gnatformat_driver.gpr"]
+  - repo: https://github.com/ambv/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        types_or: [file]
+        files: \.(py)$
