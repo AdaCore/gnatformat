@@ -187,11 +187,10 @@ package body Gnatformat.Edits is
                         if Current_Text_Edit /= No_Text_Edit then
                            if Current_Line_Number
                              = Natural (Current_Text_Edit.Location.Start_Line)
-                             and then Current_Column_Number
-                                      = Natural
-                                          (Current_Text_Edit
-                                             .Location
-                                             .Start_Column)
+                             and then
+                               Current_Column_Number
+                               = Natural
+                                   (Current_Text_Edit.Location.Start_Column)
                            then
                               Text_Edit_Ordered_Sets.Previous
                                 (Text_Edits_Cursor);
@@ -209,11 +208,10 @@ package body Gnatformat.Edits is
 
                            if Current_Line_Number
                              = Natural (Current_Text_Edit.Location.End_Line)
-                             and then Current_Column_Number
-                                      = Natural
-                                          (Current_Text_Edit
-                                             .Location
-                                             .End_Column)
+                             and then
+                               Current_Column_Number
+                               = Natural
+                                   (Current_Text_Edit.Location.End_Column)
                            then
                               Output_Buffer.Prepend
                                 (VSS.Strings.Conversions.To_Virtual_String

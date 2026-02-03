@@ -1,0 +1,3 @@
+description: Test the Ignore attribute by confirming that no sources are formatted
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--ignore=test/ignore.txt", "--pipe"]
