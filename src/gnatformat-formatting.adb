@@ -901,14 +901,15 @@ package body Gnatformat.Formatting is
       function Is_Relevant_Parent_Kind
         (Kind : Ada_Node_Kind_Type) return Boolean
       is (Expected_Basic_Decl (Kind)
-          or else Kind
-                  in Ada_Decl_Block
-                   | Ada_Type_Decl
-                   | Ada_Compilation_Unit
-                   | Ada_Stmt
-                   | Ada_Stmt_List
-                   | Ada_Ada_Node_List
-                   | Ada_Use_Type_Clause);
+          or else
+            Kind
+            in Ada_Decl_Block
+             | Ada_Type_Decl
+             | Ada_Compilation_Unit
+             | Ada_Stmt
+             | Ada_Stmt_List
+             | Ada_Ada_Node_List
+             | Ada_Use_Type_Clause);
 
       function Is_Relevant_Parent_Node (Node : Ada_Node'Class) return Boolean
       is (not Node.Is_Null and then Is_Relevant_Parent_Kind (Node.Kind));
@@ -951,12 +952,12 @@ package body Gnatformat.Formatting is
       begin
          return
            (Start_Node.Sloc_Range.Start_Line > End_Node.Sloc_Range.Start_Line
-            and then Start_Node.Sloc_Range.End_Line
-                     < End_Node.Sloc_Range.End_Line)
-           or else (Start_Node.Sloc_Range.Start_Line
-                    < End_Node.Sloc_Range.Start_Line
-                    and then Start_Node.Sloc_Range.End_Line
-                             > End_Node.Sloc_Range.End_Line);
+            and then
+              Start_Node.Sloc_Range.End_Line < End_Node.Sloc_Range.End_Line)
+           or else
+             (Start_Node.Sloc_Range.Start_Line < End_Node.Sloc_Range.Start_Line
+              and then
+                Start_Node.Sloc_Range.End_Line > End_Node.Sloc_Range.End_Line);
       end Are_Overlapping_Nodes;
 
       --------------------------
@@ -969,18 +970,18 @@ package body Gnatformat.Formatting is
          pragma
            Assert
              (Start_Node /= End_Node
-                and then Are_Overlapping_Nodes (Start_Node, End_Node));
+              and then Are_Overlapping_Nodes (Start_Node, End_Node));
       begin
          if Start_Node.Sloc_Range.Start_Line > End_Node.Sloc_Range.Start_Line
-           and then Start_Node.Sloc_Range.End_Line
-                    < End_Node.Sloc_Range.End_Line
+           and then
+             Start_Node.Sloc_Range.End_Line < End_Node.Sloc_Range.End_Line
          then
             return End_Node;
 
          elsif Start_Node.Sloc_Range.Start_Line
            < End_Node.Sloc_Range.Start_Line
-           and then Start_Node.Sloc_Range.End_Line
-                    > End_Node.Sloc_Range.End_Line
+           and then
+             Start_Node.Sloc_Range.End_Line > End_Node.Sloc_Range.End_Line
          then
             return Start_Node;
          end if;
@@ -1210,8 +1211,9 @@ package body Gnatformat.Formatting is
              (Node.P_Parent_Basic_Decl.As_Ada_Node, Indentation);
 
       elsif (not Prev_Sibling.Is_Null and not Next_Sibling.Is_Null)
-        and then Prev_Sibling.Sloc_Range.Start_Column
-                 = Next_Sibling.Sloc_Range.Start_Column
+        and then
+          Prev_Sibling.Sloc_Range.Start_Column
+          = Next_Sibling.Sloc_Range.Start_Column
       then
          Offset :=
            (if Prev_Sibling.Sloc_Range.Start_Column = 0
