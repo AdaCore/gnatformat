@@ -46,6 +46,12 @@ package Gnatformat.Command_Line is
           Gnatformat.Configuration.Indentation_Kind'Value (Indentation_Kind)));
    --  Converts a string to Gnatformat.Configuration.Optional_Indentation_Kind
 
+   function To_Optional_Layout
+     (Layout : String) return Gnatformat.Configuration.Optional_Layout
+   is ((Is_Set => True,
+        Value  => Gnatformat.Configuration.Layout_Style'Value (Layout)));
+   --  Converts a string to Gnatformat.Configuration.Optional_Layout
+
    function To_Optional_End_Of_Line_Kind
      (End_Of_Line_Kind : String)
       return Gnatformat.Configuration.Optional_End_Of_Line_Kind
@@ -172,6 +178,27 @@ package Gnatformat.Command_Line is
         Arg_Type    => Gnatformat.Configuration.Optional_Positive,
         Convert     => To_Optional_Positive,
         Default_Val => Gnatformat.Configuration.Optional_Positives.None);
+
+   package Layout is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--layout",
+        Help        =>
+          "Layout configuration: default | tall (default value = default)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Layout,
+        Convert     => To_Optional_Layout,
+        Default_Val => Gnatformat.Configuration.Optional_Layouts.None);
+
+   package Override_Layout is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--override-layout",
+        Name        => "OVERRIDE_LAYOUT",
+        Help        =>
+          "Overrides configuration file with the nodes provided in the file",
+        Arg_Type    => GNATCOLL.VFS.Virtual_File,
+        Convert     => To_Virtual_File,
+        Default_Val => GNATCOLL.VFS.No_File);
 
    package End_Of_Line is new
      Parse_Option

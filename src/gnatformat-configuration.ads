@@ -42,6 +42,7 @@ package Gnatformat.Configuration is
    --       indexed by language or source.
 
    type Indentation_Kind is (Spaces, Tabs);
+   type Layout_Style is (Default, Tall);
    type End_Of_Line_Kind is (LF, CRLF);
    type Keyword_Casing_Kind is (Keep, Lower, Upper);
 
@@ -49,6 +50,9 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (Indentation_Kind);
    subtype Optional_Indentation_Kind is
      Optional_Indentation_Kinds.Optional_Type;
+
+   package Optional_Layouts is new Gnatformat.Utils.Optional (Layout_Style);
+   subtype Optional_Layout is Optional_Layouts.Optional_Type;
 
    package Optional_End_Of_Line_Kinds is new
      Gnatformat.Utils.Optional (End_Of_Line_Kind);
