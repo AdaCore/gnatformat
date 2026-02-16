@@ -8,11 +8,18 @@ with Ada.Text_IO.Unbounded_IO;
 
 with GNAT.Traceback.Symbolic;
 
+with GNATCOLL;
+
 with GPR2;
+with GPR2.Containers;
+with GPR2.Path_Name;
 with GPR2.Project.Attribute.Set;
 with GPR2.Project.Attribute_Index;
 with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
+
+with Libadalang.Generic_API;
+with Libadalang.Generic_API.Unparsing;
 
 package body Gnatformat.Configuration is
 
@@ -41,6 +48,19 @@ package body Gnatformat.Configuration is
    --  Unparsing_Configuration objects in a hash map, therefore, consider them
    --  as always different.
 
+   ----------------------
+   --  Get_Layout_File --
+   ----------------------
+
+   function Get_Layout_File
+     (Actual : Gnatformat.Configuration.Layout_Kind)
+      return GNATCOLL.VFS.Virtual_File
+   is (if Actual = Tall
+       then Libadalang.Generic_API.Unparsing.Builtin_Overridings.Tall
+       else GNATCOLL.VFS.No_File);
+   --  Returns the predefined tall layout file if the actual layout is set
+   --  to Tall through switch or GPR attribute or No_File otherwise.
+
    -------------------------------------
    -- Compute_Unparsing_Configuration --
    -------------------------------------
@@ -50,22 +70,61 @@ package body Gnatformat.Configuration is
       Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File;
       Diagnostics                     :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
-      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration is
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      -------------------------------------
+      --  Update_Overridings_File_Array  --
+      -------------------------------------
+
+      procedure Update_Overridings_File_Array
+        (FA   : in out GNATCOLL.VFS.File_Array;
+         Last : in out Natural;
+         Val  : GNATCOLL.VFS.Virtual_File);
+      --  Inserts a Virtual file in the file array of overridings
+
+      procedure Update_Overridings_File_Array
+        (FA   : in out GNATCOLL.VFS.File_Array;
+         Last : in out Natural;
+         Val  : GNATCOLL.VFS.Virtual_File) is
+      begin
+         Last := Last + 1;
+         FA (Last) := Val;
+      end Update_Overridings_File_Array;
+
+      Overridings : GNATCOLL.VFS.File_Array := GNATCOLL.VFS.Empty_File_Array;
+      Last : Natural := 0;
    begin
+      --  Handles layout if set
+      if Format_Options.Layout.Is_Set
+        and then
+          Get_Layout_File (Format_Options.Layout.Value) /= GNATCOLL.VFS.No_File
+      then
+         Update_Overridings_File_Array
+           (Overridings,
+            Last,
+            Get_Layout_File (Format_Options.Layout.Value));
+      end if;
+
+      --  Handles keyword casing if set
       if Format_Options.Keyword_Casing.Is_Set then
-         return
-           Load_Unparsing_Configuration
-             (Unparsing_Configuration_File => Default_Unparsing_Configuration,
-              Overriddings                 =>
-                [Get_Keyword_Casing_Overriding
-                   (Format_Options.Keyword_Casing.Value)],
-              Diagnostics                  => Diagnostics);
+         Update_Overridings_File_Array
+           (Overridings,
+            Last,
+            Get_Keyword_Casing_Overriding
+              (Format_Options.Keyword_Casing.Value));
+      end if;
+
+       --  Handles the files specified through override layout if set
+      if Format_Options.Override_Layout.Is_Set then
+         for F of Format_Options.Override_Layout.Value loop
+            Update_Overridings_File_Array (Overridings, Last, F);
+         end loop;
       end if;
 
       return
         Load_Unparsing_Configuration
           (Unparsing_Configuration_File => Default_Unparsing_Configuration,
-           Overriddings                 => [],
+           Overriddings                 => Overridings,
            Diagnostics                  => Diagnostics);
    end Compute_Unparsing_Configuration;
 
@@ -243,6 +302,29 @@ package body Gnatformat.Configuration is
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Keyword_Casing_Attribute_Id,
          "Keyword casing: keep | lower | upper");
+
+      GPR2.Project.Registry.Attribute.Add
+        (Name                 => Q_Layout_Attribute_Id,
+         Index_Type           =>
+           GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Layout_Attribute_Id,
+         "Layout configuration: default | tall (default value = default)");
+
+      GPR2.Project.Registry.Attribute.Add
+        (Name                 => Q_Override_Layout_Attribute_Id,
+         Index_Type           =>
+           GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
+         Value                => GPR2.Project.Registry.Attribute.List,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Override_Layout_Attribute_Id,
+         "Override the configuration for the nodes defined in the JSON files");
+
    end Elaborate_GPR2;
 
    -----------------
@@ -406,6 +488,59 @@ package body Gnatformat.Configuration is
    is (if Self.Ignored_Sources.Is_Set
        then Self.Ignored_Sources.Value
        else String_Hashed_Sets.Empty_Set);
+
+   ----------------
+   -- Get_Layout --
+   ----------------
+
+   function Get_Layout
+     (Self              : Format_Options_Type;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Layout_Kind
+   is (if Self.Language (Language_Fallback).Layout.Is_Set
+       then Self.Language (Language_Fallback).Layout.Value
+       else Default_Basic_Format_Options.Layout.Value);
+
+   -------------------------
+   -- Get_Override_Layout --
+   -------------------------
+
+   function Get_Override_Layout
+     (Self              : Format_Options_Type;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return GNATCOLL.VFS.File_Array
+   is
+      function Files_Vector_To_Files_Array
+        (FV : Files_Vector) return GNATCOLL.VFS.File_Array;
+      --  Creates the file array based on the given file vector
+
+      -----------------------------------
+      --  Files_Vector_To_Files_Array  --
+      -----------------------------------
+
+      function Files_Vector_To_Files_Array
+        (FV : Files_Vector) return GNATCOLL.VFS.File_Array
+      is
+         Res  : GNATCOLL.VFS.File_Array := GNATCOLL.VFS.Empty_File_Array;
+         Last : Natural := 0;
+      begin
+         for F of FV loop
+            Ada.Text_IO.Put_Line ("MKU FV2FA " & F'Image);
+            Last := Last + 1;
+            Res (Last) := F;
+         end loop;
+
+         return Res;
+      end Files_Vector_To_Files_Array;
+
+   begin
+      return
+        (if Self.Language (Language_Fallback).Override_Layout.Is_Set
+         then
+           Files_Vector_To_Files_Array
+             (Self.Language (Language_Fallback).Override_Layout.Value)
+         else GNATCOLL.VFS.Empty_File_Array);
+   end Get_Override_Layout;
 
    ---------------------
    -- Get_Indentation --
@@ -584,13 +719,12 @@ package body Gnatformat.Configuration is
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
-      Overriddings                 : GNATCOLL.VFS.File_Array;
+      Overridings                  : GNATCOLL.VFS.File_Array;
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
       use Langkit_Support.Generic_API;
-
    begin
       Gnatformat.Gnatformat_Trace.Trace
         ("Loading unparsing configuration from """
@@ -640,6 +774,10 @@ package body Gnatformat.Configuration is
       Target.End_Of_Line := Source.End_Of_Line or @;
       Target.Charset := Source.Charset or @;
       Target.Keyword_Casing := Source.Keyword_Casing or @;
+
+      --  Handling rewrite of Layout and Override_Layout values
+      Target.Layout := Source.Layout or @;
+      Target.Override_Layout := Source.Override_Layout or @;
    end Overwrite;
 
    --------------
@@ -819,6 +957,8 @@ package body Gnatformat.Configuration is
             Indentation_Continuation,
             Keyword_Casing,
             Width,
+            Layout,
+            Override_Layout,
             Unknown);
 
          type Attribute_Value_Type (Kind : Format_Option_Kind := Unknown) is
@@ -849,6 +989,12 @@ package body Gnatformat.Configuration is
                when Width =>
                   Width : Positive;
 
+               when Layout =>
+                  Layout : Gnatformat.Configuration.Layout_Kind;
+
+               when Override_Layout =>
+                  Override_Layout : Optional_Files_Vector;
+
                when Unknown =>
                   null;
             end case;
@@ -866,7 +1012,51 @@ package body Gnatformat.Configuration is
             Q_Attribute_Id : constant GPR2.Q_Optional_Attribute_Id :=
               Attribute.Name.Id;
 
-            Raw_Attribute_Value : constant String := Attribute.Value.Text;
+
+            function To_Optional_Files_Vector
+              (Values : GPR2.Containers.Source_Value_List)
+               return Gnatformat.Configuration.Optional_Files_Vector;
+            --  Converts GPR2.Containers.Source_Value_List to
+            --  Gnatformat.Configuration.Optional_Files_Vector.
+
+            --------------------------------
+            --  To_Optional_Files_Vector  --
+            --------------------------------
+
+            function To_Optional_Files_Vector
+              (Values : GPR2.Containers.Source_Value_List)
+               return Gnatformat.Configuration.Optional_Files_Vector
+            is
+               use type GPR2.Containers.Source_Value_Type_List.Vector;
+
+               function To_Virtual_File
+                 (File_Name : String) return GNATCOLL.VFS.Virtual_File
+               is (GNATCOLL.VFS.Create_From_UTF8
+                     (File_Name, Normalize => False));
+
+            begin
+               if Values = GPR2.Containers.Empty_Source_Value_List then
+                  return Optional_Files_Vector'(Is_Set => False);
+               end if;
+
+               begin
+                  return
+                    Optional_Files_Vector'
+                      (Is_Set => True,
+                       Value  =>
+                         [for V of Values => To_Virtual_File (V.Text)]);
+               exception
+                  when others =>
+                     Gnatformat_Trace.Trace ("Virtual file creation failed");
+                     return Optional_Files_Vector'(Is_Set => False);
+               end;
+
+            end To_Optional_Files_Vector;
+
+            Raw_Attribute_Value : constant String :=
+              (if Attribute.Kind = GPR2.Project.Registry.Attribute.Single
+               then Attribute.Value.Text
+               else "");
 
          begin
             if Q_Attribute_Id = Q_Charset_Attribute_Id then
@@ -917,6 +1107,18 @@ package body Gnatformat.Configuration is
                   Ignore =>
                     Ada.Strings.Unbounded.To_Unbounded_String
                       (Raw_Attribute_Value));
+
+
+            elsif Q_Attribute_Id = Q_Layout_Attribute_Id then
+               return
+                 (Kind   => Layout,
+                  Layout => Layout_Kind'Value (Raw_Attribute_Value));
+
+            elsif Q_Attribute_Id = Q_Override_Layout_Attribute_Id then
+               return
+                 (Kind            => Override_Layout,
+                  Override_Layout =>
+                    To_Optional_Files_Vector (Attribute.Values));
 
             else
                return (Kind => Unknown);
@@ -1017,6 +1219,19 @@ package body Gnatformat.Configuration is
                   Gnatformat_Trace.Trace
                     (Ignore'Image & " attribute must not have an index");
 
+               when Layout                   =>
+                  Gnatformat_Trace.Trace
+                    (Layout'Image & " = " & Attribute_Value.Layout'Image);
+                  Self.With_Layout (Attribute_Value.Layout, Ada_Language);
+
+               when Override_Layout          =>
+                  Gnatformat_Trace.Trace
+                    (Override_Layout'Image
+                     & " = "
+                     & Attribute_Value.Override_Layout'Image);
+                  Self.With_Override_Layout
+                    (Attribute_Value.Override_Layout, Ada_Language);
+
                when Unknown                  =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
             end case;
@@ -1086,6 +1301,19 @@ package body Gnatformat.Configuration is
                   Gnatformat_Trace.Trace
                     (Ignore'Image & " attribute must not have an index");
 
+               when Layout                   =>
+                  Gnatformat_Trace.Trace
+                    (Layout'Image & " = " & Attribute_Value.Layout'Image);
+                  Self.With_Layout (Attribute_Value.Layout, Ada_Language);
+
+               when Override_Layout          =>
+                  Gnatformat_Trace.Trace
+                    (Override_Layout'Image
+                     & " = "
+                     & Attribute_Value.Override_Layout'Image);
+                  Self.With_Override_Layout
+                    (Attribute_Value.Override_Layout, Ada_Language);
+
                when Unknown                  =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
             end case;
@@ -1102,7 +1330,8 @@ package body Gnatformat.Configuration is
 
             when GPR2.Project.Registry.Attribute.List   =>
                Gnatformat_Trace.Trace
-                 ("Attribute does not have a single value");
+                 ("Attribute is a list, not a single value");
+               Parse_Attribute (Attribute);
          end case;
 
       else
@@ -1179,6 +1408,72 @@ package body Gnatformat.Configuration is
          Self.Format_Options.Ignored_Sources :=
            (Is_Set => True, Value => String_Hashed_Sets.Empty_Set);
    end With_Ignore;
+
+   -----------------
+   -- With_Layout --
+   -----------------
+
+   procedure With_Layout
+     (Self     : in out Format_Options_Builder_Type;
+      Layout   : Layout_Kind;
+      Language : Supported_Languages) is
+   begin
+      Self.Format_Options.Language (Language).Layout :=
+        (Is_Set => True, Value => Layout);
+   end With_Layout;
+
+   -----------------
+   -- With_Layout --
+   -----------------
+   procedure With_Layout
+     (Self            : in out Format_Options_Builder_Type;
+      Layout          : Layout_Kind;
+      Source_Filename : String) is
+   begin
+      if Self.Format_Options.Sources.Contains (Source_Filename) then
+         Self.Format_Options.Sources.Reference (Source_Filename).Layout :=
+           (Is_Set => True, Value => Layout);
+      else
+         Self.Format_Options.Sources.Insert
+           (Source_Filename,
+            (Undefined_Basic_Format_Options
+             with delta Layout => (Is_Set => True, Value => Layout)));
+      end if;
+   end With_Layout;
+
+   --------------------------
+   -- With_Override_Layout --
+   --------------------------
+
+   procedure With_Override_Layout
+     (Self                  : in out Format_Options_Builder_Type;
+      Override_Layout_Files : Optional_Files_Vector;
+      Language              : Supported_Languages) is
+   begin
+      Self.Format_Options.Language (Language).Override_Layout :=
+        Override_Layout_Files;
+   end With_Override_Layout;
+
+   --------------------------
+   -- With_Override_Layout --
+   --------------------------
+
+   procedure With_Override_Layout
+     (Self                  : in out Format_Options_Builder_Type;
+      Override_Layout_Files : Optional_Files_Vector;
+      Source_Filename       : String) is
+   begin
+      if Self.Format_Options.Sources.Contains (Source_Filename) then
+         Self.Format_Options.Sources.Reference (Source_Filename)
+           .Override_Layout :=
+           Override_Layout_Files;
+      else
+         Self.Format_Options.Sources.Insert
+           (Source_Filename,
+            (Undefined_Basic_Format_Options
+             with delta Override_Layout => Override_Layout_Files));
+      end if;
+   end With_Override_Layout;
 
    ----------------------
    -- With_Indentation --

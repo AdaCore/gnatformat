@@ -20,7 +20,7 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--subdirs subdirs] [--target target] [-X scenario 
                  [scenario...]] 
 
-GNATformat test (test) - Format Ada code
+GNATformat debug (debug) - Format Ada code
 
 positional arguments:
    SOURCE  Source files to format
@@ -48,6 +48,10 @@ optional arguments:
                                spaces)
    --indentation-continuation  Continuation Line Indentation size (default value
                                 = indentation - 1)
+   --layout                    Layout configuration: default | tall (default 
+                               value = default)
+   --override-layout           Overrides configuration file with the nodes 
+                               provided in the file
    --end-of-line               End of line sequence: lf | crlf (default value = 
                                lf)
    --keyword-casing            Keyword casing: keep | lower | upper (default 

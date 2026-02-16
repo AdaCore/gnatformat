@@ -49,7 +49,7 @@ package Gnatformat.Command_Line is
    function To_Optional_Layout
      (Layout : String) return Gnatformat.Configuration.Optional_Layout
    is ((Is_Set => True,
-        Value  => Gnatformat.Configuration.Layout_Style'Value (Layout)));
+        Value  => Gnatformat.Configuration.Layout_Kind'Value (Layout)));
    --  Converts a string to Gnatformat.Configuration.Optional_Layout
 
    function To_Optional_End_Of_Line_Kind
@@ -63,7 +63,7 @@ package Gnatformat.Command_Line is
    function To_Optional_Unbounded_String
      (S : String) return Gnatformat.Configuration.Optional_Unbounded_String
    is ((Is_Set => True, Value => To_Unbounded_String (S)));
-   --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
+   --  Converts a string to Unbounded_String
 
    function To_Optional_Keyword_Casing_Kind
      (Keyword_Casing_Kind : String)
