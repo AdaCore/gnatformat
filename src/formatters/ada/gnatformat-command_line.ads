@@ -179,27 +179,6 @@ package Gnatformat.Command_Line is
         Convert     => To_Optional_Positive,
         Default_Val => Gnatformat.Configuration.Optional_Positives.None);
 
-   package Layout is new
-     Parse_Option
-       (Parser      => Parser,
-        Long        => "--layout",
-        Help        =>
-          "Layout configuration: default | tall (default value = default)",
-        Arg_Type    => Gnatformat.Configuration.Optional_Layout,
-        Convert     => To_Optional_Layout,
-        Default_Val => Gnatformat.Configuration.Optional_Layouts.None);
-
-   package Override_Layout is new
-     Parse_Option_List
-       (Parser     => Parser,
-        Long       => "--override-layout",
-        Name       => "OVERRIDE_LAYOUT",
-        Accumulate => True,
-        Help       =>
-          "Overrides configuration file with the nodes provided in the file",
-        Arg_Type   => GNATCOLL.VFS.Virtual_File,
-        Convert    => To_Virtual_File);
-
    package End_Of_Line is new
      Parse_Option
        (Parser      => Parser,
@@ -308,6 +287,29 @@ package Gnatformat.Command_Line is
         Arg_Type    => Natural,
         Convert     => Natural'Value,
         Default_Val => 0);
+
+   --  These two packages are needed to handle the configurability of the
+   --  formatting through the switches --layout and --override-layout
+   package Layout is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--layout",
+        Help        =>
+          "Layout configuration: default | tall (default value = default)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Layout,
+        Convert     => To_Optional_Layout,
+        Default_Val => Gnatformat.Configuration.Optional_Layouts.None);
+
+   package Override_Layout is new
+     Parse_Option_List
+       (Parser     => Parser,
+        Long       => "--override-layout",
+        Name       => "OVERRIDE_LAYOUT",
+        Accumulate => True,
+        Help       =>
+          "Overrides configuration file for the nodes provided in the file",
+        Arg_Type   => GNATCOLL.VFS.Virtual_File,
+        Convert    => To_Virtual_File);
 
    package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 

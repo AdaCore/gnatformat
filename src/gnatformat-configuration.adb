@@ -525,7 +525,6 @@ package body Gnatformat.Configuration is
          Last : Natural := 0;
       begin
          for F of FV loop
-            Ada.Text_IO.Put_Line ("MKU FV2FA " & F'Image);
             Last := Last + 1;
             Res (Last) := F;
          end loop;
@@ -765,7 +764,8 @@ package body Gnatformat.Configuration is
       use type Optional_End_Of_Line_Kind;
       use type Optional_Unbounded_String;
       use type Optional_Keyword_Casing_Kind;
-
+      use type Optional_Layout;
+      use type Optional_Files_Vector;
    begin
       Target.Width := Source.Width or @;
       Target.Indentation := Source.Indentation or @;
@@ -1012,7 +1012,6 @@ package body Gnatformat.Configuration is
             Q_Attribute_Id : constant GPR2.Q_Optional_Attribute_Id :=
               Attribute.Name.Id;
 
-
             function To_Optional_Files_Vector
               (Values : GPR2.Containers.Source_Value_List)
                return Gnatformat.Configuration.Optional_Files_Vector;
@@ -1035,7 +1034,7 @@ package body Gnatformat.Configuration is
                      (File_Name, Normalize => False));
 
             begin
-               if Values = GPR2.Containers.Empty_Source_Value_List then
+               if Values /= GPR2.Containers.Empty_Source_Value_List then
                   return Optional_Files_Vector'(Is_Set => False);
                end if;
 
@@ -1057,7 +1056,6 @@ package body Gnatformat.Configuration is
               (if Attribute.Kind = GPR2.Project.Registry.Attribute.Single
                then Attribute.Value.Text
                else "");
-
          begin
             if Q_Attribute_Id = Q_Charset_Attribute_Id then
                return
@@ -1107,7 +1105,6 @@ package body Gnatformat.Configuration is
                   Ignore =>
                     Ada.Strings.Unbounded.To_Unbounded_String
                       (Raw_Attribute_Value));
-
 
             elsif Q_Attribute_Id = Q_Layout_Attribute_Id then
                return
