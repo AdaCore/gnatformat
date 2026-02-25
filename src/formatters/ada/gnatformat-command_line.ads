@@ -190,15 +190,15 @@ package Gnatformat.Command_Line is
         Default_Val => Gnatformat.Configuration.Optional_Layouts.None);
 
    package Override_Layout is new
-     Parse_Option
-       (Parser      => Parser,
-        Long        => "--override-layout",
-        Name        => "OVERRIDE_LAYOUT",
-        Help        =>
+     Parse_Option_List
+       (Parser     => Parser,
+        Long       => "--override-layout",
+        Name       => "OVERRIDE_LAYOUT",
+        Accumulate => True,
+        Help       =>
           "Overrides configuration file with the nodes provided in the file",
-        Arg_Type    => GNATCOLL.VFS.Virtual_File,
-        Convert     => To_Virtual_File,
-        Default_Val => GNATCOLL.VFS.No_File);
+        Arg_Type   => GNATCOLL.VFS.Virtual_File,
+        Convert    => To_Virtual_File);
 
    package End_Of_Line is new
      Parse_Option
