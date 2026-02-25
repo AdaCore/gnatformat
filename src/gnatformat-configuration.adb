@@ -719,7 +719,7 @@ package body Gnatformat.Configuration is
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
-      Overridings                  : GNATCOLL.VFS.File_Array;
+      Overriddings                  : GNATCOLL.VFS.File_Array;
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration

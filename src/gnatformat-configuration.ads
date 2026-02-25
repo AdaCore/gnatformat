@@ -26,8 +26,6 @@ private with Ada.Containers.Indefinite_Hashed_Maps;
 
 private with GPR2.View_Ids;
 
-private with Libadalang.Generic_API;
-
 package Gnatformat.Configuration is
 
    Default_Charset : constant String := "iso-8859-1";
