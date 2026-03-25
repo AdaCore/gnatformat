@@ -2,12 +2,9 @@
   "node_configs": {
     "ParamSpecList": {
       "table": {
-        "mustBreak": true
+        "must_break": true
       },
-      "sep": [
-        "recurse",
-        "hardline"
-      ]
+      "sep": "recurse"
     }
   }
 }

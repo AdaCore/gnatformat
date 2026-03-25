@@ -1,0 +1,9 @@
+description: Test the --layout switch with tall
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--layout",
+    "tall"
+  ]

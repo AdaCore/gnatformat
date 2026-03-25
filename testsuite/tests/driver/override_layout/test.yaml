@@ -1,4 +1,4 @@
-description: Test the --width switch
+description: Test the --override-layout switch
 driver: gnatformat
 args:
   [

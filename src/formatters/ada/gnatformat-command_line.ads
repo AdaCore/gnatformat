@@ -307,7 +307,7 @@ package Gnatformat.Command_Line is
         Name       => "OVERRIDE_LAYOUT",
         Accumulate => True,
         Help       =>
-          "Overrides configuration file for the nodes provided in the file",
+          "Overrides the configuration for the nodes provided in the file",
         Arg_Type   => GNATCOLL.VFS.Virtual_File,
         Convert    => To_Virtual_File);
 
