@@ -31,3 +31,6 @@ user_manual/_build
 
 # Internal testsuite
 testsuite/tests/internal
+
+# dotenv
+.env
