@@ -1,12 +1,11 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
 with Ada.Exceptions;
 with Ada.Text_IO.Unbounded_IO;
 
-with GNAT;
 with GNAT.Traceback.Symbolic;
 
 with GPR2;
@@ -16,6 +15,110 @@ with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
 
 package body Gnatformat.Configuration is
+
+   function Compute_Unparsing_Configuration
+     (Format_Options                  : Basic_Format_Options_Type;
+      Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File;
+      Diagnostics                     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Computes an unparsing configuration using
+   --  Default_Unparsing_Configuration as based and overriding from
+   --  Format_Options.
+
+   function Get_Keyword_Casing_Overriding
+     (Keyword_Casing : Keyword_Casing_Kind) return GNATCOLL.VFS.Virtual_File;
+   --  Converts Keyword_Casing to the associated overriding unparsing
+   --  configuration.
+
+   function "="
+     (Left, Right :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
+      return Boolean
+   is (False);
+   --  Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration does not
+   --  provide "=". This function is only used for comparing
+   --  Unparsing_Configuration objects in a hash map, therefore, consider them
+   --  as always different.
+
+   -------------------------------------
+   -- Compute_Unparsing_Configuration --
+   -------------------------------------
+
+   function Compute_Unparsing_Configuration
+     (Format_Options                  : Basic_Format_Options_Type;
+      Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File;
+      Diagnostics                     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration is
+   begin
+      if Format_Options.Keyword_Casing.Is_Set then
+         return
+           Load_Unparsing_Configuration
+             (Unparsing_Configuration_File => Default_Unparsing_Configuration,
+              Overriddings                 =>
+                [Get_Keyword_Casing_Overriding
+                   (Format_Options.Keyword_Casing.Value)],
+              Diagnostics                  => Diagnostics);
+      end if;
+
+      return
+        Load_Unparsing_Configuration
+          (Unparsing_Configuration_File => Default_Unparsing_Configuration,
+           Overriddings                 => [],
+           Diagnostics                  => Diagnostics);
+   end Compute_Unparsing_Configuration;
+
+   -------------------------------------
+   -- Compute_Unparsing_Configuration --
+   -------------------------------------
+
+   function Compute_Unparsing_Configuration
+     (Source                          : String;
+      Format_Options                  : Format_Options_Type;
+      Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File;
+      Diagnostics                     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      Basic_Format_Options : constant Basic_Format_Options_Type :=
+        (if Format_Options.Sources.Contains (Source)
+         then Format_Options.Sources.Element (Source)
+         else Format_Options.Language (Ada_Language));
+
+   begin
+      return
+        Compute_Unparsing_Configuration
+          (Format_Options                  => Basic_Format_Options,
+           Default_Unparsing_Configuration => Default_Unparsing_Configuration,
+           Diagnostics                     => Diagnostics);
+   end Compute_Unparsing_Configuration;
+
+   -----------------------------------
+   -- Get_Keyword_Casing_Overriding --
+   -----------------------------------
+
+   function Get_Keyword_Casing_Overriding
+     (Keyword_Casing : Keyword_Casing_Kind) return GNATCOLL.VFS.Virtual_File
+   is ((case Keyword_Casing is
+          when Keep  =>
+            Libadalang
+              .Generic_API
+              .Unparsing
+              .Builtin_Overridings
+              .Original_Keywords,
+          when Lower =>
+            Libadalang
+              .Generic_API
+              .Unparsing
+              .Builtin_Overridings
+              .Lowercase_Keywords,
+          when Upper =>
+            Libadalang
+              .Generic_API
+              .Unparsing
+              .Builtin_Overridings
+              .Uppercase_Keywords));
 
    -----------
    -- Build --
@@ -129,6 +232,17 @@ package body Gnatformat.Configuration is
          Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Charset_Attribute_Id, "Ignore file with the sources to ignore");
+
+      GPR2.Project.Registry.Attribute.Add
+        (Name                 => Q_Keyword_Casing_Attribute_Id,
+         Index_Type           =>
+           GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Keyword_Casing_Attribute_Id,
+         "Keyword casing: keep | lower | upper");
    end Elaborate_GPR2;
 
    -----------------
@@ -265,6 +379,24 @@ package body Gnatformat.Configuration is
         Into (Self, Source_Filename, Language_Fallback).End_Of_Line
         or Default_Basic_Format_Options.End_Of_Line.Value;
    end Get_End_Of_Line;
+
+   ------------------------
+   -- Get_Keyword_Casing --
+   ------------------------
+
+   function Get_Keyword_Casing
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Keyword_Casing_Kind
+   is
+      use Optional_Keyword_Casing_Kinds;
+
+   begin
+      return
+        Into (Self, Source_Filename, Language_Fallback).Keyword_Casing
+        or Default_Basic_Format_Options.Keyword_Casing.Value;
+   end Get_Keyword_Casing;
 
    ----------------
    -- Get_Ignore --
@@ -452,36 +584,38 @@ package body Gnatformat.Configuration is
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Overriddings                 : GNATCOLL.VFS.File_Array;
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
-      use type GNATCOLL.VFS.Virtual_File;
       use Langkit_Support.Generic_API;
 
    begin
-      if Unparsing_Configuration_File = GNATCOLL.VFS.No_File then
+      Gnatformat.Gnatformat_Trace.Trace
+        ("Loading unparsing configuration from """
+         & Unparsing_Configuration_File.Display_Full_Name
+         & """");
+      if Overriddings'Length > 0 then
+         Gnatformat.Gnatformat_Trace.Trace ("With overridings: ");
+         for O of Overriddings loop
+            Gnatformat.Gnatformat_Trace.Trace (O.Display_Full_Name);
+         end loop;
          Gnatformat.Gnatformat_Trace.Trace
-           ("Using the default unparsing configuration");
-         return
-           Unparsing.Default_Unparsing_Configuration
-             (Language => Libadalang.Generic_API.Ada_Lang_Id);
+           (Libadalang
+              .Generic_API
+              .Unparsing
+              .Builtin_Overridings
+              .Original_Keywords
+              .Display_Full_Name);
       end if;
 
-      declare
-         Rules_File_Name : constant String :=
-           GNATCOLL.VFS."+" (Unparsing_Configuration_File.Full_Name);
-
-      begin
-         Gnatformat.Gnatformat_Trace.Trace
-           ("Loading formatting rules from """ & Rules_File_Name & """");
-
-         return
-           Unparsing.Load_Unparsing_Config
-             (Libadalang.Generic_API.Ada_Lang_Id,
-              Rules_File_Name,
-              Diagnostics);
-      end;
+      return
+        Unparsing.Load_Unparsing_Config
+          (Libadalang.Generic_API.Ada_Lang_Id,
+           Unparsing_Configuration_File.Display_Full_Name,
+           Diagnostics,
+           Overridings => Overriddings);
    end Load_Unparsing_Configuration;
 
    --------------
@@ -496,6 +630,7 @@ package body Gnatformat.Configuration is
       use type Optional_Indentation_Kind;
       use type Optional_End_Of_Line_Kind;
       use type Optional_Unbounded_String;
+      use type Optional_Keyword_Casing_Kind;
 
    begin
       Target.Width := Source.Width or @;
@@ -504,6 +639,7 @@ package body Gnatformat.Configuration is
       Target.Indentation_Kind := Source.Indentation_Kind or @;
       Target.End_Of_Line := Source.End_Of_Line or @;
       Target.Charset := Source.Charset or @;
+      Target.Keyword_Casing := Source.Keyword_Casing or @;
    end Overwrite;
 
    --------------
@@ -612,6 +748,42 @@ package body Gnatformat.Configuration is
         (Is_Set => True, Value => End_Of_Line);
    end With_End_Of_Line;
 
+   ------------------------
+   -- With_Keyword_Casing --
+   ------------------------
+
+   procedure With_Keyword_Casing
+     (Self           : in out Format_Options_Builder_Type;
+      Keyword_Casing : Gnatformat.Configuration.Keyword_Casing_Kind;
+      Language       : Supported_Languages) is
+   begin
+      Self.Format_Options.Language (Language).Keyword_Casing :=
+        (Is_Set => True, Value => Keyword_Casing);
+   end With_Keyword_Casing;
+
+   ------------------------
+   -- With_Keyword_Casing --
+   ------------------------
+
+   procedure With_Keyword_Casing
+     (Self            : in out Format_Options_Builder_Type;
+      Keyword_Casing  : Gnatformat.Configuration.Keyword_Casing_Kind;
+      Source_Filename : String) is
+   begin
+      if Self.Format_Options.Sources.Contains (Source_Filename) then
+         Self.Format_Options.Sources.Reference (Source_Filename)
+           .Keyword_Casing :=
+           (Is_Set => True, Value => Keyword_Casing);
+
+      else
+         Self.Format_Options.Sources.Insert
+           (Source_Filename,
+            (Undefined_Basic_Format_Options
+             with delta
+               Keyword_Casing => (Is_Set => True, Value => Keyword_Casing)));
+      end if;
+   end With_Keyword_Casing;
+
    -------------------------
    -- With_From_Attribute --
    -------------------------
@@ -645,6 +817,7 @@ package body Gnatformat.Configuration is
             Indentation,
             Indentation_Kind,
             Indentation_Continuation,
+            Keyword_Casing,
             Width,
             Unknown);
 
@@ -668,6 +841,10 @@ package body Gnatformat.Configuration is
 
                when Indentation_Kind =>
                   Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
+
+               when Keyword_Casing =>
+                  Keyword_Casing :
+                    Gnatformat.Configuration.Keyword_Casing_Kind;
 
                when Width =>
                   Width : Positive;
@@ -726,6 +903,13 @@ package body Gnatformat.Configuration is
                return
                  (Kind        => End_Of_Line,
                   End_Of_Line => End_Of_Line_Kind'Value (Raw_Attribute_Value));
+
+            elsif Q_Attribute_Id = Q_Keyword_Casing_Attribute_Id then
+               return
+                 (Kind           => Keyword_Casing,
+                  Keyword_Casing =>
+                    Gnatformat.Configuration.Keyword_Casing_Kind'Value
+                      (Raw_Attribute_Value));
 
             elsif Q_Attribute_Id = Q_Ignore_Attribute_Id then
                return
@@ -816,6 +1000,14 @@ package body Gnatformat.Configuration is
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Ada_Language);
 
+               when Keyword_Casing           =>
+                  Gnatformat_Trace.Trace
+                    (Keyword_Casing'Image
+                     & " = "
+                     & Attribute_Value.Keyword_Casing'Image);
+                  Self.With_Keyword_Casing
+                    (Attribute_Value.Keyword_Casing, Ada_Language);
+
                when Width                    =>
                   Gnatformat_Trace.Trace
                     (Width'Image & " = " & Attribute_Value.Width'Image);
@@ -875,6 +1067,14 @@ package body Gnatformat.Configuration is
                      & Attribute_Value.Indentation_Kind'Image);
                   Self.With_Indentation_Kind
                     (Attribute_Value.Indentation_Kind, Attribute.Index.Text);
+
+               when Keyword_Casing           =>
+                  Gnatformat_Trace.Trace
+                    (Keyword_Casing'Image
+                     & " = "
+                     & Attribute_Value.Keyword_Casing'Image);
+                  Self.With_Keyword_Casing
+                    (Attribute_Value.Keyword_Casing, Attribute.Index.Text);
 
                when Width                    =>
                   Gnatformat_Trace.Trace
@@ -1157,5 +1357,184 @@ package body Gnatformat.Configuration is
       Self.Format_Options.Language (Language).Width :=
         (Is_Set => True, Value => Width);
    end With_Width;
+
+   ----------------------------------------
+   -- Create_Unparsing_Configuration_Cache --
+   ----------------------------------------
+
+   function Create_Unparsing_Configuration_Cache
+      return Unparsing_Configuration_Cache_Type
+   is (Unparsing_Configuration_Cache_Type'
+         (Default               =>
+            GNATCOLL.VFS.Create_From_UTF8
+              (Libadalang
+                 .Generic_API
+                 .Unparsing
+                 .Default_Configuration_Filename),
+          Cache                 =>
+            View_Ids_To_Unparsing_Config_Hashed_Maps.Empty_Map,
+          No_Project            => <>,
+          Initialize_No_Project => True));
+
+   ------------------------------------------
+   -- Create_Unparsing_Configuration_Cache --
+   ------------------------------------------
+
+   function Create_Unparsing_Configuration_Cache
+     (Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File)
+      return Unparsing_Configuration_Cache_Type
+   is (Unparsing_Configuration_Cache_Type'
+         (Default               => Default_Unparsing_Configuration,
+          Cache                 =>
+            View_Ids_To_Unparsing_Config_Hashed_Maps.Empty_Map,
+          No_Project            => <>,
+          Initialize_No_Project => True));
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get
+     (Self            : in out Unparsing_Configuration_Cache_Type;
+      Source_Filename : String;
+      Project         : GPR2.Project.View.Object;
+      Format_Options  : Format_Options_Type;
+      Diagnostics     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      Id : constant GPR2.View_Ids.View_Id := Project.Id;
+
+   begin
+      --  Check if this project view already has a cached unparsing
+      --  configuration.
+
+      if Self.Cache.Contains (Id) then
+         --  Use cache for this source if existent
+
+         if Self.Cache.Constant_Reference (Id).Sources.Contains
+              (Source_Filename)
+         then
+            return
+              Self.Cache.Constant_Reference (Id).Sources.Element
+                (Source_Filename);
+         end if;
+
+         --  No cache for this source.
+         --  Check if has custom format options.
+
+         if Format_Options.Sources.Contains (Source_Filename) then
+            --  Source specific unparsing configuration are computed on
+            --  demand since there's no guarantee they will ever be used.
+
+            declare
+               Source_Format_Options          :
+                 constant Basic_Format_Options_Type :=
+                   Format_Options.Sources.Element (Source_Filename);
+               Source_Unparsing_Configuration :
+                 constant Langkit_Support
+                            .Generic_API
+                            .Unparsing
+                            .Unparsing_Configuration :=
+                   Compute_Unparsing_Configuration
+                     (Source_Format_Options, Self.Default, Diagnostics);
+
+            begin
+               Self.Cache.Reference (Id).Sources.Include
+                 (Source_Filename, Source_Unparsing_Configuration);
+               return Source_Unparsing_Configuration;
+            end;
+         end if;
+
+         --  No custom format options. Fallback to language defaults.
+
+         return Self.Cache.Constant_Reference (Id).Language (Ada_Language);
+      end if;
+
+      --  This project view does not have an unparsing configuration yet.
+      --  Compute one. Source specific unparsing configuration are computed on
+      --  demand since there's no guarantee they will ever be used.
+
+      declare
+         Unparsing_Configuration : constant Unparsing_Configuration_Type :=
+           (Language =>
+              [Ada_Language =>
+                 Compute_Unparsing_Configuration
+                   (Format_Options                  =>
+                      Format_Options.Language (Ada_Language),
+                    Default_Unparsing_Configuration => Self.Default,
+                    Diagnostics                     => Diagnostics)],
+            Sources  =>
+              String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map);
+
+      begin
+         Self.Cache.Include (Id, Unparsing_Configuration);
+
+         --  At this point, this project unparsing configuration is cached.
+         --  Recurse.
+
+         return
+           Self.Get (Source_Filename, Project, Format_Options, Diagnostics);
+      end;
+   end Get;
+
+   ---------
+   -- Get --
+   ---------
+
+   function Get
+     (Self            : in out Unparsing_Configuration_Cache_Type;
+      Source_Filename : String;
+      Format_Options  : Format_Options_Type;
+      Diagnostics     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration is
+   begin
+      --  Try to get a cached unparsing configuration
+
+      if Self.No_Project.Sources.Contains (Source_Filename) then
+         return Self.No_Project.Sources.Element (Source_Filename);
+      end if;
+
+      --  No cache for this source.
+      --  Check if has custom format options.
+
+      if Format_Options.Sources.Contains (Source_Filename) then
+         --  Source specific unparsing configurations are computed on
+         --  demand since there's no guarantee they will ever be used.
+
+         declare
+            Source_Format_Options          :
+              constant Basic_Format_Options_Type :=
+                Format_Options.Sources.Element (Source_Filename);
+            Source_Unparsing_Configuration :
+              constant Langkit_Support
+                         .Generic_API
+                         .Unparsing
+                         .Unparsing_Configuration :=
+                Compute_Unparsing_Configuration
+                  (Source_Format_Options, Self.Default, Diagnostics);
+
+         begin
+            Self.No_Project.Sources.Include
+              (Source_Filename, Source_Unparsing_Configuration);
+
+            return Source_Unparsing_Configuration;
+         end;
+      end if;
+
+      --  Language specific unparsing configurations are computed on demand
+
+      if Self.Initialize_No_Project then
+         Self.Initialize_No_Project := False;
+         Self.No_Project.Language :=
+           [Compute_Unparsing_Configuration
+              (Format_Options.Language (Ada_Language),
+               Self.Default,
+               Diagnostics)];
+      end if;
+
+      return Self.No_Project.Language (Ada_Language);
+   end Get;
 
 end Gnatformat.Configuration;

@@ -1,0 +1,6 @@
+PROCEDURE Test IS
+   A : Integer := 1;
+BEGIN
+   NULL;
+END Test;
+

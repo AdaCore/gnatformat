@@ -4,13 +4,13 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--width|-w WIDTH] [--indentation|-i INDENTATION] 
                  [--indentation-kind INDENTATION-KIND] 
                  [--indentation-continuation INDENTATION-CONTINUATION] 
-                 [--end-of-line END-OF-LINE] [--charset CHARSET] [--ignore 
-                 IGNORE] [--gitdiff BASE_COMMIT] SOURCE [SOURCE ...] 
-                 [--range-format] [--start-line|-SL START-LINE] 
-                 [--start-column|-SC START-COLUMN] [--end-line|-EL END-LINE] 
-                 [--end-column|-EC END-COLUMN] [-aP Search path [Search 
-                 path...]] [--autoconf autoconf [autoconf...]] [--config config]
-                  [--db db [db...]] [--db-] [--implicit-with project 
+                 [--end-of-line END-OF-LINE] [--keyword-casing KEYWORD-CASING] 
+                 [--charset CHARSET] [--ignore IGNORE] [--gitdiff BASE_COMMIT] 
+                 SOURCE [SOURCE ...] [--range-format] [--start-line|-SL 
+                 START-LINE] [--start-column|-SC START-COLUMN] [--end-line|-EL 
+                 END-LINE] [--end-column|-EC END-COLUMN] [-aP Search path 
+                 [Search path...]] [--autoconf autoconf [autoconf...]] [--config
+                  config] [--db db [db...]] [--db-] [--implicit-with project 
                  [project...]] [-eL] [--no-project] [-P project] 
                  [--print-gpr-registry] [--root-dir root-dir] 
                  [--relocate-build-tree relocate-build-tree] [--RTS rts 
@@ -48,6 +48,8 @@ optional arguments:
                                 = indentation - 1)
    --end-of-line               End of line sequence: lf | crlf (default value = 
                                lf)
+   --keyword-casing            Keyword casing: keep | lower | upper (default 
+                               value = keep)
    --charset                   Charset to use for source decoding (default value
                                 = iso-8859-1)
    --ignore                    Ignore file with the sources that will be ignored

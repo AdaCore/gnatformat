@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, AdaCore
+--  Copyright (C) 2025-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 --  Package with the public API for editing sources
@@ -12,8 +12,6 @@ with Ada.Strings.Unbounded;
 with GNAT.OS_Lib;
 with GNAT.Traceback.Symbolic;
 
-with GNATCOLL.VFS;
-
 with Gnatformat.Formatting;
 with Gnatformat.Helpers;
 with Gnatformat.Project;
@@ -23,13 +21,20 @@ with GPR2.Build.Source; use GPR2.Build.Source;
 
 with Langkit_Support.Diagnostics;
 with Langkit_Support.File_Readers;
+with Langkit_Support.Generic_API.Unparsing;
 
 with Libadalang.Analysis;
+with Libadalang.Generic_API.Unparsing;
 with Libadalang.Preprocessing;
 
 with Gitdiff;
 
 package body Gnatformat.Full_Format is
+
+   package Langkit_Support_Unparsing renames
+     Langkit_Support.Generic_API.Unparsing;
+
+   use type Langkit_Support_Unparsing.Unparsing_Configuration;
 
    package Unbounded_String_Vectors is new
      Ada.Containers.Vectors
@@ -40,17 +45,20 @@ package body Gnatformat.Full_Format is
    subtype Unbounded_String_Vector is Unbounded_String_Vectors.Vector;
 
    procedure Full_Format
-     (Writer                  : in out Abstract_Writers.Abstract_Writer'Class;
-      Project_Tree            : GPR2.Project.Tree.Object;
-      CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Configuration :
-        Langkit_Support_Unparsing.Unparsing_Configuration;
-      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
-      Format_Options          : Gnatformat.Configuration.Format_Options_Type;
-      Check                   : Boolean;
-      Keep_Going              : Boolean;
-      Charset                 : String;
-      Base_Commit_ID          :
+     (Writer                       :
+        in out Abstract_Writers.Abstract_Writer'Class;
+      Project_Tree                 : GPR2.Project.Tree.Object;
+      CLI_Formatting_Config        :
+        Gnatformat.Configuration.Format_Options_Type;
+      Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Command_Line_Sources         :
+        Gnatformat.Command_Line.Sources.Result_Array;
+      Format_Options               :
+        Gnatformat.Configuration.Format_Options_Type;
+      Check                        : Boolean;
+      Keep_Going                   : Boolean;
+      Charset                      : String;
+      Base_Commit_ID               :
         Gnatformat.Configuration.Optional_Unbounded_String)
    is
       type Preprocessor_Data_Record is record
@@ -110,6 +118,20 @@ package body Gnatformat.Full_Format is
         Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
           Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
+      Unparsing_Configuration_Cache :
+        Gnatformat.Configuration.Unparsing_Configuration_Cache_Type :=
+          (if Unparsing_Configuration_File.Is_Regular_File
+           then
+             Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
+               (Unparsing_Configuration_File)
+           else
+             Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
+               (GNATCOLL.VFS.Create_From_UTF8
+                  (Libadalang
+                     .Generic_API
+                     .Unparsing
+                     .Default_Configuration_Filename)));
+
       type Format_Source_Result (Success : Boolean) is record
          case Success is
             when True =>
@@ -123,7 +145,9 @@ package body Gnatformat.Full_Format is
       function Format_Source
         (Source                    : GNATCOLL.VFS.Virtual_File;
          Project_Formatting_Config :
-           Gnatformat.Configuration.Format_Options_Type)
+           Gnatformat.Configuration.Format_Options_Type;
+         Unparsing_Config          :
+           Langkit_Support_Unparsing.Unparsing_Configuration)
          return Format_Source_Result;
       --  Resolves the right format options for Path and formats it
       --  with Project_Formatting_Config.
@@ -152,7 +176,9 @@ package body Gnatformat.Full_Format is
       function Format_Source
         (Source                    : GNATCOLL.VFS.Virtual_File;
          Project_Formatting_Config :
-           Gnatformat.Configuration.Format_Options_Type)
+           Gnatformat.Configuration.Format_Options_Type;
+         Unparsing_Config          :
+           Langkit_Support_Unparsing.Unparsing_Configuration)
          return Format_Source_Result
       is
          Charset : constant String :=
@@ -186,7 +212,7 @@ package body Gnatformat.Full_Format is
                 Gnatformat.Formatting.Format
                   (Unit           => Unit,
                    Format_Options => Project_Formatting_Config,
-                   Configuration  => Unparsing_Configuration));
+                   Configuration  => Unparsing_Config));
       end Format_Source;
 
       ----------------------------
@@ -244,64 +270,105 @@ package body Gnatformat.Full_Format is
             end if;
 
             declare
-               Result : constant Format_Source_Result :=
-                 Format_Source (Source.File, View_Format_Options);
+               Unparsing_Diagnostics :
+                 Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+               Unparsing_Config      :
+                 constant Langkit_Support_Unparsing.Unparsing_Configuration :=
+                   (if Source.Visible
+                    then
+                      Unparsing_Configuration_Cache.Get
+                        (Source_Simple_Name,
+                         Source.Visible_Source.Owning_View,
+                         View_Format_Options,
+                         Unparsing_Diagnostics)
+                    else
+                      Unparsing_Configuration_Cache.Get
+                        (Source_Simple_Name,
+                         View_Format_Options,
+                         Unparsing_Diagnostics));
 
             begin
-               if not Source.Visible then
-                  Writer.Print_Warning
-                    ("--  Warning: Formatting """
-                     & Source_Path_Name
-                     & """ which is not visible to the provided project");
+               if Unparsing_Config
+                 = Langkit_Support_Unparsing.No_Unparsing_Configuration
+                 or else not Unparsing_Diagnostics.Is_Empty
+               then
+                  Gnatformat.Project.Set_General_Failed;
+                  Writer.Print_Error
+                    ("--  "
+                     & Source_Simple_Name
+                     & " failed: could not load unparsing configuration");
+
+                  for Diagnostic of Unparsing_Diagnostics loop
+                     Gnatformat_Trace.Trace
+                       (Langkit_Support.Diagnostics.To_Pretty_String
+                          (Diagnostic));
+                  end loop;
+
+                  return False;
                end if;
 
-               case Result.Success is
-                  when True  =>
+               declare
+                  Result : constant Format_Source_Result :=
+                    Format_Source
+                      (Source.File, View_Format_Options, Unparsing_Config);
 
-                     if Check then
-                        declare
-                           use Ada.Strings.Unbounded;
+               begin
+                  if not Source.Visible then
+                     Writer.Print_Warning
+                       ("--  Warning: Formatting """
+                        & Source_Path_Name
+                        & """ which is not visible to the provided project");
+                  end if;
 
-                           Original_Source : constant Unbounded_String :=
-                             Gnatformat.Helpers.Read_To_Unbounded_String
-                               (Source_Path_Name);
-                        begin
-                           if Original_Source /= Result.Formatted_Source then
-                              Gnatformat.Project.Set_General_Failed;
-                              Writer.Print_Error
-                                (Source_Simple_Name
-                                 & " is not correctly formatted",
-                                 False);
-                           end if;
-                        end;
+                  case Result.Success is
+                     when True  =>
 
-                     else
-                        Writer.Print_Source_Name
-                          ("--  "
-                           & (if Source.Visible
-                              then Source_Simple_Name
-                              else Source.File.Display_Full_Name));
+                        if Check then
+                           declare
+                              use Ada.Strings.Unbounded;
 
-                        Writer.Print_Source
-                          (Source_Path_Name, Result.Formatted_Source);
-                     end if;
+                              Original_Source : constant Unbounded_String :=
+                                Gnatformat.Helpers.Read_To_Unbounded_String
+                                  (Source_Path_Name);
+                           begin
+                              if Original_Source /= Result.Formatted_Source
+                              then
+                                 Gnatformat.Project.Set_General_Failed;
+                                 Writer.Print_Error
+                                   (Source_Simple_Name
+                                    & " is not correctly formatted",
+                                    False);
+                              end if;
+                           end;
 
-                     return True;
+                        else
+                           Writer.Print_Source_Name
+                             ("--  "
+                              & (if Source.Visible
+                                 then Source_Simple_Name
+                                 else Source.File.Display_Full_Name));
 
-                  when False =>
-                     Gnatformat.Project.Set_General_Failed;
+                           Writer.Print_Source
+                             (Source_Path_Name, Result.Formatted_Source);
+                        end if;
 
-                     Writer.Print_Error
-                       ("--  " & Source_Simple_Name & " failed to format");
+                        return True;
 
-                     for Diagnostic of Result.Diagnostics loop
+                     when False =>
+                        Gnatformat.Project.Set_General_Failed;
+
                         Writer.Print_Error
-                          (Ada.Strings.Unbounded.To_String (Diagnostic),
-                           False);
-                     end loop;
+                          ("--  " & Source_Simple_Name & " failed to format");
 
-                     return False;
-               end case;
+                        for Diagnostic of Result.Diagnostics loop
+                           Writer.Print_Error
+                             (Ada.Strings.Unbounded.To_String (Diagnostic),
+                              False);
+                        end loop;
+
+                        return False;
+                  end case;
+               end;
             end;
          end;
 
@@ -362,12 +429,21 @@ package body Gnatformat.Full_Format is
             end if;
 
             declare
-               Formatted_Source :
+               Unparsing_Diagnostics :
+                 Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+               Unparsing_Config      :
+                 constant Langkit_Support_Unparsing.Unparsing_Configuration :=
+                   Gnatformat.Configuration.Get
+                     (Unparsing_Configuration_Cache,
+                      Source.Display_Base_Name,
+                      Format_Options,
+                      Unparsing_Diagnostics);
+               Formatted_Source      :
                  constant Ada.Strings.Unbounded.Unbounded_String :=
                    Gnatformat.Formatting.Format
                      (Unit           => Unit,
                       Format_Options => Format_Options,
-                      Configuration  => Unparsing_Configuration);
+                      Configuration  => Unparsing_Config);
 
             begin
                if Check then
@@ -490,17 +566,28 @@ package body Gnatformat.Full_Format is
          end if;
 
       elsif Base_Commit_ID.Is_Set then
+         declare
+            Gitdiff_Diagnostics      :
+              Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+            Gitdiff_Unparsing_Config :
+              constant Langkit_Support_Unparsing.Unparsing_Configuration :=
+                Gnatformat.Configuration.Get
+                  (Unparsing_Configuration_Cache,
+                   "",
+                   Format_Options,
+                   Gitdiff_Diagnostics);
+
          begin
             Gitdiff.Format_New_Lines
               (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
                Gitdiff.Context'
                  (Lal_Ctx          => LAL_Context,
                   Options          => Format_Options,
-                  Unparsing_Config => Unparsing_Configuration,
+                  Unparsing_Config => Gitdiff_Unparsing_Config,
                   Charset          =>
                     Ada.Strings.Unbounded.To_Unbounded_String (Charset)));
          exception
-            when E : others =>
+            when others =>
                Writer.Print_Error
                  ("Failed to generate git diff: make sure to specify a valid "
                   & "commit ID",

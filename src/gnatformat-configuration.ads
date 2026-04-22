@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -17,6 +17,7 @@ with GPR2.Project.Attribute;
 with Langkit_Support.Diagnostics;
 with Langkit_Support.Generic_API.Unparsing;
 
+with Libadalang.Generic_API.Unparsing;
 with Prettier_Ada.Documents;
 
 private with Ada.Containers.Hashed_Maps;
@@ -37,11 +38,12 @@ package Gnatformat.Configuration is
    --
    --     - package Format
    --     - atribute Width, Indentation, Indentation_Kind,
-   --       Indentation_Continuation, End_Of_Line and Charset
+   --       Indentation_Continuation, End_Of_Line, Charset and Keyword_Casing
    --       indexed by language or source.
 
    type Indentation_Kind is (Spaces, Tabs);
    type End_Of_Line_Kind is (LF, CRLF);
+   type Keyword_Casing_Kind is (Keep, Lower, Upper);
 
    package Optional_Indentation_Kinds is new
      Gnatformat.Utils.Optional (Indentation_Kind);
@@ -52,6 +54,11 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (End_Of_Line_Kind);
    subtype Optional_End_Of_Line_Kind is
      Optional_End_Of_Line_Kinds.Optional_Type;
+
+   package Optional_Keyword_Casing_Kinds is new
+     Gnatformat.Utils.Optional (Keyword_Casing_Kind);
+   subtype Optional_Keyword_Casing_Kind is
+     Optional_Keyword_Casing_Kinds.Optional_Type;
 
    package Optional_Positives is new Gnatformat.Utils.Optional (Positive);
    subtype Optional_Positive is Optional_Positives.Optional_Type;
@@ -101,6 +108,21 @@ package Gnatformat.Configuration is
    --  Language_Fallback option is available, the function returns the default
    --  end-of-line value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
+
+   function Get_Keyword_Casing
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Keyword_Casing_Kind;
+   --  Retrieves the keyword-casing option for the specified Source_Filename if
+   --  it exists.
+   --  If the keyword-casing option for Source_Filename does not exist, the
+   --  function will fall back to the keyword-casing option associated with the
+   --  given Language_Fallback if it is available.
+   --  If neither the Source_Filename keyword-casing option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  keyword-casing value defined by
+   --  Default_Basic_Format_Options.Keyword_Casing.Value.
 
    function Get_Ignore (Self : Format_Options_Type) return String_Hashed_Set;
    --  Retrieves the already resolved ignore option, i.e., the contents (list
@@ -262,6 +284,18 @@ package Gnatformat.Configuration is
       Source_Filename : String);
    --  Sets the format option End_Of_Line for the provided Source_Filename
 
+   procedure With_Keyword_Casing
+     (Self           : in out Format_Options_Builder_Type;
+      Keyword_Casing : Keyword_Casing_Kind;
+      Language       : Supported_Languages);
+   --  Sets the format option Keyword_Casing for the provided Language
+
+   procedure With_Keyword_Casing
+     (Self            : in out Format_Options_Builder_Type;
+      Keyword_Casing  : Keyword_Casing_Kind;
+      Source_Filename : String);
+   --  Sets the format option Keyword_Casing for the provided Source_Filename
+
    procedure With_From_Attribute
      (Self      : in out Format_Options_Builder_Type;
       Attribute : GPR2.Project.Attribute.Object);
@@ -323,15 +357,59 @@ package Gnatformat.Configuration is
       Source_Filename : String);
    --  Sets the format option Width for the provided Source_Filename
 
-   Default_Unparsing_Configuration :
-     constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   type Unparsing_Configuration_Cache_Type is tagged private;
+
+   function Create_Unparsing_Configuration_Cache
+      return Unparsing_Configuration_Cache_Type;
+   --  Unparsing_Configuration_Cache_Type constructor.
+
+   function Create_Unparsing_Configuration_Cache
+     (Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File)
+      return Unparsing_Configuration_Cache_Type;
+   --  Unparsing_Configuration_Cache_Type constructor.
+
+   function Get
+     (Self            : in out Unparsing_Configuration_Cache_Type;
+      Source_Filename : String;
+      Project         : GPR2.Project.View.Object;
+      Format_Options  : Format_Options_Type;
+      Diagnostics     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Returns the unparsing configuration for the given source.
+   --  If the source has a Keyword_Casing attribute, the configuration is
+   --  computed on demand and cached.
+   --  Otherwise, the language-level configuration is returned from the cache
+   --  keyed by Project.Id, loading it on first access.
+
+   function Get
+     (Self            : in out Unparsing_Configuration_Cache_Type;
+      Source_Filename : String;
+      Format_Options  : Format_Options_Type;
+      Diagnostics     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Same as the above, but without project caching. Computes the
+   --  configuration on demand and caches it.
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Overriddings                 : GNATCOLL.VFS.File_Array;
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
    --  Loads the formatting rules
+
+   function Compute_Unparsing_Configuration
+     (Source                          : String;
+      Format_Options                  : Format_Options_Type;
+      Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File;
+      Diagnostics                     :
+        in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+
+   Default_Unparsing_Configuration :
+     constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
 
 private
 
@@ -369,6 +447,11 @@ private
    Q_Charset_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Charset_Attribute_Id);
 
+   Keyword_Casing_Attribute_Id   : constant GPR2.Attribute_Id :=
+     GPR2."+" ("keyword_casing");
+   Q_Keyword_Casing_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Keyword_Casing_Attribute_Id);
+
    type Basic_Format_Options_Type is record
       Width                    : Optional_Positive := (Is_Set => False);
       Indentation              : Optional_Positive := (Is_Set => False);
@@ -378,6 +461,8 @@ private
       End_Of_Line              : Optional_End_Of_Line_Kind :=
         (Is_Set => False);
       Charset                  : Optional_Unbounded_String :=
+        (Is_Set => False);
+      Keyword_Casing           : Optional_Keyword_Casing_Kind :=
         (Is_Set => False);
    end record;
 
@@ -409,7 +494,8 @@ private
       Charset                  =>
         (Is_Set => True,
          Value  =>
-           Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)));
+           Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)),
+      Keyword_Casing           => (Is_Set => True, Value => Keep));
 
    Undefined_Basic_Format_Options : constant Basic_Format_Options_Type :=
      (Width                    => (Is_Set => False),
@@ -417,7 +503,8 @@ private
       Indentation_Kind         => (Is_Set => False),
       Indentation_Continuation => (Is_Set => False),
       End_Of_Line              => (Is_Set => False),
-      Charset                  => (Is_Set => False));
+      Charset                  => (Is_Set => False),
+      Keyword_Casing           => (Is_Set => False));
 
    package String_To_Basic_Format_Options_Hash_Maps is new
      Ada.Containers.Indefinite_Hashed_Maps
@@ -471,9 +558,66 @@ private
       Implicit_Indentation_Continuation : Boolean;
    end record;
 
+   function "="
+     (Left, Right :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
+      return Boolean;
+
+   package String_To_Basic_Unparsing_Configuration_Hash_Maps is new
+     Ada.Containers.Indefinite_Hashed_Maps
+       (Key_Type        => String,
+        Element_Type    =>
+          Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration,
+        Hash            => Ada.Strings.Hash,
+        Equivalent_Keys => "=");
+
+   subtype String_To_Basic_Unparsing_Configuration_Hash_Map is
+     String_To_Basic_Unparsing_Configuration_Hash_Maps.Map;
+
+   type Supported_Languages_Unparsing_Configuration_Type is
+     array (Supported_Languages)
+     of Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+
+   type Unparsing_Configuration_Type is record
+      Language : Supported_Languages_Unparsing_Configuration_Type :=
+        [Ada_Language =>
+           Langkit_Support.Generic_API.Unparsing.No_Unparsing_Configuration];
+      Sources  : String_To_Basic_Unparsing_Configuration_Hash_Map :=
+        String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map;
+   end record;
+
+   package View_Ids_To_Unparsing_Config_Hashed_Maps is new
+     Ada.Containers.Hashed_Maps
+       (Key_Type        => GPR2.View_Ids.View_Id,
+        Element_Type    => Unparsing_Configuration_Type,
+        Hash            => GPR2.View_Ids.Hash,
+        Equivalent_Keys => GPR2.View_Ids."=");
+
+   subtype View_Id_To_Unparsing_Config_Hashed_Map is
+     View_Ids_To_Unparsing_Config_Hashed_Maps.Map;
+
+   type Unparsing_Configuration_Cache_Type is tagged record
+      Default               : GNATCOLL.VFS.Virtual_File;
+      Cache                 : View_Id_To_Unparsing_Config_Hashed_Map;
+      No_Project            : Unparsing_Configuration_Type;
+      --  For standalone sources
+      Initialize_No_Project : Boolean;
+      --  No_Project is lazily initialized
+   end record;
+
+   Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-       Langkit_Support.Generic_API.Unparsing.Default_Unparsing_Configuration
-         (Language => Libadalang.Generic_API.Ada_Lang_Id);
+       Langkit_Support.Generic_API.Unparsing.Load_Unparsing_Config
+         (Libadalang.Generic_API.Ada_Lang_Id,
+          Libadalang.Generic_API.Unparsing.Default_Configuration_Filename,
+          Diagnostics,
+          Overridings =>
+            [Libadalang
+               .Generic_API
+               .Unparsing
+               .Builtin_Overridings
+               .Original_Keywords]);
 
 end Gnatformat.Configuration;

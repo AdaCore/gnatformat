@@ -1,0 +1,9 @@
+description: Test the --keyword-casing upper switch
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--keyword-casing",
+    "upper"
+  ]

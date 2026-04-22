@@ -1,8 +1,10 @@
 --
---  Copyright (C) 2025, AdaCore
+--  Copyright (C) 2025-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 --  Package with the public API for editing sources
+
+with GNATCOLL.VFS;
 
 with Gnatformat.Abstract_Writers;
 with Gnatformat.Command_Line;
@@ -10,25 +12,23 @@ with Gnatformat.Configuration;
 
 with GPR2.Project.Tree;
 
-with Langkit_Support.Generic_API.Unparsing;
-
 package Gnatformat.Full_Format is
 
-   package Langkit_Support_Unparsing renames
-     Langkit_Support.Generic_API.Unparsing;
-
    procedure Full_Format
-     (Writer                  : in out Abstract_Writers.Abstract_Writer'Class;
-      Project_Tree            : GPR2.Project.Tree.Object;
-      CLI_Formatting_Config   : Gnatformat.Configuration.Format_Options_Type;
-      Unparsing_Configuration :
-        Langkit_Support_Unparsing.Unparsing_Configuration;
-      Command_Line_Sources    : Gnatformat.Command_Line.Sources.Result_Array;
-      Format_Options          : Gnatformat.Configuration.Format_Options_Type;
-      Check                   : Boolean;
-      Keep_Going              : Boolean;
-      Charset                 : String;
-      Base_Commit_ID          :
+     (Writer                       :
+        in out Abstract_Writers.Abstract_Writer'Class;
+      Project_Tree                 : GPR2.Project.Tree.Object;
+      CLI_Formatting_Config        :
+        Gnatformat.Configuration.Format_Options_Type;
+      Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
+      Command_Line_Sources         :
+        Gnatformat.Command_Line.Sources.Result_Array;
+      Format_Options               :
+        Gnatformat.Configuration.Format_Options_Type;
+      Check                        : Boolean;
+      Keep_Going                   : Boolean;
+      Charset                      : String;
+      Base_Commit_ID               :
         Gnatformat.Configuration.Optional_Unbounded_String);
 
 end Gnatformat.Full_Format;
