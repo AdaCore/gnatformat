@@ -146,12 +146,14 @@ package Gnatformat.Configuration is
 
    function Get_Layout
      (Self              : Format_Options_Type;
+      Source_Filename   : String;
       Language_Fallback : Supported_Languages := Ada_Language)
       return Layout_Kind;
    --  Retrieves the layout option if specified otherwise the function returns
    --  the value defined by Default_Basic_Format_Options.Layout.Value.
 
-      function Get_Override_Layout
+
+   function Get_Override_Layout
      (Self              : Format_Options_Type;
       Source_Filename   : String;
       Language_Fallback : Supported_Languages := Ada_Language)
@@ -357,6 +359,12 @@ package Gnatformat.Configuration is
      (Self                  : in out Format_Options_Builder_Type;
       Override_Layout_Files : Optional_Files_Vector;
       Language              : Supported_Languages);
+   --  Sets the Override-Layout option
+
+   procedure With_Override_Layout
+     (Self                  : in out Format_Options_Builder_Type;
+      Override_Layout_Files : Optional_Files_Vector;
+      Source_Filename       : String);
    --  Sets the Override-Layout option
 
    procedure With_Override_Layout
@@ -600,23 +608,17 @@ private
         String_To_Basic_Format_Options_Hash_Maps.Empty_Map;
       --  Empty_Map for Sources has the same meaning as undefined
       Ignored_Sources : Optional_String_Hashed_Set := (Is_Set => False);
-
-      Override_Layout_Files : Optional_Files_Vector := (Is_Set => False);
    end record;
 
    Default_Format_Options : constant Format_Options_Type :=
-     (Language              => [others => Default_Basic_Format_Options],
-      Sources               =>
-        String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
-      Ignored_Sources       => (Is_Set => False),
-      Override_Layout_Files => (Is_Set => False));
+     (Language        => [others => Default_Basic_Format_Options],
+      Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
+      Ignored_Sources => (Is_Set => False));
 
    Undefined_Format_Options : constant Format_Options_Type :=
-     (Language              => [others => Undefined_Basic_Format_Options],
-      Sources               =>
-        String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
-      Ignored_Sources       => (Is_Set => False),
-      Override_Layout_Files => (Is_Set => False));
+     (Language        => [others => Undefined_Basic_Format_Options],
+      Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
+      Ignored_Sources => (Is_Set => False));
 
    package View_Ids_To_Format_Options_Hashed_Maps is new
      Ada.Containers.Hashed_Maps

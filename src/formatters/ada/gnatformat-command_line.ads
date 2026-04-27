@@ -304,7 +304,6 @@ package Gnatformat.Command_Line is
      Parse_Option_List
        (Parser     => Parser,
         Long       => "--override-layout",
-        Name       => "OVERRIDE_LAYOUT",
         Accumulate => True,
         Help       =>
           "Overrides the configuration for the nodes provided in the file",

@@ -36,6 +36,7 @@ package body Gnatformat.Command_Line.Configuration is
          return
            Gnatformat.Configuration.Optional_Files_Vector'
              (Is_Set => True, Value => [for V of Value => V]);
+
       end To_Optional_Files_Vector;
 
       Format_Options_Builder :
@@ -117,7 +118,8 @@ package body Gnatformat.Command_Line.Configuration is
       end if;
       if Override_Layout_Value.Is_Set then
          Format_Options_Builder.With_Override_Layout
-           (Override_Layout => Override_Layout_Value);
+           (Override_Layout_Files => Override_Layout_Value,
+            Language              => Ada_Language);
       end if;
 
       return Format_Options_Builder.Build;
