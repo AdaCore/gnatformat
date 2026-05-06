@@ -1,0 +1,14 @@
+description: |
+  Format the same out-of-project source twice. The first formatting computes
+  and caches the source-specific unparsing configuration in the no-project
+  cache; the second formatting must return the cached value (cache-hit
+  branch of the no-project Get).
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "outside.adb",
+    "outside.adb",
+    "--pipe",
+  ]

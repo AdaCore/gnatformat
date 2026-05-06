@@ -1,0 +1,4 @@
+description: Test the Keyword_Casing attribute with upper casing indexed by a
+  specific source filename.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

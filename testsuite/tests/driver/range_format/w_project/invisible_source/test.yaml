@@ -1,0 +1,15 @@
+description: Range format with an explicit project where the source does not
+  belong to the project (exercises the Visible => False branch in Range_Format).
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "outside.adb",
+    "--range-format",
+    "-SL 1",
+    "-SC 5",
+    "-EL 6",
+    "-EC 6",
+    "--pipe",
+  ]
