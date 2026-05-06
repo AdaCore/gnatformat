@@ -47,7 +47,9 @@ package body Gnatformat.Range_Format is
       Unparsing_Configuration_Cache :
         Gnatformat.Configuration.Unparsing_Configuration_Cache_Type :=
           (if Unparsing_Configuration_File.Is_Regular_File
-           then Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
+           then
+             Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
+               (Unparsing_Configuration_File)
            else
              Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
                (GNATCOLL.VFS.Create_From_UTF8
