@@ -360,10 +360,6 @@ package Gnatformat.Configuration is
    type Unparsing_Configuration_Cache_Type is tagged private;
 
    function Create_Unparsing_Configuration_Cache
-      return Unparsing_Configuration_Cache_Type;
-   --  Unparsing_Configuration_Cache_Type constructor.
-
-   function Create_Unparsing_Configuration_Cache
      (Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File)
       return Unparsing_Configuration_Cache_Type;
    --  Unparsing_Configuration_Cache_Type constructor.

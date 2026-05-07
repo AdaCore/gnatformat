@@ -1358,24 +1358,6 @@ package body Gnatformat.Configuration is
         (Is_Set => True, Value => Width);
    end With_Width;
 
-   ----------------------------------------
-   -- Create_Unparsing_Configuration_Cache --
-   ----------------------------------------
-
-   function Create_Unparsing_Configuration_Cache
-      return Unparsing_Configuration_Cache_Type
-   is (Unparsing_Configuration_Cache_Type'
-         (Default               =>
-            GNATCOLL.VFS.Create_From_UTF8
-              (Libadalang
-                 .Generic_API
-                 .Unparsing
-                 .Default_Configuration_Filename),
-          Cache                 =>
-            View_Ids_To_Unparsing_Config_Hashed_Maps.Empty_Map,
-          No_Project            => <>,
-          Initialize_No_Project => True));
-
    ------------------------------------------
    -- Create_Unparsing_Configuration_Cache --
    ------------------------------------------
