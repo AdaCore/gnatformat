@@ -1,0 +1,20 @@
+--  visible.adb
+procedure Visible is
+begin
+  null;
+end Visible;
+
+--  visible.adb
+procedure Visible is
+begin
+  null;
+end Visible;
+
+--  Warning: Formatting "outside.adb" which is not visible to the provided project
+
+--  outside.adb
+procedure Outside is
+begin
+  null;
+end Outside;
+

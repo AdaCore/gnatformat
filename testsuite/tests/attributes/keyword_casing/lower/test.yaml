@@ -1,0 +1,3 @@
+description: Test the Keyword_Casing attribute with lower casing
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

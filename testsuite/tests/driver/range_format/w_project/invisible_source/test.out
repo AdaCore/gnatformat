@@ -1,0 +1,11 @@
+outside.adb(<SubpBody ["Outside"] outside.adb:1:9-8:13>) - 1:9-8:13
+^
+procedure Outside is
+   A, B : Boolean := True;
+begin
+
+   A := true;
+   B := false;
+
+end Outside;$
+

@@ -1,0 +1,11 @@
+test.adb(<SubpBody ["Test"] test.adb:1:9-8:10>) - 1:9-8:10
+^
+procedure Test is
+   A, B : Boolean := True;
+begin
+
+   A := true;
+   B := false;
+
+end Test;$
+

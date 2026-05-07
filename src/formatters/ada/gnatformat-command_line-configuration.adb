@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -30,6 +30,9 @@ package body Gnatformat.Command_Line.Configuration is
       End_Of_Line_Value              :
         constant Gnatformat.Configuration.Optional_End_Of_Line_Kind :=
           End_Of_Line.Get;
+      Keyword_Casing_Value           :
+        constant Gnatformat.Configuration.Optional_Keyword_Casing_Kind :=
+          Keyword_Casing.Get;
       Ignore_Value                   :
         constant Gnatformat.Configuration.Optional_Unbounded_String :=
           Ignore.Get;
@@ -61,10 +64,14 @@ package body Gnatformat.Command_Line.Configuration is
            (Indentation_Continuation => Indentation_Continuation_Value.Value,
             Language                 => Ada_Language);
       end if;
-
       if End_Of_Line_Value.Is_Set then
          Format_Options_Builder.With_End_Of_Line
            (End_Of_Line => End_Of_Line_Value.Value, Language => Ada_Language);
+      end if;
+      if Keyword_Casing_Value.Is_Set then
+         Format_Options_Builder.With_Keyword_Casing
+           (Keyword_Casing => Keyword_Casing_Value.Value,
+            Language       => Ada_Language);
       end if;
       if Ignore_Value.Is_Set then
          Format_Options_Builder.With_Ignore

@@ -1,0 +1,9 @@
+description: Test the --keyword-casing keep switch
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--keyword-casing",
+    "keep"
+  ]
