@@ -1,0 +1,4 @@
+test.adb(<SubpBody ["Test"] test.adb:1:1-4:10>) - 1:1-4:10
+^
+procedure Test(X:Integer;Y:Integer;Z:Integer)is begin null;end Test;$
+
