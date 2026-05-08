@@ -1,0 +1,16 @@
+description: |
+  Format the same project source twice plus an out-of-project source whose
+  base name has source-specific Format options. Exercises the cache-hit
+  branch when re-formatting the project source and the source-specific
+  branch of the no-project Get when the out-of-project source name is
+  present in the project's source-specific format options.
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "test/visible.adb",
+    "test/visible.adb",
+    "outside.adb",
+    "--pipe",
+  ]

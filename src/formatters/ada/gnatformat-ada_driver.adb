@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -25,14 +25,9 @@ with GPR2;
 with GPR2.Options;
 with GPR2.Project.Tree;
 
-with Langkit_Support.Diagnostics;
-with Langkit_Support.Generic_API.Unparsing;
 with Langkit_Support.Slocs;
 
 procedure Gnatformat.Ada_Driver is
-
-   package Langkit_Support_Unparsing renames
-     Langkit_Support.Generic_API.Unparsing;
 
    function Charset return String
    is (declare
@@ -49,9 +44,11 @@ begin
    GNATCOLL.Traces.Parse_Config_File;
 
    if not Gnatformat.Command_Line.Parser.Parse then
-      Ada.Text_IO.Put_Line
-        (Ada.Text_IO.Standard_Error, "Failed to parse CLI arguments");
-      GNAT.OS_Lib.OS_Exit (1);
+      if Gnatformat.Command_Line.Parser.Last_Error /= "" then
+         GNAT.OS_Lib.OS_Exit (1);
+      else
+         GNAT.OS_Lib.OS_Exit (0);
+      end if;
    end if;
 
    if Gnatformat.Command_Line.Version.Get then
@@ -91,14 +88,8 @@ begin
         constant Gnatformat.Configuration.Format_Options_Type :=
           Gnatformat.Command_Line.Configuration.Get;
 
-      Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-
       Unparsing_Configuration_File : constant GNATCOLL.VFS.Virtual_File :=
         Gnatformat.Command_Line.Unparsing_Configuration.Get;
-      Unparsing_Configuration      :
-        constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Load_Unparsing_Configuration
-            (Unparsing_Configuration_File, Diagnostics);
 
       Sources : constant Gnatformat.Command_Line.Sources.Result_Array :=
         Gnatformat.Command_Line.Sources.Get;
@@ -111,7 +102,6 @@ begin
          else Gnatformat.File_Writers.Writer);
 
       use type Gnatformat.Command_Line.Sources.Result_Array;
-      use type Langkit_Support_Unparsing.Unparsing_Configuration;
 
    begin
       if Gnatformat.Command_Line.Range_Format.Get then
@@ -156,25 +146,6 @@ begin
          GNAT.OS_Lib.OS_Exit (1);
       end if;
 
-      if Unparsing_Configuration
-        = Langkit_Support_Unparsing.No_Unparsing_Configuration
-      then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error,
-            "Failed to load unparsing configuration");
-         GNAT.OS_Lib.OS_Exit (1);
-      end if;
-
-      if not Diagnostics.Is_Empty then
-         Ada.Text_IO.Put_Line
-           (Ada.Text_IO.Standard_Error, "Failed to load formatting rules");
-         for Diagnostic of Diagnostics loop
-            Gnatformat.Gnatformat_Trace.Trace
-              (Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic));
-         end loop;
-         GNAT.OS_Lib.OS_Exit (1);
-      end if;
-
       if No_Project then
          Gnatformat.Gnatformat_Trace.Trace
            ("Proceeding with no project loaded");
@@ -185,9 +156,9 @@ begin
 
       if Gnatformat.Command_Line.Range_Format.Get then
          Gnatformat.Range_Format.Range_Format
-           (Project_Tree            => Project_Tree,
-            Source                  => Sources (Sources'First),
-            Selection_Range         =>
+           (Project_Tree                 => Project_Tree,
+            Source                       => Sources (Sources'First),
+            Selection_Range              =>
               (Langkit_Support.Slocs.Line_Number
                  (Gnatformat.Command_Line.Start_Line.Get),
                Langkit_Support.Slocs.Line_Number
@@ -196,17 +167,17 @@ begin
                  (Gnatformat.Command_Line.Start_Column.Get),
                Langkit_Support.Slocs.Column_Number
                  (Gnatformat.Command_Line.End_Column.Get)),
-            CLI_Formatting_Config   => CLI_Formatting_Config,
-            Unparsing_Configuration => Unparsing_Configuration,
-            Default_Charset         => Charset,
-            Pipe                    => Gnatformat.Command_Line.Pipe.Get);
+            CLI_Formatting_Config        => CLI_Formatting_Config,
+            Unparsing_Configuration_File => Unparsing_Configuration_File,
+            Default_Charset              => Charset,
+            Pipe                         => Gnatformat.Command_Line.Pipe.Get);
 
       else
          Gnatformat.Full_Format.Full_Format
            (Writer,
             Project_Tree,
             CLI_Formatting_Config,
-            Unparsing_Configuration,
+            Unparsing_Configuration_File,
             Sources,
             Format_Options => Gnatformat.Command_Line.Configuration.Get,
             Check          => Gnatformat.Command_Line.Check.Get,

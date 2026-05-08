@@ -1,0 +1,17 @@
+description: Range format honours the --unparsing-configuration CLI flag. The
+  custom configuration empties the ParamSpec template so parameter specs are
+  unparsed without surrounding whitespace, collapsing the formatted procedure
+  to a single line.
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--range-format",
+    "-SL 1",
+    "-SC 1",
+    "-EL 4",
+    "-EC 9",
+    "--pipe",
+    "--unparsing-configuration",
+    "tall.json",
+  ]

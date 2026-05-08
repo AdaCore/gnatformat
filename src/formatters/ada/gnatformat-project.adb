@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, AdaCore
+--  Copyright (C) 2025-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -342,7 +342,7 @@ package body Gnatformat.Project is
          return Result;
       end Find_Implicit_Project_File;
 
-      Explicit_Project : GNATCOLL.VFS.Virtual_File :=
+      Explicit_Project : constant GNATCOLL.VFS.Virtual_File :=
         (if GPR_Options.Project_File.Is_Defined
          then
            GNATCOLL.VFS.Create_From_UTF8

@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -58,6 +58,16 @@ package Gnatformat.Command_Line is
      (S : String) return Gnatformat.Configuration.Optional_Unbounded_String
    is ((Is_Set => True, Value => To_Unbounded_String (S)));
    --  Converts a string to Gnatformat.Configuration.Optional_End_Of_Line_Kind
+
+   function To_Optional_Keyword_Casing_Kind
+     (Keyword_Casing_Kind : String)
+      return Gnatformat.Configuration.Optional_Keyword_Casing_Kind
+   is ((Is_Set => True,
+        Value  =>
+          Gnatformat.Configuration.Keyword_Casing_Kind'Value
+            (Keyword_Casing_Kind)));
+   --  Converts a string to
+   --  Gnatformat.Configuration.Optional_Keyword_Casing_Kind
 
    package Root_Project_Only is new
      Parse_Flag
@@ -172,6 +182,17 @@ package Gnatformat.Command_Line is
         Convert     => To_Optional_End_Of_Line_Kind,
         Default_Val =>
           Gnatformat.Configuration.Optional_End_Of_Line_Kinds.None);
+
+   package Keyword_Casing is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--keyword-casing",
+        Help        =>
+          "Keyword casing: keep | lower | upper (default value = keep)",
+        Arg_Type    => Gnatformat.Configuration.Optional_Keyword_Casing_Kind,
+        Convert     => To_Optional_Keyword_Casing_Kind,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Keyword_Casing_Kinds.None);
 
    package Charset is new
      Parse_Option
