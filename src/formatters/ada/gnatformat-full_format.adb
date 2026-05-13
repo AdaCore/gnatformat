@@ -9,9 +9,9 @@ with Ada.Containers.Vectors;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 
-with GNAT.OS_Lib;
 with GNAT.Traceback.Symbolic;
 
+with Gnatformat.Bail;
 with Gnatformat.Formatting;
 with Gnatformat.Helpers;
 with Gnatformat.Project;
@@ -616,7 +616,7 @@ package body Gnatformat.Full_Format is
       end if;
 
       if Gnatformat.Project.General_Failed then
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Bail.Bail (1);
       end if;
    end Full_Format;
 

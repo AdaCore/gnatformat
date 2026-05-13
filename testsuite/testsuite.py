@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from os import sep
 from typing import override
@@ -41,7 +42,13 @@ def valgrind_wrap(env: e3.env.Env, argv: list[str]) -> list[str]:
     command line in Valgrind.
     """
     if env.options.valgrind:
-        argv = ["valgrind", "-q", "--leak-check=full"] + argv
+        supp = os.path.join(os.path.dirname(__file__), "valgrind.supp")
+        argv = [
+            "valgrind",
+            "-q",
+            "--leak-check=full",
+            f"--suppressions={supp}",
+        ] + argv
     return argv
 
 

@@ -1,0 +1,34 @@
+# Suppressions for leaks triggered by --print-gpr-registry.
+#
+# GPR2's GPR2.Options.Print_GPR_Registry calls GNAT.OS_Lib.OS_Exit (0)
+# directly after printing (gpr2-options.adb, near "Print_GPR_Registry"),
+# which short-circuits to libc _exit and bypasses adafinal. Elaboration-time
+# allocations are then reported as leaks.
+#
+# Once GPR2 is fixed to exit cleanly, delete this file and the
+# --suppressions= flag in testsuite/testsuite.py.
+
+{
+   gpr2_print_gpr_registry_strands_langkit_unparsing_config
+   Memcheck:Leak
+   match-leak-kinds: definite,possible
+   ...
+   fun:langkit_support__unparsing_config__load_unparsing_config_from_buffer*
+   ...
+}
+{
+   gpr2_print_gpr_registry_strands_gpr2_default_search_paths
+   Memcheck:Leak
+   match-leak-kinds: definite,possible
+   ...
+   fun:gpr2__project__default_search_paths*
+   ...
+}
+{
+   gpr2_print_gpr_registry_strands_gnatcoll_opt_parse
+   Memcheck:Leak
+   match-leak-kinds: definite,possible
+   ...
+   fun:gnatcoll__opt_parse__parse_impl*
+   ...
+}

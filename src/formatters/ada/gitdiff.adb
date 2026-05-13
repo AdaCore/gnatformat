@@ -1,5 +1,5 @@
 --
---  Copyright (C) 2025, AdaCore
+--  Copyright (C) 2025-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
@@ -104,24 +104,37 @@ package body Gitdiff is
    --  git-clang-format.
 
    procedure CD_To_Toplevel is
-      Args : constant GNAT.OS_Lib.Argument_List :=
+      Args : GNAT.OS_Lib.Argument_List :=
         (new String'("rev-parse"), new String'("--show-toplevel"));
-
-      Status : aliased Integer;
-
-      Directory : constant String :=
-        GNAT.Expect.Get_Command_Output
-          (Command    => "git",
-           Arguments  => Args,
-           Input      => "",
-           Status     => Status'Access,
-           Err_To_Out => False);
    begin
-      if Status /= 0 then
-         raise Git_Command_Failed with "git command failed";
-      end if;
+      declare
+         Status : aliased Integer;
 
-      Ada.Directories.Set_Directory (Directory);
+         Directory : constant String :=
+           GNAT.Expect.Get_Command_Output
+             (Command    => "git",
+              Arguments  => Args,
+              Input      => "",
+              Status     => Status'Access,
+              Err_To_Out => False);
+      begin
+         for I in Args'Range loop
+            GNAT.OS_Lib.Free (Args (I));
+         end loop;
+
+         if Status /= 0 then
+            raise Git_Command_Failed with "git command failed";
+         end if;
+
+         Ada.Directories.Set_Directory (Directory);
+      end;
+
+   exception
+      when others =>
+         for I in Args'Range loop
+            GNAT.OS_Lib.Free (Args (I));
+         end loop;
+         raise;
    end CD_To_Toplevel;
 
    function Get_Next
@@ -290,91 +303,103 @@ package body Gitdiff is
    procedure Format_New_Lines (Base_Commit_ID : String; Ctx : Context) is
       use GNAT.Regpat;
 
-      Args : constant GNAT.OS_Lib.Argument_List :=
+      Args : GNAT.OS_Lib.Argument_List :=
         (new String'("diff-index"),
          new String'("-p"),
          new String'("-U0"),
          new String'(Base_Commit_ID));
-
-      Status : aliased Integer;
-
-      Diff_Text : constant String :=
-        GNAT.Expect.Get_Command_Output
-          (Command    => "git",
-           Arguments  => Args,
-           Input      => "",
-           Status     => Status'Access,
-           Err_To_Out => False);
-
-      Cursor : Positive := Diff_Text'First;
-
-      Matcher : constant Pattern_Matcher :=
-        GNAT.Regpat.Compile (Complete_Regexp, Regpat_Flags);
-
-      E : Diff_Elem;
-
-      File_Name : Unbounded_String := Null_Unbounded_String;
-
-      Formatting_Edits : Formatting_Edits_Type :=
-        Formatting_Edit_Hashed_Maps.Empty_Map;
    begin
-      if Status /= 0 then
-         raise Git_Command_Failed with "Failed to generate git diff";
-      end if;
+      declare
+         Status : aliased Integer;
 
-      E := Get_Next (Diff_Text, Cursor, Matcher);
+         Diff_Text : constant String :=
+           GNAT.Expect.Get_Command_Output
+             (Command    => "git",
+              Arguments  => Args,
+              Input      => "",
+              Status     => Status'Access,
+              Err_To_Out => False);
 
-      case E.Kind is
-         when File =>
-            File_Name := E.File_Name;
+         Cursor : Positive := Diff_Text'First;
 
-         when Hunk =>
-            --  We never expect git's output to have a chunk before a file
-            raise Git_Command_Failed with "Failed to parse diff text";
+         Matcher : constant Pattern_Matcher :=
+           GNAT.Regpat.Compile (Complete_Regexp, Regpat_Flags);
 
-         when None =>
-            return;
-      end case;
+         E : Diff_Elem;
 
-      CD_To_Toplevel;
+         File_Name : Unbounded_String := Null_Unbounded_String;
 
-      Iterate_Over_Files : while File_Name /= Null_Unbounded_String loop
-         declare
-            use Ada.Directories;
-            S : constant String := To_String (File_Name);
-         begin
-            if Extension (S) = "ads" or else Extension (S) = "adb" then
+         Formatting_Edits : Formatting_Edits_Type :=
+           Formatting_Edit_Hashed_Maps.Empty_Map;
+      begin
+         for I in Args'Range loop
+            GNAT.OS_Lib.Free (Args (I));
+         end loop;
 
-               File_Name :=
-                 Process_File
-                   (To_String (File_Name),
-                    Ctx,
-                    Formatting_Edits,
-                    Diff_Text,
-                    Cursor,
-                    Matcher);
-            else
-               --  Ignore the current file's hunks
-               loop
-                  E := Get_Next (Diff_Text, Cursor, Matcher);
+         if Status /= 0 then
+            raise Git_Command_Failed with "Failed to generate git diff";
+         end if;
 
-                  case E.Kind is
-                     when File =>
-                        File_Name := E.File_Name;
-                        exit;
+         E := Get_Next (Diff_Text, Cursor, Matcher);
 
-                     when Hunk =>
-                        null;
+         case E.Kind is
+            when File =>
+               File_Name := E.File_Name;
 
-                     when None =>
-                        exit Iterate_Over_Files;
-                  end case;
-               end loop;
-            end if;
-         end;
-      end loop Iterate_Over_Files;
+            when Hunk =>
+               --  We never expect git's output to have a chunk before a file
+               raise Git_Command_Failed with "Failed to parse diff text";
 
-      Apply_Edits (Formatting_Edits);
+            when None =>
+               return;
+         end case;
 
+         CD_To_Toplevel;
+
+         Iterate_Over_Files : while File_Name /= Null_Unbounded_String loop
+            declare
+               use Ada.Directories;
+               S : constant String := To_String (File_Name);
+            begin
+               if Extension (S) = "ads" or else Extension (S) = "adb" then
+
+                  File_Name :=
+                    Process_File
+                      (To_String (File_Name),
+                       Ctx,
+                       Formatting_Edits,
+                       Diff_Text,
+                       Cursor,
+                       Matcher);
+               else
+                  --  Ignore the current file's hunks
+                  loop
+                     E := Get_Next (Diff_Text, Cursor, Matcher);
+
+                     case E.Kind is
+                        when File =>
+                           File_Name := E.File_Name;
+                           exit;
+
+                        when Hunk =>
+                           null;
+
+                        when None =>
+                           exit Iterate_Over_Files;
+                     end case;
+                  end loop;
+               end if;
+            end;
+         end loop Iterate_Over_Files;
+
+         Apply_Edits (Formatting_Edits);
+      end;
+
+   exception
+      when others =>
+         for I in Args'Range loop
+            GNAT.OS_Lib.Free (Args (I));
+         end loop;
+         raise;
    end Format_New_Lines;
 end Gitdiff;

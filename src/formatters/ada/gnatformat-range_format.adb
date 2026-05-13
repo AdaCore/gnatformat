@@ -6,8 +6,7 @@
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
-with GNAT.OS_Lib;
-
+with Gnatformat.Bail;
 with Gnatformat.Formatting;
 with Gnatformat.Edits;
 with Gnatformat.Project;
@@ -145,7 +144,7 @@ package body Gnatformat.Range_Format is
             Ada.Text_IO.Put_Line
               (Ada.Text_IO.Standard_Error,
                "Failed to find " & Source.Display_Base_Name);
-            GNAT.OS_Lib.OS_Exit (1);
+            Gnatformat.Bail.Bail (1);
          end if;
 
          declare
