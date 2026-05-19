@@ -9,3 +9,4 @@ end Bar;
 package Baz is
     I : Integer;
 end Baz;
+

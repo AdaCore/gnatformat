@@ -6,7 +6,7 @@
 with Ada.Text_IO;
 with Ada.Directories;
 
-with GNAT.OS_Lib;
+with Gnatformat.Bail;
 
 with GPR2.Build.Compilation_Unit;
 with GPR2.Path_Name;
@@ -144,7 +144,7 @@ package body Gnatformat.Project is
          begin
             if Project_Source = No_Project_Source then
                if not Gnatformat.Command_Line.Keep_Going.Get then
-                  GNAT.OS_Lib.OS_Exit (1);
+                  Gnatformat.Bail.Bail (1);
                end if;
                Set_General_Failed;
 
@@ -203,7 +203,7 @@ package body Gnatformat.Project is
                "Failed to resolve " & String (Path.Simple_Name));
 
             if not Gnatformat.Command_Line.Keep_Going.Get then
-               GNAT.OS_Lib.OS_Exit (1);
+               Gnatformat.Bail.Bail (1);
             end if;
 
             Set_General_Failed;
@@ -258,7 +258,7 @@ package body Gnatformat.Project is
             "Failed to load project """
             & Project_File.Display_Full_Name (Normalize => True)
             & """");
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Bail.Bail (1);
 
       else
          Gnatformat_Trace.Trace

@@ -3,15 +3,18 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Command_Line;
+with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
-with GNAT.OS_Lib;
+with GNAT.Traceback.Symbolic;
 
 with GNATCOLL.Opt_Parse;
 with GNATCOLL.VFS; use GNATCOLL.VFS;
 
 with Gnatformat.Abstract_Writers;
+with Gnatformat.Bail;
 with Gnatformat.Command_Line.Configuration;
 with Gnatformat.Command_Line;
 with Gnatformat.Configuration;
@@ -45,9 +48,9 @@ begin
 
    if not Gnatformat.Command_Line.Parser.Parse then
       if Gnatformat.Command_Line.Parser.Last_Error /= "" then
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Bail.Bail (1);
       else
-         GNAT.OS_Lib.OS_Exit (0);
+         Gnatformat.Bail.Bail (0);
       end if;
    end if;
 
@@ -114,7 +117,7 @@ begin
               (Ada.Text_IO.Standard_Error,
                "Exactly one source file must be provided.");
             Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
-            GNAT.OS_Lib.OS_Exit (1);
+            Gnatformat.Bail.Bail (1);
          end if;
 
       else
@@ -131,7 +134,7 @@ begin
             Ada.Text_IO.Put_Line
               (Ada.Text_IO.Standard_Error,
                Gnatformat.Command_Line.Parser.Help);
-            GNAT.OS_Lib.OS_Exit (1);
+            Gnatformat.Bail.Bail (1);
          end if;
       end if;
 
@@ -143,7 +146,7 @@ begin
             "Provided project file """
             & Project_File.Display_Full_Name
             & """ does not exit.");
-         GNAT.OS_Lib.OS_Exit (1);
+         Gnatformat.Bail.Bail (1);
       end if;
 
       if No_Project then
@@ -186,4 +189,22 @@ begin
             Base_Commit_ID => Gnatformat.Command_Line.Gitdiff.Get);
       end if;
    end;
+
+exception
+
+   when Gnatformat.Bail.Bail_Out =>
+      --  Deliberate non-local exit. Falling through here lets finalization run.
+      --  See Gnatformat.Bail for the rationale.
+      null;
+
+   when E : others =>
+      --  Catch unhandled exceptions at the top level so we exit cleanly.
+      Ada.Text_IO.Put_Line
+        (Ada.Text_IO.Standard_Error,
+         "Unexpected error: "
+         & Ada.Exceptions.Exception_Name (E)
+         & ": "
+         & Ada.Exceptions.Exception_Message (E));
+      Gnatformat_Trace.Trace (GNAT.Traceback.Symbolic.Symbolic_Traceback (E));
+      Ada.Command_Line.Set_Exit_Status (1);
 end Gnatformat.Ada_Driver;
