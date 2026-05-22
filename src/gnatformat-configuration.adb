@@ -19,7 +19,6 @@ with GPR2.Project.Registry.Attribute.Description;
 with GPR2.Project.Registry.Pack;
 
 with Libadalang.Generic_API;
-with Libadalang.Generic_API.Unparsing;
 
 package body Gnatformat.Configuration is
 
@@ -72,60 +71,50 @@ package body Gnatformat.Configuration is
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
-      -------------------------------------
-      --  Update_Overridings_File_Array  --
-      -------------------------------------
-
-      procedure Update_Overridings_File_Array
-        (FA   : in out GNATCOLL.VFS.File_Array;
-         Last : in out Natural;
-         Val  : GNATCOLL.VFS.Virtual_File);
-      --  Inserts a Virtual file in the file array of overridings
-
-      procedure Update_Overridings_File_Array
-        (FA   : in out GNATCOLL.VFS.File_Array;
-         Last : in out Natural;
-         Val  : GNATCOLL.VFS.Virtual_File) is
-      begin
-         Last := Last + 1;
-         FA (Last) := Val;
-      end Update_Overridings_File_Array;
-
-      Overridings : GNATCOLL.VFS.File_Array := GNATCOLL.VFS.Empty_File_Array;
-      Last : Natural := 0;
+      Overriddings_Array_Access : GNATCOLL.VFS.File_Array_Access :=
+        new GNATCOLL.VFS.File_Array (1 .. 0);
    begin
       --  Handles layout if set
       if Format_Options.Layout.Is_Set
         and then
           Get_Layout_File (Format_Options.Layout.Value) /= GNATCOLL.VFS.No_File
       then
-         Update_Overridings_File_Array
-           (Overridings,
-            Last,
+         GNATCOLL.VFS.Append
+           (Overriddings_Array_Access,
             Get_Layout_File (Format_Options.Layout.Value));
       end if;
 
       --  Handles keyword casing if set
       if Format_Options.Keyword_Casing.Is_Set then
-         Update_Overridings_File_Array
-           (Overridings,
-            Last,
+         GNATCOLL.VFS.Append
+           (Overriddings_Array_Access,
             Get_Keyword_Casing_Overriding
               (Format_Options.Keyword_Casing.Value));
       end if;
 
-       --  Handles the files specified through override layout if set
+      --  Handles the files specified through override layout if set
       if Format_Options.Override_Layout.Is_Set then
          for F of Format_Options.Override_Layout.Value loop
-            Update_Overridings_File_Array (Overridings, Last, F);
+            GNATCOLL.VFS.Append (Overriddings_Array_Access, F);
          end loop;
+      end if;
+
+      --  Creates the files array to load the unparsing configuration
+      --  associated with the current overridings
+      if Overriddings_Array_Access.all'Length > 0 then
+         return
+           Load_Unparsing_Configuration
+             (Unparsing_Configuration_File => Default_Unparsing_Configuration,
+              Overriddings                 => Overriddings_Array_Access.all,
+              Diagnostics                  => Diagnostics);
       end if;
 
       return
         Load_Unparsing_Configuration
           (Unparsing_Configuration_File => Default_Unparsing_Configuration,
-           Overriddings                 => Overridings,
+           Overriddings                 => [],
            Diagnostics                  => Diagnostics);
+
    end Compute_Unparsing_Configuration;
 
    -------------------------------------
@@ -526,15 +515,14 @@ package body Gnatformat.Configuration is
       function Files_Vector_To_Files_Array
         (FV : Files_Vector) return GNATCOLL.VFS.File_Array
       is
-         Res  : GNATCOLL.VFS.File_Array := GNATCOLL.VFS.Empty_File_Array;
-         Last : Natural := 0;
+         Res : GNATCOLL.VFS.File_Array_Access :=
+           new GNATCOLL.VFS.File_Array (1 .. 0);
       begin
          for F of FV loop
-            Last := Last + 1;
-            Res (Last) := F;
+            GNATCOLL.VFS.Append (Res, F);
          end loop;
 
-         return Res;
+         return Res.all;
       end Files_Vector_To_Files_Array;
 
    begin
@@ -544,7 +532,9 @@ package body Gnatformat.Configuration is
               .Is_Set
          then
            Files_Vector_To_Files_Array
-             (Self.Language (Language_Fallback).Override_Layout.Value)
+             (Into (Self, Source_Filename, Language_Fallback)
+                .Override_Layout
+                .Value)
          else GNATCOLL.VFS.Empty_File_Array);
    end Get_Override_Layout;
 
@@ -719,45 +709,13 @@ package body Gnatformat.Configuration is
        then Into (Self.Sources.Element (Source_Filename))
        else Into (Self, Language_Fallback));
 
-   ----------------------
-   --  Get_Layout_File --
-   ----------------------
-
-   function Get_Layout_File
-     (Actual : Gnatformat.Configuration.Layout_Kind)
-      return GNATCOLL.VFS.Virtual_File
-   is (if Actual = Tall
-       then Libadalang.Generic_API.Unparsing.Builtin_Overridings.Tall
-       else GNATCOLL.VFS.No_File);
-   --  Returns the predefined tall layout file if the actual layout is set
-   --  to Tall through switch or GPR attribute or No_File otherwise.
-
-   -------------------------------------
-   --  Update_Overridings_File_Array  --
-   -------------------------------------
-
-   procedure Update_Overridings_File_Array
-     (FA   : in out GNATCOLL.VFS.File_Array;
-      Last : in out Natural;
-      Val  : GNATCOLL.VFS.Virtual_File);
-   --  Inserts a Virtual file in the file array of overridings
-
-   procedure Update_Overridings_File_Array
-     (FA   : in out GNATCOLL.VFS.File_Array;
-      Last : in out Natural;
-      Val  : GNATCOLL.VFS.Virtual_File) is
-   begin
-      Last := Last + 1;
-      FA (Last) := Val;
-   end Update_Overridings_File_Array;
-
    -----------------------------
    --  Load_Unparsing_Config  --
    -----------------------------
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
-      Overriddings                  : GNATCOLL.VFS.File_Array;
+      Overriddings                 : GNATCOLL.VFS.File_Array;
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration

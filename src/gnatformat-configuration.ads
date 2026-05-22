@@ -152,7 +152,6 @@ package Gnatformat.Configuration is
    --  Retrieves the layout option if specified otherwise the function returns
    --  the value defined by Default_Basic_Format_Options.Layout.Value.
 
-
    function Get_Override_Layout
      (Self              : Format_Options_Type;
       Source_Filename   : String;
@@ -366,16 +365,6 @@ package Gnatformat.Configuration is
       Override_Layout_Files : Optional_Files_Vector;
       Source_Filename       : String);
    --  Sets the Override-Layout option
-
-   procedure With_Override_Layout
-     (Self                  : in out Format_Options_Builder_Type;
-      Override_Layout_Files : Optional_Files_Vector;
-      Source_Filename       : String);
-
-   --  procedure With_Override_Layout
-   --    (Self            : in out Format_Options_Builder_Type;
-   --     Override_Layout : Optional_Files_Vector);
-   --  --  Sets the Override-Layout option
 
    procedure With_Indentation
      (Self        : in out Format_Options_Builder_Type;
@@ -689,7 +678,6 @@ private
 
    Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
 
-   --  !!!! TO DO MKU : to be updated with tall layout and ... !!!!
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
        Langkit_Support.Generic_API.Unparsing.Load_Unparsing_Config

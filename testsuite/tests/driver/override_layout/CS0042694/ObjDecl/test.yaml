@@ -1,0 +1,9 @@
+description: |
+  Test that gnatformat is able to format the provided ObjectDecl on
+  both separators `:` and `:=` using the given unparsing configuration.
+driver: gnatformat
+args: ["--width", "132",
+       "--override-layout",
+       "align_both.json",
+       "--pipe",        
+       "test_align.ads"]

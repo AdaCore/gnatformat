@@ -4,6 +4,6 @@ project Test is
    for Exec_dir use ".";
    for Main use ("test.adb");
    package Format is
-      for Override_Layout ("Ada") use ("test.json");
+      for Override_Layout ("Ada") use ("test/test.json");
    end Format;
 end Test;

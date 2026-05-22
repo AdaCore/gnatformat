@@ -10,11 +10,12 @@ usage: gnatformat [--help|-h] [--json-help] [--no-subprojects] [-U] [--verbose]
                  [--charset CHARSET] [--ignore IGNORE] [--gitdiff BASE_COMMIT] 
                  SOURCE [SOURCE ...] [--range-format] [--start-line|-SL 
                  START-LINE] [--start-column|-SC START-COLUMN] [--end-line|-EL 
-                 END-LINE] [--end-column|-EC END-COLUMN] [-aP Search path 
-                 [Search path...]] [--autoconf autoconf [autoconf...]] [--config
-                  config] [--db db [db...]] [--db-] [--implicit-with project 
-                 [project...]] [-eL] [--no-project] [-P project] 
-                 [--print-gpr-registry] [--root-dir root-dir] 
+                 END-LINE] [--end-column|-EC END-COLUMN] [--layout LAYOUT] 
+                 [--override-layout OVERRIDE-LAYOUT [OVERRIDE-LAYOUT...]] [-aP 
+                 Search path [Search path...]] [--autoconf autoconf 
+                 [autoconf...]] [--config config] [--db db [db...]] [--db-] 
+                 [--implicit-with project [project...]] [-eL] [--no-project] [-P
+                  project] [--print-gpr-registry] [--root-dir root-dir] 
                  [--relocate-build-tree relocate-build-tree] [--RTS rts 
                  [rts...]] [--RTS rts-index] [--src-subdirs src-subdirs] 
                  [--subdirs subdirs] [--target target] [-X scenario 
@@ -48,10 +49,6 @@ optional arguments:
                                spaces)
    --indentation-continuation  Continuation Line Indentation size (default value
                                 = indentation - 1)
-   --layout                    Layout configuration: default | tall (default 
-                               value = default)
-   --override-layout           Overrides configuration file with the nodes 
-                               provided in the file
    --end-of-line               End of line sequence: lf | crlf (default value = 
                                lf)
    --keyword-casing            Keyword casing: keep | lower | upper (default 
@@ -66,6 +63,10 @@ optional arguments:
                                formatting
    --end-line, -EL             Selection end line number for range formatting
    --end-column, -EC           Selection end column number for range formatting
+   --layout                    Layout configuration: default | tall (default 
+                               value = default)
+   --override-layout           Overrides the configuration for the nodes 
+                               provided in the file
    -aP                         Add directory to the project search path
    --autoconf                  Specify/create the main config project file name
    --config                    Specify the configuration project file name
