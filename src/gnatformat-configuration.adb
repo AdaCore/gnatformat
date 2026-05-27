@@ -100,15 +100,25 @@ package body Gnatformat.Configuration is
       end if;
 
       --  Creates the files array to load the unparsing configuration
-      --  associated with the current overridings
+      --  associated with the current overridings and frees the initially
+      --  allocated array access
       if Overriddings_Array_Access.all'Length > 0 then
-         return
-           Load_Unparsing_Configuration
-             (Unparsing_Configuration_File => Default_Unparsing_Configuration,
-              Overriddings                 => Overriddings_Array_Access.all,
-              Diagnostics                  => Diagnostics);
+         declare
+            Overridings : constant GNATCOLL.VFS.File_Array :=
+              Overriddings_Array_Access.all;
+         begin
+            GNATCOLL.VFS.Unchecked_Free (Overriddings_Array_Access);
+            return
+              Load_Unparsing_Configuration
+                (Unparsing_Configuration_File =>
+                   Default_Unparsing_Configuration,
+                 Overriddings                 => Overridings,
+                 Diagnostics                  => Diagnostics);
+         end;
       end if;
 
+      --  Freeing Overriddings_Array_Access even none of the options are set
+      GNATCOLL.VFS.Unchecked_Free (Overriddings_Array_Access);
       return
         Load_Unparsing_Configuration
           (Unparsing_Configuration_File => Default_Unparsing_Configuration,
@@ -515,14 +525,20 @@ package body Gnatformat.Configuration is
       function Files_Vector_To_Files_Array
         (FV : Files_Vector) return GNATCOLL.VFS.File_Array
       is
-         Res : GNATCOLL.VFS.File_Array_Access :=
+         FA_Access : GNATCOLL.VFS.File_Array_Access :=
            new GNATCOLL.VFS.File_Array (1 .. 0);
       begin
          for F of FV loop
-            GNATCOLL.VFS.Append (Res, F);
+            GNATCOLL.VFS.Append (FA_Access, F);
          end loop;
 
-         return Res.all;
+         declare
+            FA : constant GNATCOLL.VFS.File_Array := FA_Access.all;
+         begin
+            GNATCOLL.VFS.Unchecked_Free (FA_Access);
+            return FA;
+         end;
+
       end Files_Vector_To_Files_Array;
 
    begin
