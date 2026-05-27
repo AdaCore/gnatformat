@@ -1029,7 +1029,7 @@ package body Gnatformat.Configuration is
                function To_Virtual_File
                  (File_Name : String) return GNATCOLL.VFS.Virtual_File
                is (GNATCOLL.VFS.Create_From_UTF8
-                     (File_Name, Normalize => False));
+                     (File_Name, Normalize => True));
 
             begin
                if Values = GPR2.Containers.Empty_Source_Value_List then
