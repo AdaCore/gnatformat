@@ -1,4 +1,4 @@
 description: |
-  Test the Override_Layout attribute.
+  Test of the Layout attribute.
 driver: gnatformat
 args: ["-P", "test/test.gpr", "--pipe"]
