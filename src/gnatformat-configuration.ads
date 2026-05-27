@@ -160,11 +160,6 @@ package Gnatformat.Configuration is
    --  Retrieves the override layout file array if this option is set or
    --  returns Empty_File_Array otherwise.
 
-   --  function Get_Override_Layout
-   --    (Self : Format_Options_Type) return GNATCOLL.VFS.File_Array;
-   --  --  Retrieves the override layout file array if this option is set or
-   --  --  returns Empty_File_Array otherwiise.
-
    function Get_Indentation
      (Self              : Format_Options_Type;
       Source_Filename   : String;
@@ -535,7 +530,7 @@ private
    function Into
      (Self : Basic_Format_Options_Type)
       return Prettier_Ada.Documents.Format_Options_Type;
-   --  Converts a Basic_Format_Options_Type into an equivalent
+   --  Converts a Basic_Format_Options_Type into an equivalen
    --  Prettier_Ada Format_Options.Type.
 
    function Into
