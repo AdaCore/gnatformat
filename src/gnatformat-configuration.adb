@@ -54,9 +54,12 @@ package body Gnatformat.Configuration is
    function Get_Layout_File
      (Actual : Gnatformat.Configuration.Layout_Kind)
       return GNATCOLL.VFS.Virtual_File
-   is (if Actual = Tall
-       then Libadalang.Generic_API.Unparsing.Builtin_Overridings.Tall
-       else GNATCOLL.VFS.No_File);
+   is (case Actual is
+         when Default =>
+           GNATCOLL.VFS.Create_From_UTF8
+             (Libadalang.Generic_API.Unparsing.Default_Configuration_Filename),
+         when Tall    =>
+           Libadalang.Generic_API.Unparsing.Builtin_Overridings.Tall);
    --  Returns the predefined tall layout file if the actual layout is set
    --  to Tall through switch or GPR attribute or No_File otherwise.
 
@@ -76,8 +79,7 @@ package body Gnatformat.Configuration is
    begin
       --  Handles layout if set
       if Format_Options.Layout.Is_Set
-        and then
-          Get_Layout_File (Format_Options.Layout.Value) /= GNATCOLL.VFS.No_File
+        and then Format_Options.Layout.Value /= Default
       then
          GNATCOLL.VFS.Append
            (Overriddings_Array_Access,
@@ -525,22 +527,31 @@ package body Gnatformat.Configuration is
       function Files_Vector_To_Files_Array
         (FV : Files_Vector) return GNATCOLL.VFS.File_Array
       is
-         FA_Access : GNATCOLL.VFS.File_Array_Access :=
-           new GNATCOLL.VFS.File_Array (1 .. 0);
+         use Files_Vectors;
+
       begin
-         for F of FV loop
-            GNATCOLL.VFS.Append (FA_Access, F);
-         end loop;
+         if FV = Files_Vectors.Empty_Vector then
+            return GNATCOLL.VFS.Empty_File_Array;
+         end if;
 
          declare
-            FA : constant GNATCOLL.VFS.File_Array := FA_Access.all;
+            FA_Access : GNATCOLL.VFS.File_Array_Access :=
+              new GNATCOLL.VFS.File_Array (1 .. 0);
          begin
-            GNATCOLL.VFS.Unchecked_Free (FA_Access);
-            return FA;
+
+            for F of FV loop
+               GNATCOLL.VFS.Append (FA_Access, F);
+            end loop;
+
+            declare
+               FA : constant GNATCOLL.VFS.File_Array := FA_Access.all;
+            begin
+               GNATCOLL.VFS.Unchecked_Free (FA_Access);
+               return FA;
+            end;
          end;
 
       end Files_Vector_To_Files_Array;
-
    begin
       return
         (if Into (Self, Source_Filename, Language_Fallback)
@@ -551,7 +562,9 @@ package body Gnatformat.Configuration is
              (Into (Self, Source_Filename, Language_Fallback)
                 .Override_Layout
                 .Value)
-         else GNATCOLL.VFS.Empty_File_Array);
+         else
+           Files_Vector_To_Files_Array
+             (Default_Basic_Format_Options.Override_Layout.Value));
    end Get_Override_Layout;
 
    ---------------------
@@ -1045,7 +1058,7 @@ package body Gnatformat.Configuration is
                function To_Virtual_File
                  (File_Name : String) return GNATCOLL.VFS.Virtual_File
                is (GNATCOLL.VFS.Create_From_UTF8
-                     (File_Name, Normalize => True));
+                     (File_Name, Normalize => False));
 
             begin
                if Values = GPR2.Containers.Empty_Source_Value_List then
@@ -1462,10 +1475,34 @@ package body Gnatformat.Configuration is
    procedure With_Override_Layout
      (Self                  : in out Format_Options_Builder_Type;
       Override_Layout_Files : Optional_Files_Vector;
-      Language              : Supported_Languages) is
+      Language              : Supported_Languages)
+   is
+      use GNATCOLL.VFS;
+      function Resolve_File (F : Virtual_File) return Virtual_File
+      is (if Self.Project.Is_Set
+          then
+            (declare
+               Project_File : constant GNATCOLL.VFS.Virtual_File :=
+                 GNATCOLL.VFS.Create_From_UTF8
+                   (Self.Project.Value.Path_Name.String_Value);
+             begin
+               GNATCOLL.VFS.Join (Project_File.Dir, F))
+          else F);
+      --  Resolves the override layout files against the project file location
+
+      Resolved_Override_Layout_Files : Optional_Files_Vector;
    begin
+      Resolved_Override_Layout_Files :=
+        (if Override_Layout_Files.Is_Set
+         then
+           Optional_Files_Vector'
+             (Is_Set => True,
+              Value  =>
+                [for F of Override_Layout_Files.Value => Resolve_File (F)])
+         else Override_Layout_Files);
+
       Self.Format_Options.Language (Language).Override_Layout :=
-        Override_Layout_Files;
+        Resolved_Override_Layout_Files;
    end With_Override_Layout;
 
    --------------------------
@@ -1475,17 +1512,41 @@ package body Gnatformat.Configuration is
    procedure With_Override_Layout
      (Self                  : in out Format_Options_Builder_Type;
       Override_Layout_Files : Optional_Files_Vector;
-      Source_Filename       : String) is
+      Source_Filename       : String)
+   is
+      use GNATCOLL.VFS;
+      function Resolve_File (F : Virtual_File) return Virtual_File
+      is (if Self.Project.Is_Set
+          then
+            (declare
+               Project_File : constant GNATCOLL.VFS.Virtual_File :=
+                 GNATCOLL.VFS.Create_From_UTF8
+                   (Self.Project.Value.Path_Name.String_Value);
+             begin
+               GNATCOLL.VFS.Join (Project_File.Dir, F))
+          else F);
+      --  Resolves the override layout files against the project file location
+
+      Resolved_Override_Layout_Files : Optional_Files_Vector;
    begin
+      Resolved_Override_Layout_Files :=
+        (if Override_Layout_Files.Is_Set
+         then
+           Optional_Files_Vector'
+             (Is_Set => True,
+              Value  =>
+                [for F of Override_Layout_Files.Value => Resolve_File (F)])
+         else Override_Layout_Files);
+
       if Self.Format_Options.Sources.Contains (Source_Filename) then
          Self.Format_Options.Sources.Reference (Source_Filename)
            .Override_Layout :=
-           Override_Layout_Files;
+           Resolved_Override_Layout_Files;
       else
          Self.Format_Options.Sources.Insert
            (Source_Filename,
             (Undefined_Basic_Format_Options
-             with delta Override_Layout => Override_Layout_Files));
+             with delta Override_Layout => Resolved_Override_Layout_Files));
       end if;
    end With_Override_Layout;
 

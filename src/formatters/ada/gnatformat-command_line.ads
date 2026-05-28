@@ -289,7 +289,8 @@ package Gnatformat.Command_Line is
         Default_Val => 0);
 
    --  These two packages are needed to handle the configurability of the
-   --  formatting through the switches --layout and --override-layout
+   --  formatting through the switches --layout and --override-layout.
+
    package Layout is new
      Parse_Option
        (Parser      => Parser,
