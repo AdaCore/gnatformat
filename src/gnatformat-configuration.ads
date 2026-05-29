@@ -4,6 +4,7 @@
 --
 
 with Ada.Containers.Indefinite_Hashed_Sets;
+with Ada.Containers.Vectors;
 with Ada.Strings.Hash;
 with Ada.Strings.Unbounded;
 
@@ -25,8 +26,6 @@ private with Ada.Containers.Indefinite_Hashed_Maps;
 
 private with GPR2.View_Ids;
 
-private with Libadalang.Generic_API;
-
 package Gnatformat.Configuration is
 
    Default_Charset : constant String := "iso-8859-1";
@@ -38,10 +37,12 @@ package Gnatformat.Configuration is
    --
    --     - package Format
    --     - atribute Width, Indentation, Indentation_Kind,
-   --       Indentation_Continuation, End_Of_Line, Charset and Keyword_Casing
+   --       Indentation_Continuation, End_Of_Line, Charset, Keyword_Casing,
+   --       Layout and Override_Layout
    --       indexed by language or source.
 
    type Indentation_Kind is (Spaces, Tabs);
+   type Layout_Kind is (Default, Tall);
    type End_Of_Line_Kind is (LF, CRLF);
    type Keyword_Casing_Kind is (Keep, Lower, Upper);
 
@@ -49,6 +50,10 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (Indentation_Kind);
    subtype Optional_Indentation_Kind is
      Optional_Indentation_Kinds.Optional_Type;
+
+   package Optional_Layouts is new Gnatformat.Utils.Optional (Layout_Kind);
+   subtype Optional_Layout is Optional_Layouts.Optional_Type;
+   Default_Layout : constant Layout_Kind := Default;
 
    package Optional_End_Of_Line_Kinds is new
      Gnatformat.Utils.Optional (End_Of_Line_Kind);
@@ -77,6 +82,15 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (String_Hashed_Set);
    subtype Optional_String_Hashed_Set is
      Optional_String_Hashed_Sets.Optional_Type;
+
+   use type GNATCOLL.VFS.Virtual_File;
+   package Files_Vectors is new
+     Ada.Containers.Vectors (Positive, GNATCOLL.VFS.Virtual_File);
+   subtype Files_Vector is Files_Vectors.Vector;
+
+   package Optional_Files_Vectors is new
+     Gnatformat.Utils.Optional (Files_Vector);
+   subtype Optional_Files_Vector is Optional_Files_Vectors.Optional_Type;
 
    type Format_Options_Type is private;
 
@@ -129,6 +143,22 @@ package Gnatformat.Configuration is
    --  of sources to be ignored) of the file used to build the ignore option.
    --  Defaults to an empty String_Hashed_Set is Format_Options_Type was not
    --  built with an ignore option.
+
+   function Get_Layout
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Layout_Kind;
+   --  Retrieves the layout option if specified otherwise the function returns
+   --  the value defined by Default_Basic_Format_Options.Layout.Value.
+
+   function Get_Override_Layout
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return GNATCOLL.VFS.File_Array;
+   --  Retrieves the override layout file array if this option is set or
+   --  returns Empty_File_Array otherwise.
 
    function Get_Indentation
      (Self              : Format_Options_Type;
@@ -307,6 +337,30 @@ package Gnatformat.Configuration is
       Ignore : GNATCOLL.VFS.Virtual_File);
    --  Sets the Ignore option
 
+   procedure With_Layout
+     (Self     : in out Format_Options_Builder_Type;
+      Layout   : Layout_Kind;
+      Language : Supported_Languages);
+   --  Sets the Layout option
+
+   procedure With_Layout
+     (Self            : in out Format_Options_Builder_Type;
+      Layout          : Layout_Kind;
+      Source_Filename : String);
+   --  Sets the Layout option
+
+   procedure With_Override_Layout
+     (Self                  : in out Format_Options_Builder_Type;
+      Override_Layout_Files : Optional_Files_Vector;
+      Language              : Supported_Languages);
+   --  Sets the Override-Layout option
+
+   procedure With_Override_Layout
+     (Self                  : in out Format_Options_Builder_Type;
+      Override_Layout_Files : Optional_Files_Vector;
+      Source_Filename       : String);
+   --  Sets the Override-Layout option
+
    procedure With_Indentation
      (Self        : in out Format_Options_Builder_Type;
       Indentation : Positive;
@@ -419,6 +473,15 @@ private
    Q_Ignore_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Ignore_Attribute_Id);
 
+   Layout_Attribute_Id   : constant GPR2.Attribute_Id := GPR2."+" ("layout");
+   Q_Layout_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Layout_Attribute_Id);
+
+   Override_Layout_Attribute_Id   : constant GPR2.Attribute_Id :=
+     GPR2."+" ("override_layout");
+   Q_Override_Layout_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Override_Layout_Attribute_Id);
+
    Indentation_Attribute_Id   : constant GPR2.Attribute_Id :=
      GPR2."+" ("indentation");
    Q_Indentation_Attribute_Id : constant GPR2.Q_Attribute_Id :=
@@ -460,12 +523,14 @@ private
         (Is_Set => False);
       Keyword_Casing           : Optional_Keyword_Casing_Kind :=
         (Is_Set => False);
+      Layout                   : Optional_Layout := (Is_Set => False);
+      Override_Layout          : Optional_Files_Vector := (Is_Set => False);
    end record;
 
    function Into
      (Self : Basic_Format_Options_Type)
       return Prettier_Ada.Documents.Format_Options_Type;
-   --  Converts a Basic_Format_Options_Type into an equivalent
+   --  Converts a Basic_Format_Options_Type into an equivalen
    --  Prettier_Ada Format_Options.Type.
 
    function Into
@@ -491,7 +556,10 @@ private
         (Is_Set => True,
          Value  =>
            Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)),
-      Keyword_Casing           => (Is_Set => True, Value => Keep));
+      Keyword_Casing           => (Is_Set => True, Value => Keep),
+      Layout                   => (Is_Set => True, Value => Default_Layout),
+      Override_Layout          =>
+        (Is_Set => True, Value => Files_Vectors.Empty_Vector));
 
    Undefined_Basic_Format_Options : constant Basic_Format_Options_Type :=
      (Width                    => (Is_Set => False),
@@ -500,7 +568,9 @@ private
       Indentation_Continuation => (Is_Set => False),
       End_Of_Line              => (Is_Set => False),
       Charset                  => (Is_Set => False),
-      Keyword_Casing           => (Is_Set => False));
+      Keyword_Casing           => (Is_Set => False),
+      Layout                   => (Is_Set => False),
+      Override_Layout          => (Is_Set => False));
 
    package String_To_Basic_Format_Options_Hash_Maps is new
      Ada.Containers.Indefinite_Hashed_Maps

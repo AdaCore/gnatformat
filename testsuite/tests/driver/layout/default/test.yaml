@@ -1,0 +1,9 @@
+description: Test the --layout switch with default
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--layout",
+    "default"
+  ]

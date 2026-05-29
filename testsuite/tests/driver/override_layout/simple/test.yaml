@@ -1,0 +1,9 @@
+description: Test the --override-layout switch
+driver: gnatformat
+args:
+  [
+    "test.adb",
+    "--pipe",
+    "--override-layout",
+    "test.json"
+  ]

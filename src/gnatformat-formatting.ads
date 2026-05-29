@@ -27,8 +27,7 @@ package Gnatformat.Formatting is
      (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
       Format_Options : Prettier_Ada.Documents.Format_Options_Type;
       Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Formats the given Unit using the provided Format_Options and
    --  Configuation.
@@ -37,8 +36,7 @@ package Gnatformat.Formatting is
      (Unit           : Libadalang.Analysis.Analysis_Unit;
       Format_Options : Gnatformat.Configuration.Format_Options_Type;
       Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Formats the given Unit using the provided Format_Options and
    --  Configuration.
@@ -48,8 +46,7 @@ package Gnatformat.Formatting is
       Selection_Range         : Langkit_Support.Slocs.Source_Location_Range;
       Format_Options          : Gnatformat.Configuration.Format_Options_Type;
       Configuration           :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration;
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
       Use_Initial_Indentation : Boolean := False)
       return Gnatformat.Edits.Formatting_Edit_Type;
    --  Range formats a section of Unit using the provided Format_Options and

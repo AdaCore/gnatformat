@@ -1,0 +1,4 @@
+description: |
+  Test of the Layout attribute.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

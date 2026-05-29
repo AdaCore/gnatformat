@@ -1,0 +1,10 @@
+package body Test is
+
+   procedure My_proc
+     (A : Integer;
+      B : Boolean;
+      C : Float)
+   is null;
+
+end Test;
+

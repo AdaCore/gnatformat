@@ -36,8 +36,7 @@ package body Gnatformat.Formatting is
      (Unit           : Libadalang.Analysis.Analysis_Unit;
       Format_Options : Gnatformat.Configuration.Format_Options_Type;
       Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String
    is (Format
          (Libadalang.Generic_API.To_Generic_Unit (Unit),
@@ -588,8 +587,7 @@ package body Gnatformat.Formatting is
      (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
       Format_Options : Prettier_Ada.Documents.Format_Options_Type;
       Configuration  :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String
    is
       Document : constant Prettier_Ada.Documents.Document_Type :=
@@ -611,8 +609,7 @@ package body Gnatformat.Formatting is
       Options          : Gnatformat.Configuration.Format_Options_Type;
       --  Unparsing_Config_File : GNATCOLL.VFS.Virtual_File)
       Unparsing_Config :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Gnatformat.Edits.Formatting_Edit_Type;
    --  Gnatformat library entry point for the whole Unit formatting
 
@@ -677,8 +674,7 @@ package body Gnatformat.Formatting is
      (Unit             : Libadalang.Analysis.Analysis_Unit;
       Options          : Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Config :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration)
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Gnatformat.Edits.Formatting_Edit_Type
    is
       use Ada.Strings.Unbounded;
@@ -1381,8 +1377,7 @@ package body Gnatformat.Formatting is
       Selection_Range         : Langkit_Support.Slocs.Source_Location_Range;
       Format_Options          : Gnatformat.Configuration.Format_Options_Type;
       Configuration           :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Gnatformat.Configuration.Default_Unparsing_Configuration;
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
       Use_Initial_Indentation : Boolean := False)
       return Gnatformat.Edits.Formatting_Edit_Type
    is

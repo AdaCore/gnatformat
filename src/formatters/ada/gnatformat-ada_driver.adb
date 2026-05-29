@@ -193,8 +193,8 @@ begin
 exception
 
    when Gnatformat.Bail.Bail_Out =>
-      --  Deliberate non-local exit. Falling through here lets finalization run.
-      --  See Gnatformat.Bail for the rationale.
+      --  Deliberate non-local exit. Falling through here lets finalization
+      --  run. See Gnatformat.Bail for the rationale.
       null;
 
    when E : others =>
