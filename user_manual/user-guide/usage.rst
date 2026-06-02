@@ -47,6 +47,16 @@ The specific options allowing to customize the formatting of your sources are:
   In the absence of this option, the choice by default is ``spaces``.
 * ``--indentation-continuation``: allows to specify the continuation line indentation size.
   In the absence of this option, the default value is ``indentation - 1``.
+* ``--keyword-casing``: allows to choose the Ada language keyword casing through the options:
+  ``keep``  - which preserves the current casing of keywords, 
+  ``lower`` - which convert all the keywords in lower case  and 
+  ``upper`` - which converst all the keywords in upper case.
+  In the absence of this option, the default value is ``keep``.
+* ``--layout``: allows to choose one of the builtin layouts (i.e., ``default`` or ``tall``).
+  In the absence of this option, the default value is ``default``.
+* ``--override-layout``: allows to define the usage of custom configurations for specific nodes. 
+  Pass your custom configuration files (:file:`.json`) after this switch to rewrite the nodes 
+  using your specified formatting preferences.
 * ``--end-of-line``: allows you to choose the end of line sequence (i.e., ``lf`` or ``crlf``).
   In the absence of this option, the default value is ``lf``.
 * ``--charset``: allows you to specify the charset to use for source decoding.
@@ -65,7 +75,7 @@ As a library
 
 The formatting functionality is also available via a library.
 
-In order to use it as a libray, the API is located in the (:file:`gnatformat-formattng.ads`)
+In order to use it as a libray, the API is located in the (:file:`gnatformat-formatting.ads`)
 and the entry point is the function ``Gnatformat.Formatting.Format`` having the following interface::
 
   function Format

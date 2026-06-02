@@ -23,6 +23,16 @@ The formatting of your sources can be customized by the following options:
 * ``--indentation-continuation`` is an option allowing to specify the continuation line
   indentation size in case of your source code line should break relatively to the previous line.
   By default this value is set to ``indentation - 1``.
+* ``--keyword-casing``: allows to choose the Ada language keyword casing through the options:
+  ``keep``  - which preserves the current casing of keywords, 
+  ``lower`` - which convert all the keywords in lower case  and 
+  ``upper`` - which converst all the keywords in upper case.
+  By default this option is set to ``keep``.
+* ``--layout``: allows to choose one of the builtin layouts (i.e., ``default`` or ``tall``).
+  By default is set to ``default``.
+* ``--override-layout``: allows to define the usage of custom configurations for specific nodes. 
+  Pass your custom configuration files (:file:`.json`) after this switch to rewrite the nodes 
+  using your specified formatting preferences.
 * ``--end-of-line`` is an option allowing to choose the end of line sequence in your file
   (i.e., ``lf`` or ``crlf``). By default, this value is set to ``lf``.
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
@@ -68,6 +78,18 @@ The lines below shows the implementation of the ``Format`` package as part of th
     for Indentation_Kind ("Ada") use "spaces"; -- this is the default
 
     for Indentation_Kind ("some_source.ads") use "tabs";
+
+    for Keyword_Casing ("Ada") use "keep"; -- this is the default
+
+    for Keyword_Casing ("some_source.ads") use "lower";
+
+    for Layout ("Ada") use "default"; -- this is the default
+
+    for Layout ("some_source.ads") use "tall";
+    
+    for Override_Layout ("Ada") use ("custom_config.json", other_custom_config.json);
+
+    for Override_Layout ("some_source.ads") use ("custom_config.json");
 
     for Width ("Ada") use "79"; -- this is the default
 
