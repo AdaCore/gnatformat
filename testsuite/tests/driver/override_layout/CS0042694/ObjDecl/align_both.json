@@ -30,7 +30,7 @@
                       "kind": "group",
                       "document": [
                         {
-                          "kind": "ifKind",
+                          "kind": "match",
                           "field": "f_has_aliased",
                           "default": {
                             "kind": "recurse_field",
@@ -54,7 +54,7 @@
                           ]
                         },
                         {
-                          "kind": "ifKind",
+                          "kind": "match",
                           "field": "f_has_constant",
                           "default": {
                             "kind": "recurse_field",
