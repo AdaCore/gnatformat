@@ -33,7 +33,7 @@ The available global options are:
 * ``--check``: exit with error code 1 if the input is not formatted correctly and
   print the name of files that would be formatted.
 * ``--pipe, -p``: print the result to stdout instead of editing the files on disk.
-* ``--keep-going, -k``: print the result to stdout instead of editing the files on disk.
+* ``--keep-going, -k``: keep going after errors formatting a source file.
 
 The specific options allowing to customize the formatting of your sources are:
 
