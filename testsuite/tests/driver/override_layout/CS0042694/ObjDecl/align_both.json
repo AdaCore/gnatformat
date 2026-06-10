@@ -29,53 +29,41 @@
                     {
                       "kind": "group",
                       "document": [
+                        {"kind": "recurse_field", "field": "f_has_aliased"},
                         {
-                          "kind": "match",
-                          "field": "f_has_aliased",
-                          "default": {
-                            "kind": "recurse_field",
-                            "field": "f_has_aliased"
-                          },
-                          "absent": {
-                            "kind": "recurse_field",
-                            "field": "f_has_aliased"
-                          },
-                          "matchers": [
-                            {
-                              "kind": "AliasedPresent",
-                              "document": [
-                                {
-                                  "kind": "recurse_field",
-                                  "field": "f_has_aliased"
-                                },
-                                "whitespace"
-                              ]
+                          "kind": "if",
+                          "condition": {
+                            "kind": "is_a",
+                            "node": {
+                              "kind": "eval_member",
+                              "member": "f_has_aliased",
+                              "prefix": "this_node"
+                            },
+                            "pattern": {
+                              "kind": "node",
+                              "type": "AliasedPresent"
                             }
-                          ]
+                          },
+                          "then": "whitespace",
+                          "else": []
                         },
+                        {"kind": "recurse_field", "field": "f_has_constant"},
                         {
-                          "kind": "match",
-                          "field": "f_has_constant",
-                          "default": {
-                            "kind": "recurse_field",
-                            "field": "f_has_constant"
-                          },
-                          "absent": {
-                            "kind": "recurse_field",
-                            "field": "f_has_constant"
-                          },
-                          "matchers": [
-                            {
-                              "kind": "ConstantPresent",
-                              "document": [
-                                {
-                                  "kind": "recurse_field",
-                                  "field": "f_has_constant"
-                                },
-                                "whitespace"
-                              ]
+                          "kind": "if",
+                          "condition": {
+                            "kind": "is_a",
+                            "node": {
+                              "kind": "eval_member",
+                              "member": "f_has_constant",
+                              "prefix": "this_node"
+                            },
+                            "pattern": {
+                              "kind": "node",
+                              "type": "ConstantPresent"
                             }
-                          ]
+                          },
+                          "then": "whitespace",
+                          "else": []
                         },
                         {
                           "kind": "recurse_field",
