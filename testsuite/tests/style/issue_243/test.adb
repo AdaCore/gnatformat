@@ -1,0 +1,75 @@
+procedure test is
+
+type My_Enum is (A, B, C, D, E, F);
+Something : My_Enum := A;
+Val       : My_Enum;
+
+begin
+
+case Something is
+  when A =>
+    --  comment A
+
+    Val := A;   
+
+when B =>
+    --  comment B
+    Val := B;
+
+when C =>
+
+    --  comment C
+
+    Val := C;
+
+
+when D =>
+
+    --  comment D
+    Val := D;
+
+when E =>
+
+    --  comment E
+    Val := E;
+
+when others =>
+    --  comment others
+    Val := F;
+  
+end case;
+
+
+Val := (case Something is
+  when A =>
+    --  comment A
+
+    A,   
+
+when B =>
+    --  comment B
+    B,
+
+when C =>
+
+    --  comment C
+
+   C,
+
+
+when D =>
+
+    --  comment D
+   D,
+
+when E =>
+
+    --  comment E
+    E,
+
+when others =>
+    --  comment others
+    F);
+ 
+
+end test;

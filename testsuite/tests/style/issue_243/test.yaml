@@ -1,0 +1,4 @@
+description: |  
+  Testing the comments alignment in CaseStmt and CaseExpr
+driver: gnatformat
+args: ["test.adb", "--pipe"]
