@@ -6,6 +6,3 @@ args: [
        "--indentation-kind", "tabs",
        "--pipe"
       ]
-control:
-- [XFAIL, "True",
-   "erroneous formatting when tabs are used: see bug eng/ide/gnatformat#118"]

@@ -10,7 +10,7 @@ package Examples is
       Max    : Integer;
       -- Prefix
       Prefix : String)
-      --  Is Length of Prefix between Min and Max?
+     --  Is Length of Prefix between Min and Max?
       return Boolean
    with
      --  Precondition Min <= Max
