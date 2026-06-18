@@ -1678,7 +1678,7 @@ package body Pp.Formatting is
                      end if;
                   else
                      Delete_Last (Tokns);
-                     --  It was appended above
+                  --  It was appended above
                   end if;
                end;
             else
@@ -2764,8 +2764,8 @@ package body Pp.Formatting is
                   end if;
                else
                   Append_Tokn (New_Tokns, False_End_Of_Line, "eol extra");
-                  --  This is needed because every comment in New_Tokns must be
-                  --  followed by EOL_Token.
+               --  This is needed because every comment in New_Tokns must be
+               --  followed by EOL_Token.
                end if;
             end;
             Next_ss (Src_Tok);
