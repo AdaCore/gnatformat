@@ -1,0 +1,5 @@
+description: Identifier_Casing definition leaves identifiers inside
+  formatting-off regions unchanged (those regions are restored from the
+  original source); identifiers outside the off region are still recased
+driver: gnatformat
+args: ["test.adb", "--pipe", "--identifier-casing", "definition"]

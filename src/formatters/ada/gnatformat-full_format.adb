@@ -14,6 +14,7 @@ with GNAT.Traceback.Symbolic;
 with Gnatformat.Bail;
 with Gnatformat.Formatting;
 with Gnatformat.Helpers;
+with Gnatformat.Identifier_Casing;
 with Gnatformat.Project;
 
 with GPR2;
@@ -110,9 +111,42 @@ package body Gnatformat.Full_Format is
       Preprocessor_Data : constant Preprocessor_Data_Record :=
         Get_Preprocessor_Data;
 
-      LAL_Context : constant Libadalang.Analysis.Analysis_Context :=
-        Libadalang.Analysis.Create_Context
-          (File_Reader => Preprocessor_Data.File_Reader);
+      Cached_Resolution_Context : Libadalang.Analysis.Analysis_Context :=
+        Libadalang.Analysis.No_Analysis_Context;
+      --  Memoization slot for the Resolution_Context function below.
+
+      function Resolution_Context return Libadalang.Analysis.Analysis_Context;
+      --  Context for file resolution and identifier-casing normalization. It
+      --  carries the preprocessor file reader and, when available, a project
+      --  unit provider, so that name resolution works across units.
+      --
+      --  Built lazily on first use: it is only needed when a source enables
+      --  identifier casing.
+
+      ------------------------
+      -- Resolution_Context --
+      ------------------------
+
+      function Resolution_Context return Libadalang.Analysis.Analysis_Context
+      is
+         use type Libadalang.Analysis.Analysis_Context;
+
+      begin
+         if Cached_Resolution_Context = Libadalang.Analysis.No_Analysis_Context
+         then
+            Cached_Resolution_Context :=
+              Gnatformat.Project.Create_Resolution_Context
+                (Project_Tree, Preprocessor_Data.File_Reader);
+         end if;
+
+         return Cached_Resolution_Context;
+      end Resolution_Context;
+
+      Format_Context : constant Libadalang.Analysis.Analysis_Context :=
+        Libadalang.Analysis.Create_Context;
+      --  Context that provides the analysis units handed to the formatter.
+      --  Formatting is purely syntactic, so this context needs neither a unit
+      --  provider nor a file reader.
 
       Project_Format_Options_Cache :
         Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
@@ -181,13 +215,22 @@ package body Gnatformat.Full_Format is
            Langkit_Support_Unparsing.Unparsing_Configuration)
          return Format_Source_Result
       is
-         Charset : constant String :=
+         Charset           : constant String :=
            Ada.Strings.Unbounded.To_String
              (Gnatformat.Configuration.Get_Charset
                 (Project_Formatting_Config, Source.Display_Base_Name));
-         Unit    : constant Libadalang.Analysis.Analysis_Unit :=
-           LAL_Context.Get_From_File
-             (Source.Display_Full_Name (Normalize => True), Charset);
+         Identifier_Casing :
+           constant Gnatformat.Configuration.Identifier_Casing_Kind :=
+             Gnatformat.Configuration.Get_Identifier_Casing
+               (Project_Formatting_Config, Source.Display_Base_Name);
+         Unit              : constant Libadalang.Analysis.Analysis_Unit :=
+           (case Identifier_Casing is
+              when Gnatformat.Configuration.Definition =>
+                Resolution_Context.Get_From_File
+                  (Source.Display_Full_Name (Normalize => True), Charset),
+              when Gnatformat.Configuration.Keep       =>
+                Format_Context.Get_From_File
+                  (Source.Display_Full_Name (Normalize => True), Charset));
 
       begin
          if Unit.Has_Diagnostics then
@@ -210,7 +253,11 @@ package body Gnatformat.Full_Format is
              (Success          => True,
               Formatted_Source =>
                 Gnatformat.Formatting.Format
-                  (Unit           => Unit,
+                  (Unit           =>
+                     (case Identifier_Casing is
+                        when Gnatformat.Configuration.Definition =>
+                          Gnatformat.Identifier_Casing.Normalized_Unit (Unit),
+                        when Gnatformat.Configuration.Keep       => Unit),
                    Format_Options => Project_Formatting_Config,
                    Configuration  => Unparsing_Config));
       end Format_Source;
@@ -410,8 +457,18 @@ package body Gnatformat.Full_Format is
            ("Processing standalone source " & Source.Display_Base_Name);
 
          declare
-            Unit : constant Libadalang.Analysis.Analysis_Unit :=
-              LAL_Context.Get_From_File (Source.Display_Full_Name, Charset);
+            Identifier_Casing :
+              constant Gnatformat.Configuration.Identifier_Casing_Kind :=
+                Gnatformat.Configuration.Get_Identifier_Casing
+                  (Format_Options, Source.Display_Base_Name);
+            Unit              : constant Libadalang.Analysis.Analysis_Unit :=
+              (case Identifier_Casing is
+                 when Gnatformat.Configuration.Definition =>
+                   Resolution_Context.Get_From_File
+                     (Source.Display_Full_Name, Charset),
+                 when Gnatformat.Configuration.Keep       =>
+                   Format_Context.Get_From_File
+                     (Source.Display_Full_Name, Charset));
 
          begin
             if Unit.Has_Diagnostics then
@@ -438,14 +495,19 @@ package body Gnatformat.Full_Format is
                       Source.Display_Base_Name,
                       Format_Options,
                       Unparsing_Diagnostics);
-               Formatted_Source      :
-                 constant Ada.Strings.Unbounded.Unbounded_String :=
-                   Gnatformat.Formatting.Format
-                     (Unit           => Unit,
-                      Format_Options => Format_Options,
-                      Configuration  => Unparsing_Config);
+               Formatted_Source      : Ada.Strings.Unbounded.Unbounded_String;
 
             begin
+               Formatted_Source :=
+                 Gnatformat.Formatting.Format
+                   (Unit           =>
+                      (case Identifier_Casing is
+                         when Gnatformat.Configuration.Definition =>
+                           Gnatformat.Identifier_Casing.Normalized_Unit (Unit),
+                         when Gnatformat.Configuration.Keep       => Unit),
+                    Format_Options => Format_Options,
+                    Configuration  => Unparsing_Config);
+
                if Check then
                   declare
                      Original_Source : Ada.Strings.Unbounded.Unbounded_String;
@@ -581,7 +643,7 @@ package body Gnatformat.Full_Format is
             Gitdiff.Format_New_Lines
               (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
                Gitdiff.Context'
-                 (Lal_Ctx          => LAL_Context,
+                 (Lal_Ctx          => Resolution_Context,
                   Options          => Format_Options,
                   Unparsing_Config => Gitdiff_Unparsing_Config,
                   Charset          =>

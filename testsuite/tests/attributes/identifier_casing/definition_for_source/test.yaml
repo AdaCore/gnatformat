@@ -1,0 +1,4 @@
+description: Test the Identifier_Casing attribute with definition casing indexed
+  by a specific source filename.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

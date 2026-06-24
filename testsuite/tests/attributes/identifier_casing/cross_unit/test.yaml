@@ -1,0 +1,12 @@
+description: Test Identifier_Casing definition across units - references, dotted
+  names and spec/body declaration unification
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "test/pkg.ads",
+    "test/pkg.adb",
+    "test/main.adb",
+    "--pipe",
+  ]

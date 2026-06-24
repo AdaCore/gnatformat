@@ -1,0 +1,10 @@
+project Test is
+   for Source_Dirs use (".");
+   for Object_Dir use ".";
+   for Exec_Dir use ".";
+   for Main use ("main.adb");
+
+   package Format is
+      for Identifier_Casing ("Ada") use "definition";
+   end Format;
+end Test;

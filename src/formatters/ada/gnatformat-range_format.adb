@@ -9,6 +9,7 @@ with Ada.Text_IO;
 with Gnatformat.Bail;
 with Gnatformat.Formatting;
 with Gnatformat.Edits;
+with Gnatformat.Identifier_Casing;
 with Gnatformat.Project;
 
 with GPR2;
@@ -25,6 +26,34 @@ package body Gnatformat.Range_Format is
 
    package Langkit_Support_Unparsing renames
      Langkit_Support.Generic_API.Unparsing;
+
+   function Casing_Normalized_Unit
+     (Resolution_Context : Libadalang.Analysis.Analysis_Context;
+      Filename           : String;
+      Charset            : String) return Libadalang.Analysis.Analysis_Unit;
+   --  Parses Filename in Resolution_Context and returns its identifier-casing
+   --  normalized form (see Gnatformat.Identifier_Casing.Normalized_Unit).
+   --  Falls back to the parsed unit when it has diagnostics.
+
+   ----------------------------
+   -- Casing_Normalized_Unit --
+   ----------------------------
+
+   function Casing_Normalized_Unit
+     (Resolution_Context : Libadalang.Analysis.Analysis_Context;
+      Filename           : String;
+      Charset            : String) return Libadalang.Analysis.Analysis_Unit
+   is
+      Original_Unit : constant Libadalang.Analysis.Analysis_Unit :=
+        Resolution_Context.Get_From_File (Filename, Charset);
+
+   begin
+      if Original_Unit.Has_Diagnostics then
+         return Original_Unit;
+      end if;
+
+      return Gnatformat.Identifier_Casing.Normalized_Unit (Original_Unit);
+   end Casing_Normalized_Unit;
 
    --------------------
    --  Range_Format  --
@@ -89,13 +118,33 @@ package body Gnatformat.Range_Format is
                    (Project_Formatting_Config,
                     Project_Source.File.Display_Base_Name));
 
-            Context : constant Libadalang.Analysis.Analysis_Context :=
-              Libadalang.Analysis.Create_Context;
+            Source_Path : constant String :=
+              Project_Source.File.Display_Full_Name (Normalize => True);
+
+            Identifier_Casing :
+              constant Gnatformat.Configuration.Identifier_Casing_Kind :=
+                Gnatformat.Configuration.Get_Identifier_Casing
+                  (Project_Formatting_Config,
+                   Project_Source.File.Display_Base_Name);
+
+            Resolution_Context :
+              constant Libadalang.Analysis.Analysis_Context :=
+                (case Identifier_Casing is
+                   when Gnatformat.Configuration.Definition =>
+                     Gnatformat.Project.Create_Resolution_Context
+                       (Project_Tree),
+                   when Gnatformat.Configuration.Keep       =>
+                     Libadalang.Analysis.Create_Context);
 
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
-              Context.Get_From_File
-                (Project_Source.File.Display_Full_Name (Normalize => True),
-                 Charset);
+              (case Identifier_Casing is
+                 when Gnatformat.Configuration.Definition =>
+                   Casing_Normalized_Unit
+                     (Resolution_Context => Resolution_Context,
+                      Filename           => Source_Path,
+                      Charset            => Charset),
+                 when Gnatformat.Configuration.Keep       =>
+                   Resolution_Context.Get_From_File (Source_Path, Charset));
 
             Edits : Gnatformat.Edits.Formatting_Edit_Type;
 
@@ -148,12 +197,28 @@ package body Gnatformat.Range_Format is
          end if;
 
          declare
-            Context : constant Libadalang.Analysis.Analysis_Context :=
-              Libadalang.Analysis.Create_Context;
-            Unit    : constant Libadalang.Analysis.Analysis_Unit :=
-              Context.Get_From_File
-                (Source.Display_Full_Name (Normalize => True),
-                 Default_Charset);
+            Source_Path : constant String :=
+              Source.Display_Full_Name (Normalize => True);
+
+            Identifier_Casing :
+              constant Gnatformat.Configuration.Identifier_Casing_Kind :=
+                Gnatformat.Configuration.Get_Identifier_Casing
+                  (CLI_Formatting_Config, Source.Display_Base_Name);
+
+            Resolution_Context :
+              constant Libadalang.Analysis.Analysis_Context :=
+                Libadalang.Analysis.Create_Context;
+
+            Unit : constant Libadalang.Analysis.Analysis_Unit :=
+              (case Identifier_Casing is
+                 when Gnatformat.Configuration.Definition =>
+                   Casing_Normalized_Unit
+                     (Resolution_Context => Resolution_Context,
+                      Filename           => Source_Path,
+                      Charset            => Default_Charset),
+                 when Gnatformat.Configuration.Keep       =>
+                   Resolution_Context.Get_From_File
+                     (Source_Path, Default_Charset));
 
             Unparsing_Diagnostics :
               Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;

@@ -1,0 +1,8 @@
+main.adb(<SubpBody ["Main"] main.adb:3:1-7:10>) - 3:1-7:10
+^
+procedure Main is
+   X : Integer := Pkg.My_Constant;
+begin
+   Pkg.Do_Something;
+end Main;$
+

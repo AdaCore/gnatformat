@@ -16,9 +16,6 @@ with Prettier_Ada.Documents;      use Prettier_Ada.Documents;
 
 package body Gnatformat.Formatting is
 
-   --------------------------------------------------------------------
-   --  These structures concerns the ON/OFF formatting markers handling
-
    use type Ada.Containers.Count_Type;
 
    function "+" (Source : String) return Ada.Strings.Unbounded.Unbounded_String
@@ -80,8 +77,6 @@ package body Gnatformat.Formatting is
    subtype Unpaired_Diagnostic_Vector is Unpaired_Diagnostic_Vectors.Vector;
    package Unpaired_Info_Vector_Sorting is new
      Unpaired_Diagnostic_Vectors.Generic_Sorting ("<");
-
-   ----------------------------------------------------------------------------
 
    function Restore_Off_On_Sections
      (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
@@ -676,6 +671,23 @@ package body Gnatformat.Formatting is
            Original_Source_Markers,
            Formatted_Source,
            Formatted_Source_Markers);
+   end Restore_Off_On_Sections;
+
+   -----------------------------
+   -- Restore_Off_On_Sections --
+   -----------------------------
+
+   function Restore_Off_On_Sections
+     (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      return Ada.Strings.Unbounded.Unbounded_String
+   is
+      Unpaired_Markers_Ignored : Unpaired_Diagnostic_Vector := [];
+
+   begin
+      return
+        Restore_Off_On_Sections
+          (Original_Source, Formatted_Source, Unpaired_Markers_Ignored);
    end Restore_Off_On_Sections;
 
    ------------

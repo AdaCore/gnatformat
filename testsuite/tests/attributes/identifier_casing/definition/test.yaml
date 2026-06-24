@@ -1,0 +1,3 @@
+description: Test the Identifier_Casing attribute with definition casing
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

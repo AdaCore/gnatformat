@@ -9,6 +9,7 @@ with Ada.Containers.Indefinite_Ordered_Maps;
 with Ada.Containers.Vectors;
 with Ada.Directories;
 with Ada.Strings;
+with Ada.Strings.UTF_Encoding;
 
 with VSS.Characters;
 with VSS.Characters.Latin;
@@ -252,6 +253,124 @@ package body Gnatformat.Edits is
       end loop;
 
       return Result;
+   end Apply_Edits;
+
+   -----------------
+   -- Apply_Edits --
+   -----------------
+
+   function Apply_Edits
+     (Source : Ada.Strings.Unbounded.Unbounded_String;
+      Edits  : Text_Edit_Ordered_Set)
+      return Ada.Strings.Unbounded.Unbounded_String
+   is
+      Input_UTF_8   : constant Ada.Strings.UTF_Encoding.UTF_8_String :=
+        Ada.Strings.Unbounded.To_String (Source);
+      Input_Buffer  : constant VSS.Strings.Virtual_String :=
+        VSS.Strings.Conversions.To_Virtual_String (Input_UTF_8);
+      Output_Buffer : VSS.Strings.Virtual_String;
+
+      Lines          : constant VSS.String_Vectors.Virtual_String_Vector :=
+        Input_Buffer.Split_Lines (Keep_Terminator => True);
+      Lines_Iterator : constant VSS.String_Vectors.Reversible_Iterator :=
+        VSS.String_Vectors.Iterate (Lines);
+      Lines_Cursor   : VSS.String_Vectors.Cursor :=
+        VSS.String_Vectors.Last (Lines_Iterator);
+
+      Text_Edits_Cursor : Text_Edit_Ordered_Sets.Cursor := Edits.Last;
+      Current_Text_Edit : Text_Edit_Type :=
+        (if Text_Edit_Ordered_Sets.Has_Element (Text_Edits_Cursor)
+         then Text_Edit_Ordered_Sets.Element (Text_Edits_Cursor)
+         else No_Text_Edit);
+      Inside_Text_Edit  : Boolean := False;
+
+      Current_Line_Number    : Natural;
+      Current_Column_Number  : Natural;
+      Current_Line           : VSS.Strings.Virtual_String;
+      Current_Line_Length    : Natural;
+      Current_Line_Tabs_Size : Positive_Vector;
+
+      use type VSS.Characters.Virtual_Character;
+
+   begin
+      if Edits.Is_Empty then
+         return Source;
+      end if;
+
+      Current_Line_Tabs_Size.Reserve_Capacity (10);
+      Current_Line_Number := Lines.Length;
+      while VSS.String_Vectors.Has_Element (Lines_Cursor) loop
+         Current_Line := VSS.String_Vectors.Element (Lines, Lines_Cursor);
+
+         Compute_Line_Length
+           (Current_Line, Current_Line_Length, Current_Line_Tabs_Size);
+
+         Current_Column_Number := Current_Line_Length;
+
+         declare
+            Current_Line_Character_It :
+              VSS.Strings.Cursors.Iterators.Characters.Character_Iterator :=
+                Current_Line.After_Last_Character;
+
+         begin
+            while Current_Line_Character_It.Backward loop
+               if not Inside_Text_Edit then
+                  Output_Buffer.Prepend (Current_Line_Character_It.Element);
+               end if;
+
+               if Current_Text_Edit /= No_Text_Edit then
+                  if Current_Line_Number
+                    = Natural (Current_Text_Edit.Location.Start_Line)
+                    and then
+                      Current_Column_Number
+                      = Natural (Current_Text_Edit.Location.Start_Column)
+                  then
+                     Text_Edit_Ordered_Sets.Previous (Text_Edits_Cursor);
+                     if Text_Edit_Ordered_Sets.Has_Element (Text_Edits_Cursor)
+                     then
+                        Current_Text_Edit :=
+                          Text_Edit_Ordered_Sets.Element (Text_Edits_Cursor);
+                     else
+                        Current_Text_Edit := No_Text_Edit;
+                     end if;
+                     Inside_Text_Edit := False;
+                  end if;
+
+                  if Current_Line_Number
+                    = Natural (Current_Text_Edit.Location.End_Line)
+                    and then
+                      Current_Column_Number
+                      = Natural (Current_Text_Edit.Location.End_Column)
+                  then
+                     Output_Buffer.Prepend
+                       (VSS.Strings.Conversions.To_Virtual_String
+                          (Ada.Strings.UTF_Encoding.UTF_8_String'
+                             (Ada.Strings.Unbounded.To_String
+                                (Current_Text_Edit.Text))));
+                     Inside_Text_Edit := True;
+                  end if;
+               end if;
+
+               if Current_Line_Character_It.Element
+                 = VSS.Characters.Latin.Character_Tabulation
+               then
+                  Current_Column_Number :=
+                    @ - Current_Line_Tabs_Size.Last_Element;
+                  Current_Line_Tabs_Size.Delete_Last;
+               else
+                  Current_Column_Number := @ - 1;
+               end if;
+            end loop;
+         end;
+
+         Lines_Cursor :=
+           VSS.String_Vectors.Previous (Lines_Iterator, Lines_Cursor);
+         Current_Line_Number := @ - 1;
+      end loop;
+
+      return
+        Ada.Strings.Unbounded.To_Unbounded_String
+          (VSS.Strings.Conversions.To_UTF_8_String (Output_Buffer));
    end Apply_Edits;
 
    -------------------------

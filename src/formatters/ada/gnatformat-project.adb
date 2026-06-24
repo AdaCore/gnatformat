@@ -13,9 +13,41 @@ with GPR2.Path_Name;
 with GPR2.Project.View;
 with GPR2.Reporter.Console;
 
+with Libadalang.Project_Provider;
+
 package body Gnatformat.Project is
 
    use GNATCOLL.VFS;
+
+   -------------------------------
+   -- Create_Resolution_Context --
+   -------------------------------
+
+   function Create_Resolution_Context
+     (Project_Tree : GPR2.Project.Tree.Object;
+      File_Reader  : Langkit_Support.File_Readers.File_Reader_Reference :=
+        Langkit_Support.File_Readers.No_File_Reader_Reference)
+      return Libadalang.Analysis.Analysis_Context is
+   begin
+      if Project_Tree.Is_Defined then
+         begin
+            return
+              Libadalang.Analysis.Create_Context
+                (File_Reader   => File_Reader,
+                 Unit_Provider =>
+                   Libadalang.Project_Provider.Create_Project_Unit_Provider
+                     (Project_Tree));
+
+         exception
+            when others =>
+               Gnatformat_Trace.Trace
+                 ("Could not create a project unit provider; identifier "
+                  & "casing will only resolve intra-unit references");
+         end;
+      end if;
+
+      return Libadalang.Analysis.Create_Context (File_Reader => File_Reader);
+   end Create_Resolution_Context;
 
    --------------------------
    --  Set_General_Failed  --

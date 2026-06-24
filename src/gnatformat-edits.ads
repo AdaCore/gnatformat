@@ -59,6 +59,15 @@ package Gnatformat.Edits is
    procedure Apply_Edits (Edits : Formatting_Edits_Type);
    --  Applies Edits on disk
 
+   function Apply_Edits
+     (Source : Ada.Strings.Unbounded.Unbounded_String;
+      Edits  : Text_Edit_Ordered_Set)
+      return Ada.Strings.Unbounded.Unbounded_String;
+   --  Applies Edits to the in-memory Source (assumed UTF-8 encoded) and
+   --  returns the result. Source's bytes are preserved verbatim except for the
+   --  spans covered by Edits, so line endings, trivia and encoding are left
+   --  untouched outside of the edited locations.
+
    procedure Insert_Text_Edit
      (Map         : in out Formatting_Edits_Type;
       Source_Path : Source_Path_Type;

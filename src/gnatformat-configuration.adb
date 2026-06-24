@@ -305,6 +305,17 @@ package body Gnatformat.Configuration is
          "Keyword casing: keep | lower | upper");
 
       GPR2.Project.Registry.Attribute.Add
+        (Name                 => Q_Identifier_Casing_Attribute_Id,
+         Index_Type           =>
+           GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
+         Value                => GPR2.Project.Registry.Attribute.Single,
+         Value_Case_Sensitive => False,
+         Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
+      GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
+        (Q_Identifier_Casing_Attribute_Id,
+         "Identifier casing: keep | definition (default value = keep)");
+
+      GPR2.Project.Registry.Attribute.Add
         (Name                 => Q_Layout_Attribute_Id,
          Index_Type           =>
            GPR2.Project.Registry.Attribute.FileGlob_Or_Language_Index,
@@ -480,6 +491,24 @@ package body Gnatformat.Configuration is
         Into (Self, Source_Filename, Language_Fallback).Keyword_Casing
         or Default_Basic_Format_Options.Keyword_Casing.Value;
    end Get_Keyword_Casing;
+
+   ---------------------------
+   -- Get_Identifier_Casing --
+   ---------------------------
+
+   function Get_Identifier_Casing
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Identifier_Casing_Kind
+   is
+      use Optional_Identifier_Casing_Kinds;
+
+   begin
+      return
+        Into (Self, Source_Filename, Language_Fallback).Identifier_Casing
+        or Default_Basic_Format_Options.Identifier_Casing.Value;
+   end Get_Identifier_Casing;
 
    ----------------
    -- Get_Ignore --
@@ -790,6 +819,7 @@ package body Gnatformat.Configuration is
       use type Optional_End_Of_Line_Kind;
       use type Optional_Unbounded_String;
       use type Optional_Keyword_Casing_Kind;
+      use type Optional_Identifier_Casing_Kind;
       use type Optional_Layout;
       use type Optional_Files_Vector;
    begin
@@ -800,6 +830,7 @@ package body Gnatformat.Configuration is
       Target.End_Of_Line := Source.End_Of_Line or @;
       Target.Charset := Source.Charset or @;
       Target.Keyword_Casing := Source.Keyword_Casing or @;
+      Target.Identifier_Casing := Source.Identifier_Casing or @;
 
       --  Handling rewrite of Layout and Override_Layout values
       Target.Layout := Source.Layout or @;
@@ -949,6 +980,43 @@ package body Gnatformat.Configuration is
       end if;
    end With_Keyword_Casing;
 
+   ----------------------------
+   -- With_Identifier_Casing --
+   ----------------------------
+
+   procedure With_Identifier_Casing
+     (Self              : in out Format_Options_Builder_Type;
+      Identifier_Casing : Gnatformat.Configuration.Identifier_Casing_Kind;
+      Language          : Supported_Languages) is
+   begin
+      Self.Format_Options.Language (Language).Identifier_Casing :=
+        (Is_Set => True, Value => Identifier_Casing);
+   end With_Identifier_Casing;
+
+   ----------------------------
+   -- With_Identifier_Casing --
+   ----------------------------
+
+   procedure With_Identifier_Casing
+     (Self              : in out Format_Options_Builder_Type;
+      Identifier_Casing : Gnatformat.Configuration.Identifier_Casing_Kind;
+      Source_Filename   : String) is
+   begin
+      if Self.Format_Options.Sources.Contains (Source_Filename) then
+         Self.Format_Options.Sources.Reference (Source_Filename)
+           .Identifier_Casing :=
+           (Is_Set => True, Value => Identifier_Casing);
+
+      else
+         Self.Format_Options.Sources.Insert
+           (Source_Filename,
+            (Undefined_Basic_Format_Options
+             with delta
+               Identifier_Casing =>
+                 (Is_Set => True, Value => Identifier_Casing)));
+      end if;
+   end With_Identifier_Casing;
+
    -------------------------
    -- With_From_Attribute --
    -------------------------
@@ -983,6 +1051,7 @@ package body Gnatformat.Configuration is
             Indentation_Kind,
             Indentation_Continuation,
             Keyword_Casing,
+            Identifier_Casing,
             Width,
             Layout,
             Override_Layout,
@@ -1012,6 +1081,10 @@ package body Gnatformat.Configuration is
                when Keyword_Casing =>
                   Keyword_Casing :
                     Gnatformat.Configuration.Keyword_Casing_Kind;
+
+               when Identifier_Casing =>
+                  Identifier_Casing :
+                    Gnatformat.Configuration.Identifier_Casing_Kind;
 
                when Width =>
                   Width : Positive;
@@ -1127,6 +1200,13 @@ package body Gnatformat.Configuration is
                     Gnatformat.Configuration.Keyword_Casing_Kind'Value
                       (Raw_Attribute_Value));
 
+            elsif Q_Attribute_Id = Q_Identifier_Casing_Attribute_Id then
+               return
+                 (Kind              => Identifier_Casing,
+                  Identifier_Casing =>
+                    Gnatformat.Configuration.Identifier_Casing_Kind'Value
+                      (Raw_Attribute_Value));
+
             elsif Q_Attribute_Id = Q_Ignore_Attribute_Id then
                return
                  (Kind   => Ignore,
@@ -1235,6 +1315,14 @@ package body Gnatformat.Configuration is
                   Self.With_Keyword_Casing
                     (Attribute_Value.Keyword_Casing, Ada_Language);
 
+               when Identifier_Casing        =>
+                  Gnatformat_Trace.Trace
+                    (Identifier_Casing'Image
+                     & " = "
+                     & Attribute_Value.Identifier_Casing'Image);
+                  Self.With_Identifier_Casing
+                    (Attribute_Value.Identifier_Casing, Ada_Language);
+
                when Width                    =>
                   Gnatformat_Trace.Trace
                     (Width'Image & " = " & Attribute_Value.Width'Image);
@@ -1315,6 +1403,14 @@ package body Gnatformat.Configuration is
                      & Attribute_Value.Keyword_Casing'Image);
                   Self.With_Keyword_Casing
                     (Attribute_Value.Keyword_Casing, Attribute.Index.Text);
+
+               when Identifier_Casing        =>
+                  Gnatformat_Trace.Trace
+                    (Identifier_Casing'Image
+                     & " = "
+                     & Attribute_Value.Identifier_Casing'Image);
+                  Self.With_Identifier_Casing
+                    (Attribute_Value.Identifier_Casing, Attribute.Index.Text);
 
                when Width                    =>
                   Gnatformat_Trace.Trace
