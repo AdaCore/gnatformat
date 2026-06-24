@@ -72,7 +72,7 @@ The public library API lives in `src/`:
 
 The CLI binary is assembled here:
 
-- `gnatformat-ada_driver.adb` — main entry point; parses CLI args, loads project, dispatches to `Full_Format` or `Range_Format`
+- `gnatformat-ada_driver.adb` — main entry point; parses CLI args, loads project, dispatches to `Full_Format` or `Range_Format`. It is also `argv[0]`-aware: when invoked under the basename `git-gnatformat` (installed alongside `gnatformat` so Git exposes it as the `git gnatformat` subcommand), it translates `git gnatformat [<base-commit>]` into `gnatformat --gitdiff <base-commit>`, defaulting the base to `HEAD`
 - `gnatformat-command_line.ads` — CLI argument declarations
 - `gnatformat-command_line-configuration.ads/.adb` — maps CLI flags to `Format_Options_Type`
 - `gnatformat-project.ads/.adb` — GPR2 project loading and source discovery

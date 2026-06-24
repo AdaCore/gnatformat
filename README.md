@@ -26,6 +26,11 @@ is marked as `externally built`.
 In order to customize your formatting, a few options are available and can be listed
 by executing the `gnatformat --help` command.
 
+Installing GNATformat also provides a `git-gnatformat` executable, so you can run
+`git gnatformat [<base-commit>]` as a regular Git subcommand. It is equivalent to
+`gnatformat --gitdiff <base-commit>` (formatting only the lines changed since
+`<base-commit>`, defaulting to `HEAD`).
+
 The functionality is also available via a library, which is in particular included
 in the `Ada Language Server`, and can therefore be used through IDEs like `GNAT Studio`
 or ` Visual Studio Code`.

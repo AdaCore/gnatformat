@@ -4,6 +4,7 @@
 --
 
 with Ada.Command_Line;
+with Ada.Directories;
 with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
@@ -11,7 +12,8 @@ with Ada.Text_IO;
 with GNAT.Traceback.Symbolic;
 
 with GNATCOLL.Opt_Parse;
-with GNATCOLL.VFS; use GNATCOLL.VFS;
+with GNATCOLL.Strings; use GNATCOLL.Strings;
+with GNATCOLL.VFS;     use GNATCOLL.VFS;
 
 with Gnatformat.Abstract_Writers;
 with Gnatformat.Bail;
@@ -43,16 +45,102 @@ procedure Gnatformat.Ada_Driver is
           else Gnatformat.Configuration.Default_Charset));
    --  Return charset from command line option or default one if none.
 
+   Git_Subcommand_Name : constant String := "git-gnatformat";
+   --  Basename under which this binary is installed alongside "gnatformat" so
+   --  that Git exposes it as the "git gnatformat" subcommand.
+
+   function Invoked_As_Git_Subcommand return Boolean
+   is (Ada.Directories.Base_Name (Ada.Command_Line.Command_Name)
+       = Git_Subcommand_Name);
+   --  True when this binary was invoked through its "git-gnatformat" name
+   --  (i.e. as the "git gnatformat" subcommand) rather than as "gnatformat".
+
+   function Git_Subcommand_Help_Requested return Boolean
+   is (Ada.Command_Line.Argument_Count >= 1
+       and then
+         (Ada.Command_Line.Argument (1) = "-h"
+          or else Ada.Command_Line.Argument (1) = "--help"));
+   --  True when the first git-subcommand argument requests usage.
+
+   procedure Print_Git_Subcommand_Usage;
+   --  Print a short usage paragraph for the "git gnatformat" subcommand.
+
+   function Git_Subcommand_Arguments return XString_Array;
+   --  Translate the "git gnatformat [<base-commit>] [<extra args>]" calling
+   --  convention into the equivalent "gnatformat --gitdiff <base-commit>
+   --  [<extra args>]" argument vector. An omitted base commit defaults to
+   --  HEAD, so a bare "git gnatformat" formats the working-tree changes
+   --  against the last commit.
+
+   procedure Print_Git_Subcommand_Usage is
+   begin
+      Ada.Text_IO.Put_Line
+        ("usage: git gnatformat [<base-commit>] [<gnatformat options>]");
+      Ada.Text_IO.New_Line;
+      Ada.Text_IO.Put_Line
+        ("Format the Ada lines added or changed since <base-commit> "
+         & "(default: HEAD).");
+      Ada.Text_IO.Put_Line
+        ("This is a thin Git subcommand wrapper around "
+         & "'gnatformat --gitdiff <base-commit>';");
+      Ada.Text_IO.Put_Line
+        ("any extra arguments are forwarded to gnatformat unchanged.");
+   end Print_Git_Subcommand_Usage;
+
+   function Git_Subcommand_Arguments return XString_Array is
+      Count : constant Natural := Ada.Command_Line.Argument_Count;
+
+      Has_Base : constant Boolean :=
+        Count >= 1
+        and then Ada.Command_Line.Argument (1)'Length > 0
+        and then Ada.Command_Line.Argument (1) (1) /= '-';
+      --  A leading argument that does not look like an option is taken as the
+      --  base commit; otherwise the base defaults to HEAD.
+
+      Base        : constant String :=
+        (if Has_Base then Ada.Command_Line.Argument (1) else "HEAD");
+      First_Extra : constant Positive := (if Has_Base then 2 else 1);
+      Extra_Count : constant Natural := Count - First_Extra + 1;
+
+      Result : XString_Array (1 .. 2 + Extra_Count);
+   begin
+      Result (1) := To_XString ("--gitdiff");
+      Result (2) := To_XString (Base);
+      for I in 0 .. Extra_Count - 1 loop
+         Result (3 + I) :=
+           To_XString (Ada.Command_Line.Argument (First_Extra + I));
+      end loop;
+      return Result;
+   end Git_Subcommand_Arguments;
+
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
-   if not Gnatformat.Command_Line.Parser.Parse then
-      if Gnatformat.Command_Line.Parser.Last_Error /= "" then
-         Gnatformat.Bail.Bail (1);
+   declare
+      Parsed : Boolean;
+   begin
+      if Invoked_As_Git_Subcommand then
+         if Git_Subcommand_Help_Requested then
+            Print_Git_Subcommand_Usage;
+            return;
+         end if;
+
+         Parsed :=
+           Gnatformat.Command_Line.Parser.Parse
+             (Arguments                => Git_Subcommand_Arguments,
+              Fallback_On_Command_Line => False);
       else
-         Gnatformat.Bail.Bail (0);
+         Parsed := Gnatformat.Command_Line.Parser.Parse;
       end if;
-   end if;
+
+      if not Parsed then
+         if Gnatformat.Command_Line.Parser.Last_Error /= "" then
+            Gnatformat.Bail.Bail (1);
+         else
+            Gnatformat.Bail.Bail (0);
+         end if;
+      end if;
+   end;
 
    if Gnatformat.Command_Line.Version.Get then
       Ada.Text_IO.Put_Line

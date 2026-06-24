@@ -62,6 +62,8 @@ class GNATformatDriver(DiffTestDriver):
        - driver: "gnatformat"
        - description: A description of the test's purpose
        - args: An array with the arguments to be passed to gnatformat
+       - program: optional key to change the program to run (default: "gnatformat");
+         used e.g. to exercise the "git-gnatformat" subcommand wrapper
        - status_code: optional key to change the expected status code (default: 0)
 
     2. Include a "test.out" text file in the test directory with the expected
@@ -73,8 +75,10 @@ class GNATformatDriver(DiffTestDriver):
     """
 
     def run(self):
-        # Run the "gnatformat" program...
-        argv = ["gnatformat"] + self.test_env.get("args", ["--pipe"])
+        # Run the "gnatformat" program (or another, e.g. the "git-gnatformat"
+        # subcommand wrapper, when the test overrides "program")...
+        program = self.test_env.get("program", "gnatformat")
+        argv = [program] + self.test_env.get("args", ["--pipe"])
 
         # ... on the input Ada source code file
         self.validate_status_code(

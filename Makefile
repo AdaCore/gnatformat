@@ -58,6 +58,9 @@ bin: coverage-instrumentation
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		$(COMMON_BUILD_FLAGS) ;
+	cp -f bin/gnatformat bin/git-gnatformat
+	# The binary is argv[0]-aware: when invoked as "git-gnatformat" it
+	# behaves as the "git gnatformat" subcommand. See gnatformat-ada_driver.adb.
 
 .PHONY: install
 install: install-lib install-bin
@@ -90,6 +93,7 @@ install-bin:
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
+	cp -f "$(PREFIX)/bin/gnatformat" "$(PREFIX)/bin/git-gnatformat"
 ifneq ($(COVERAGE),)
 	mkdir -p $(PREFIX)/share/gnatformat/sids || true
 	cp obj/*.sid $(PREFIX)/share/gnatformat/sids/
@@ -107,6 +111,7 @@ install-bin-stripped:
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
+	cp -f "$(PREFIX)/bin/gnatformat" "$(PREFIX)/bin/git-gnatformat"
 ifneq ($(BUILD_MODE),dev)
 	strip "$(PREFIX)/bin/"*
 endif

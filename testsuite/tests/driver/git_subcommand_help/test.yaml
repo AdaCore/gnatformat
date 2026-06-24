@@ -1,0 +1,4 @@
+description: Test that 'git gnatformat --help' prints the subcommand usage.
+driver: gnatformat
+program: git-gnatformat
+args: ["--help"]
