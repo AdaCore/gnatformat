@@ -16,9 +16,77 @@ with Prettier_Ada.Documents;      use Prettier_Ada.Documents;
 
 package body Gnatformat.Formatting is
 
+   --------------------------------------------------------------------
+   --  These structures concerns the ON/OFF formatting markers handling
+
+   use type Ada.Containers.Count_Type;
+
+   function "+" (Source : String) return Ada.Strings.Unbounded.Unbounded_String
+   renames Ada.Strings.Unbounded.To_Unbounded_String;
+
+   type Marker_Kind is (Off, On);
+   --  A marker can indicate either the start or the end of an On / Off
+   --  section.
+
+   function "<" (Left, Right : Marker_Kind) return Boolean
+   is (if Left = Right then False else Left = Off and Right = On);
+   --  The Off marker is always expected before the On marker
+
+   type On_Off_Section_Marker is
+     array (Marker_Kind) of Ada.Strings.Unbounded.Unbounded_String;
+
+   type On_Off_Section_Marker_Index is new Positive;
+
+   type On_Off_Section_Marker_Array is
+     array (On_Off_Section_Marker_Index range <>) of On_Off_Section_Marker;
+
+   On_Off_Section_Markers : constant On_Off_Section_Marker_Array :=
+     [[+"--!format off", +"--!format on"],
+      [+"--!pp off", +"--!pp on"],
+      [+"--  begin read only", +"--  end read only"]];
+
+   type Marker_Information_Record is record
+      Index_On_String : Positive;
+      --  The character (byte) index of the String where this marker starts
+
+      Marker_Index : On_Off_Section_Marker_Index;
+      --  The index (identifier) of this marker on the markers list
+      --  On_Off_Section_Markers.
+
+      Kind : Marker_Kind;
+   end record;
+
+   function "<" (Left, Right : Marker_Information_Record) return Boolean
+   is (case Left.Index_On_String = Right.Index_On_String is
+         when True  =>
+           (case Left.Marker_Index = Right.Marker_Index is
+              when True  => Left.Kind < Right.Kind,
+              when False => Left.Marker_Index < Right.Marker_Index),
+         when False => Left.Index_On_String < Right.Index_On_String);
+   --  Markers are sorted on the following order:
+   --  1) The character (byte) index of the String where the marker starts
+   --  2) Their kind (Off marker is expected before than On marker)
+   --  3) The index (identifier) of this marker on the markers list
+   --     On_Off_Section_Markers.
+
+   package Marker_Information_Vectors is new
+     Ada.Containers.Vectors (Positive, Marker_Information_Record);
+   subtype Marker_Information_Vector is Marker_Information_Vectors.Vector;
+   package Marker_Info_Vector_Sorting is new
+     Marker_Information_Vectors.Generic_Sorting ("<");
+
+   package Unpaired_Diagnostic_Vectors is new
+     Ada.Containers.Vectors (Positive, Marker_Information_Record);
+   subtype Unpaired_Diagnostic_Vector is Unpaired_Diagnostic_Vectors.Vector;
+   package Unpaired_Info_Vector_Sorting is new
+     Unpaired_Diagnostic_Vectors.Generic_Sorting ("<");
+
+   ----------------------------------------------------------------------------
+
    function Restore_Off_On_Sections
      (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
-      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
+      Unpaired_Markers : out Unpaired_Diagnostic_Vector)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Restores sections of the formatted source code that are delimitted by
    --  the off/on markers by copying them from the original source code.
@@ -52,72 +120,19 @@ package body Gnatformat.Formatting is
 
    function Restore_Off_On_Sections
      (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
-      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
+      Unpaired_Markers : out Unpaired_Diagnostic_Vector)
       return Ada.Strings.Unbounded.Unbounded_String
    is
-      use type Ada.Containers.Count_Type;
-
-      function "+"
-        (Source : String) return Ada.Strings.Unbounded.Unbounded_String
-      renames Ada.Strings.Unbounded.To_Unbounded_String;
-
-      type Marker_Kind is (Off, On);
-      --  A marker can indicate either the start or the end of an On / Off
-      --  section.
-
-      function "<" (Left, Right : Marker_Kind) return Boolean
-      is (if Left = Right then False else Left = Off and Right = On);
-      --  The Off marker is always expected before the On marker
-
-      type On_Off_Section_Marker is
-        array (Marker_Kind) of Ada.Strings.Unbounded.Unbounded_String;
-
-      type On_Off_Section_Marker_Index is new Positive;
-
-      type On_Off_Section_Marker_Array is
-        array (On_Off_Section_Marker_Index range <>) of On_Off_Section_Marker;
-
-      On_Off_Section_Markers : constant On_Off_Section_Marker_Array :=
-        [[+"--!format off", +"--!format on"],
-         [+"--!pp off", +"--!pp on"],
-         [+"--  begin read only", +"--  end read only"]];
-
-      type Marker_Information_Record is record
-         Index_On_String : Positive;
-         --  The character (byte) index of the String where this marker starts
-
-         Marker_Index : On_Off_Section_Marker_Index;
-         --  The index (identifier) of this marker on the markers list
-         --  On_Off_Section_Markers.
-
-         Kind : Marker_Kind;
-      end record;
-
-      function "<" (Left, Right : Marker_Information_Record) return Boolean
-      is (case Left.Index_On_String = Right.Index_On_String is
-            when True  =>
-              (case Left.Marker_Index = Right.Marker_Index is
-                 when True  => Left.Kind < Right.Kind,
-                 when False => Left.Marker_Index < Right.Marker_Index),
-            when False => Left.Index_On_String < Right.Index_On_String);
-      --  Markers are sorted on the following order:
-      --  1) The character (byte) index of the String where the marker starts
-      --  2) Their kind (Off marker is expected before than On marker)
-      --  3) The index (identifier) of this marker on the markers list
-      --     On_Off_Section_Markers.
-
-      package Marker_Information_Vectors is new
-        Ada.Containers.Vectors (Positive, Marker_Information_Record);
-      subtype Marker_Information_Vector is Marker_Information_Vectors.Vector;
-      package Marker_Info_Vector_Sorting is new
-        Marker_Information_Vectors.Generic_Sorting ("<");
 
       function Find_Markers_Information
-        (Source : Ada.Strings.Unbounded.Unbounded_String)
+        (Source   : Ada.Strings.Unbounded.Unbounded_String;
+         Unpaired : out Unpaired_Diagnostic_Vector)
          return Marker_Information_Vector;
       --  Finds all markers in Source and computed their
       --  Marker_Information_Record. Returns a Marker_Information_Vector with
-      --  all the found markers.
+      --  all the found markers. The unpaired On markers will be added to the
+      --  Unpaired diagnostic vector.
       --
       --  This function assumes that On_Off_Section_Markers is composed by
       --  ISO 8859-1 (Latin-1) characters.
@@ -161,7 +176,8 @@ package body Gnatformat.Formatting is
       ------------------------------
 
       function Find_Markers_Information
-        (Source : Ada.Strings.Unbounded.Unbounded_String)
+        (Source   : Ada.Strings.Unbounded.Unbounded_String;
+         Unpaired : out Unpaired_Diagnostic_Vector)
          return Marker_Information_Vector
       is
          function Is_Whole_Line
@@ -248,6 +264,8 @@ package body Gnatformat.Formatting is
          Markers_Information : Marker_Information_Vector := [];
 
       begin
+         Unpaired := [];
+
          for On_Off_Section_Marker_Index in On_Off_Section_Markers'Range loop
             declare
                From : Natural := 1;
@@ -277,7 +295,8 @@ package body Gnatformat.Formatting is
                      exit;
                   end if;
 
-                  --  Only consider this marker if it's a whole line comment
+                  --  Only consider the current marker if it's a whole line
+                  --  comment
 
                   if Is_Whole_Line
                        (From,
@@ -290,11 +309,12 @@ package body Gnatformat.Formatting is
                   then
                      Markers_Information.Append
                        (Marker_Information_Record'
-                          ((case Current_Marker is
-                              when On  => From,
-                              when Off => Line_Start_Index),
-                           On_Off_Section_Marker_Index,
-                           Current_Marker));
+                          (Index_On_String =>
+                             (case Current_Marker is
+                                when On  => From,
+                                when Off => Line_Start_Index),
+                           Marker_Index    => On_Off_Section_Marker_Index,
+                           Kind            => Current_Marker));
 
                      --  Flip the marker we're looking for
 
@@ -304,8 +324,7 @@ package body Gnatformat.Formatting is
                           when Off => On);
                   end if;
 
-                  --  Next search starts after the marker that was just found
-
+                  --  Next search starts after the markers that was just found
                   From :=
                     @
                     + Ada.Strings.Unbounded.Length
@@ -313,7 +332,78 @@ package body Gnatformat.Formatting is
                            (Current_Marker));
                end loop;
             end;
+
+            --  Compute the On marker placement to cover the unexpected
+            --  places where these can be found and add them to the
+            --  Markers_Information vector when looking into the original
+            --  sources in order to have them available before the
+            --  markers validation step.
+
+            declare
+               From_On : Natural := 1;
+               --  The index from where the string search starts for ON markers
+
+               Line_Start_Index_On : Positive;
+               --  Used to store the line start index of On markers
+
+            begin
+               while From_On < Ada.Strings.Unbounded.Length (Source) loop
+                  From_On :=
+                    Ada.Strings.Unbounded.Index
+                      (Source,
+                       Ada.Strings.Unbounded.To_String
+                         (On_Off_Section_Markers (On_Off_Section_Marker_Index)
+                            (On)),
+                       From_On);
+
+                  --  If the markers were not found, exit
+
+                  if From_On = 0 then
+                     exit;
+                  end if;
+
+                  --  Only consider the On marker if it's a whole line
+                  --  comment
+
+                  if Is_Whole_Line
+                       (From_On,
+                        From_On
+                        + Ada.Strings.Unbounded.Length
+                            (On_Off_Section_Markers
+                               (On_Off_Section_Marker_Index) (On))
+                        - 1,
+                        Line_Start_Index_On)
+                  then
+                     declare
+                        Marker_On : constant Marker_Information_Record :=
+                          Marker_Information_Record'
+                            (Index_On_String => From_On,
+                             Marker_Index    => On_Off_Section_Marker_Index,
+                             Kind            => On);
+                     begin
+                        if not Markers_Information.Contains (Marker_On) then
+                           --  If not already present in the marker information
+                           --  vector, should be ignored afterwards.
+                           --  Add to the Unpaired vector
+                           Unpaired.Append (Marker_On);
+                        end if;
+                     end;
+                  end if;
+
+                  --  Next search starts after the markers that was just found
+
+                  From_On :=
+                    @
+                    + Ada.Strings.Unbounded.Length
+                        (On_Off_Section_Markers (On_Off_Section_Marker_Index)
+                           (On));
+               end loop;
+            end;
          end loop;
+
+         if Unpaired.Length /= 0 then
+            Unpaired_Info_Vector_Sorting.Sort (Unpaired);
+         end if;
 
          Marker_Info_Vector_Sorting.Sort (Markers_Information);
 
@@ -428,7 +518,11 @@ package body Gnatformat.Formatting is
               Positive (Markers_Information.Length);
 
          begin
+            --  The unpaired on markers has the Ignore field set to true. So,
+            --  just ignore and move on.
+
             while Marker_Index <= Markers_Count loop
+
                if Markers_Information.Constant_Reference (Marker_Index).Kind
                  /= Off
                then
@@ -492,6 +586,7 @@ package body Gnatformat.Formatting is
                end if;
 
                Marker_Index := @ + 2;
+
             end loop;
          end;
       end Validate_Markers;
@@ -538,10 +633,13 @@ package body Gnatformat.Formatting is
       Original_Source_Markers  : Marker_Information_Vector;
       Formatted_Source_Markers : Marker_Information_Vector;
 
+      Formatted_Source_Unpaired : Unpaired_Diagnostic_Vector;
+
    begin
       --  Start by finding the Off / On markers in the original source
 
-      Original_Source_Markers := Find_Markers_Information (Original_Source);
+      Original_Source_Markers :=
+        Find_Markers_Information (Original_Source, Unpaired_Markers);
 
       --  If no markers are found in the original source, then there's nothing
       --  to restore. Return the formatted source.
@@ -557,7 +655,8 @@ package body Gnatformat.Formatting is
 
       --  Find the Off / On markers in the formatted source
 
-      Formatted_Source_Markers := Find_Markers_Information (Formatted_Source);
+      Formatted_Source_Markers :=
+        Find_Markers_Information (Formatted_Source, Formatted_Source_Unpaired);
 
       --  Validate the the markers found in the formatted source are in a good
       --  state.
@@ -600,8 +699,22 @@ package body Gnatformat.Formatting is
       Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
         Prettier_Ada.Documents.Format (Document, Format_Options);
 
+      Unpaired_Markers : Unpaired_Diagnostic_Vector := [];
+
+      Formatted_String : constant Ada.Strings.Unbounded.Unbounded_String :=
+        Restore_Off_On_Sections
+          (Original_Source, Formatted_Source, Unpaired_Markers);
+
    begin
-      return Restore_Off_On_Sections (Original_Source, Formatted_Source);
+      if Unpaired_Markers.Length /= 0 then
+         Gnatformat_Trace.Trace
+           ("WARNING: "
+            & Unpaired_Markers.Length'Image
+            & " unpaired ON markers found in "
+            & Ada.Directories.Simple_Name (Unit.Filename));
+      end if;
+
+      return Formatted_String;
    end Format;
 
    function Format_Unit
