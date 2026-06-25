@@ -53,6 +53,9 @@ lib:
 
 .PHONY: bin
 bin: coverage-instrumentation
+	# Builds both the "gnatformat" binary and the standalone "git-gnatformat"
+	# subcommand wrapper (a tiny forwarder to "gnatformat --gitdiff", not a copy
+	# of the gnatformat binary): both are Mains of the driver project.
 	gprbuild \
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \

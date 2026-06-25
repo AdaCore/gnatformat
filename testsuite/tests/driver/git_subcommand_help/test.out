@@ -1,0 +1,5 @@
+usage: git gnatformat [<base-commit>] [<gnatformat options>]
+
+Format the Ada lines added or changed since <base-commit> (default: HEAD).
+This is a thin Git subcommand wrapper around 'gnatformat --gitdiff <base-commit>';
+any extra arguments are forwarded to gnatformat unchanged.

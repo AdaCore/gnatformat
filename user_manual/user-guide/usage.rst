@@ -70,6 +70,25 @@ The specific options allowing to customize the formatting of your sources are:
 * ``--end-line, -EL``: allows to specify the selection's end line number for range formatting.
 * ``--end-column, -EC``: allows to specify the selection's end column number for range formatting.
 
+As a Git subcommand
+-------------------
+
+Installing |GNATformat| also provides a ``git-gnatformat`` executable next to
+``gnatformat`` on the ``PATH``. Git automatically exposes any such executable as
+a subcommand, so you can run::
+
+    git gnatformat [<base-commit>]
+
+This is equivalent to ``gnatformat --gitdiff <base-commit>``: it formats only the
+Ada lines added or changed since ``<base-commit>``, editing the files in place.
+When ``<base-commit>`` is omitted it defaults to ``HEAD``, so a bare
+``git gnatformat`` formats the changes in your working tree against the last
+commit. Any extra arguments are forwarded to ``gnatformat`` unchanged, and
+``git gnatformat --help`` prints a short usage reminder.
+
+Because ``git-gnatformat`` is a native executable, the subcommand works
+identically on Linux, macOS and Windows without depending on a POSIX shell.
+
 As a library
 ------------
 
