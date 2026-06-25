@@ -34,6 +34,7 @@ GPR project files are in `gnat/`:
 - `gnatformat_common.gpr` — shared compiler switches (abstract project)
 - `gnatformat.gpr` — the library project (sources from `src/`)
 - `gnatformat_driver.gpr` — the binary project (sources from `src/formatters/ada/`)
+- `git_gnatformat.gpr` — the standalone `git-gnatformat` subcommand wrapper (sources from `src/formatters/git/`); depends only on the Ada runtime, not the library
 
 ## Running Tests
 
@@ -72,7 +73,7 @@ The public library API lives in `src/`:
 
 The CLI binary is assembled here:
 
-- `gnatformat-ada_driver.adb` — main entry point; parses CLI args, loads project, dispatches to `Full_Format` or `Range_Format`. It is also `argv[0]`-aware: when invoked under the basename `git-gnatformat` (installed alongside `gnatformat` so Git exposes it as the `git gnatformat` subcommand), it translates `git gnatformat [<base-commit>]` into `gnatformat --gitdiff <base-commit>`, defaulting the base to `HEAD`
+- `gnatformat-ada_driver.adb` — main entry point; parses CLI args, loads project, dispatches to `Full_Format` or `Range_Format`
 - `gnatformat-command_line.ads` — CLI argument declarations
 - `gnatformat-command_line-configuration.ads/.adb` — maps CLI flags to `Format_Options_Type`
 - `gnatformat-project.ads/.adb` — GPR2 project loading and source discovery
@@ -82,6 +83,17 @@ The CLI binary is assembled here:
 - `gnatformat-console_writers.ads/.adb` — writer that outputs to stdout (`--pipe` mode)
 - `gnatformat-file_writers.ads/.adb` — writer that overwrites files in place
 - `gitdiff.ads/.adb` — support for `--git-diff` mode (format only changed lines)
+
+### Git subcommand wrapper (`src/formatters/git/`)
+
+- `git_format.adb` — a small, dependency-free executable installed as
+  `git-gnatformat` next to `gnatformat` on the `PATH`, so Git exposes it as the
+  `git gnatformat` subcommand. It translates `git gnatformat [<base-commit>]
+  [<extra args>]` into `gnatformat --gitdiff <base-commit> [<extra args>]`
+  (defaulting the base to `HEAD`), locates the sibling `gnatformat` binary,
+  spawns it, and forwards its exit status. Kept separate from the driver so the
+  wrapper stays ~1MB instead of being a ~57MB copy of the formatter; built by
+  `git_gnatformat.gpr`.
 
 ### Configuration via GPR
 

@@ -10,6 +10,8 @@ GNATFORMAT_LIBRARY_PROJECT = gnat/gnatformat.gpr
 
 GNATFORMAT_DRIVER_PROJECT = gnat/gnatformat_driver.gpr
 
+GIT_GNATFORMAT_PROJECT = gnat/git_gnatformat.gpr
+
 COVERAGE ?=
 COVERAGE_BUILD_FLAGS = \
 	--implicit-with=gnatcov_rts \
@@ -58,9 +60,13 @@ bin: coverage-instrumentation
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		$(COMMON_BUILD_FLAGS) ;
-	cp -f bin/gnatformat bin/git-gnatformat
-	# The binary is argv[0]-aware: when invoked as "git-gnatformat" it
-	# behaves as the "git gnatformat" subcommand. See gnatformat-ada_driver.adb.
+	# Build the standalone "git gnatformat" subcommand wrapper. It is a tiny
+	# forwarder to "gnatformat --gitdiff", not a copy of the gnatformat binary.
+	gprbuild \
+		-P $(GIT_GNATFORMAT_PROJECT) \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		-p \
+		-j$(PROCESSORS) ;
 
 .PHONY: install
 install: install-lib install-bin
@@ -93,7 +99,13 @@ install-bin:
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
-	cp -f "$(PREFIX)/bin/gnatformat" "$(PREFIX)/bin/git-gnatformat"
+	gprinstall \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		--install-name=git-gnatformat \
+		--prefix="$(PREFIX)" \
+		-P $(GIT_GNATFORMAT_PROJECT) \
+		-p \
+		-f ;
 ifneq ($(COVERAGE),)
 	mkdir -p $(PREFIX)/share/gnatformat/sids || true
 	cp obj/*.sid $(PREFIX)/share/gnatformat/sids/
@@ -111,7 +123,13 @@ install-bin-stripped:
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
-	cp -f "$(PREFIX)/bin/gnatformat" "$(PREFIX)/bin/git-gnatformat"
+	gprinstall \
+		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
+		--install-name=git-gnatformat \
+		--prefix="$(PREFIX)" \
+		-P $(GIT_GNATFORMAT_PROJECT) \
+		-p \
+		-f ;
 ifneq ($(BUILD_MODE),dev)
 	strip "$(PREFIX)/bin/"*
 endif
