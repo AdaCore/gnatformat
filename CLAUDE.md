@@ -33,8 +33,11 @@ Build mode defaults to `dev`. Use `BUILD_MODE=prod` for optimized production bui
 GPR project files are in `gnat/`:
 - `gnatformat_common.gpr` — shared compiler switches (abstract project)
 - `gnatformat.gpr` — the library project (sources from `src/`)
-- `gnatformat_driver.gpr` — the binary project (sources from `src/formatters/ada/`)
-- `git_gnatformat.gpr` — the standalone `git-gnatformat` subcommand wrapper (sources from `src/formatters/git/`); depends only on the Ada runtime, not the library
+- `gnatformat_driver.gpr` — the binary project; builds two Mains, the
+  `gnatformat` binary (sources from `src/formatters/ada/`) and the standalone
+  `git-gnatformat` subcommand wrapper (`src/formatters/git/git_format.adb`).
+  The wrapper references no library units, so even though the project `with`s
+  the library it links to ~1MB rather than a ~57MB copy of `gnatformat`.
 
 ## Running Tests
 
@@ -91,9 +94,10 @@ The CLI binary is assembled here:
   `git gnatformat` subcommand. It translates `git gnatformat [<base-commit>]
   [<extra args>]` into `gnatformat --gitdiff <base-commit> [<extra args>]`
   (defaulting the base to `HEAD`), locates the sibling `gnatformat` binary,
-  spawns it, and forwards its exit status. Kept separate from the driver so the
-  wrapper stays ~1MB instead of being a ~57MB copy of the formatter; built by
-  `git_gnatformat.gpr`.
+  spawns it, and forwards its exit status. It is a second Main of
+  `gnatformat_driver.gpr`; because it references no library units the linker
+  pulls in nothing from `gnatformat.gpr`, so the wrapper stays ~1MB instead of
+  being a ~57MB copy of the formatter.
 
 ### Configuration via GPR
 

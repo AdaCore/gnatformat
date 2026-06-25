@@ -10,8 +10,6 @@ GNATFORMAT_LIBRARY_PROJECT = gnat/gnatformat.gpr
 
 GNATFORMAT_DRIVER_PROJECT = gnat/gnatformat_driver.gpr
 
-GIT_GNATFORMAT_PROJECT = gnat/git_gnatformat.gpr
-
 COVERAGE ?=
 COVERAGE_BUILD_FLAGS = \
 	--implicit-with=gnatcov_rts \
@@ -55,18 +53,14 @@ lib:
 
 .PHONY: bin
 bin: coverage-instrumentation
+	# Builds both the "gnatformat" binary and the standalone "git-gnatformat"
+	# subcommand wrapper (a tiny forwarder to "gnatformat --gitdiff", not a copy
+	# of the gnatformat binary): both are Mains of the driver project.
 	gprbuild \
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-XGNATFORMAT_LIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		$(COMMON_BUILD_FLAGS) ;
-	# Build the standalone "git gnatformat" subcommand wrapper. It is a tiny
-	# forwarder to "gnatformat --gitdiff", not a copy of the gnatformat binary.
-	gprbuild \
-		-P $(GIT_GNATFORMAT_PROJECT) \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		-p \
-		-j$(PROCESSORS) ;
 
 .PHONY: install
 install: install-lib install-bin
@@ -99,13 +93,6 @@ install-bin:
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
 		-f ;
-	gprinstall \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		--install-name=git-gnatformat \
-		--prefix="$(PREFIX)" \
-		-P $(GIT_GNATFORMAT_PROJECT) \
-		-p \
-		-f ;
 ifneq ($(COVERAGE),)
 	mkdir -p $(PREFIX)/share/gnatformat/sids || true
 	cp obj/*.sid $(PREFIX)/share/gnatformat/sids/
@@ -121,13 +108,6 @@ install-bin-stripped:
 		--install-name=gnatformat \
 		--prefix="$(PREFIX)" \
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
-		-p \
-		-f ;
-	gprinstall \
-		-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
-		--install-name=git-gnatformat \
-		--prefix="$(PREFIX)" \
-		-P $(GIT_GNATFORMAT_PROJECT) \
 		-p \
 		-f ;
 ifneq ($(BUILD_MODE),dev)
