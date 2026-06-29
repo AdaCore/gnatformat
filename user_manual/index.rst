@@ -35,3 +35,14 @@
 
     style-checks/gnat_style_checks
     style-checks/gnatcheck_style_checks
+
+|GNATformat| Custom configurability options
+===========================================
+
+.. toctree::
+    :numbered:
+    :maxdepth: 3
+
+    unparsing-configuration/introduction
+    unparsing-configuration/configuration_template_commands
+    unparsing-configuration/configuration_snippets
