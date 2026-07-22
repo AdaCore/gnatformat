@@ -38,13 +38,14 @@ package Gnatformat.Configuration is
    --     - package Format
    --     - atribute Width, Indentation, Indentation_Kind,
    --       Indentation_Continuation, End_Of_Line, Charset, Keyword_Casing,
-   --       Layout and Override_Layout
+   --       Identifier_Casing, Layout and Override_Layout
    --       indexed by language or source.
 
    type Indentation_Kind is (Spaces, Tabs);
    type Layout_Kind is (Default, Tall);
    type End_Of_Line_Kind is (LF, CRLF);
    type Keyword_Casing_Kind is (Keep, Lower, Upper);
+   type Identifier_Casing_Kind is (Keep, Definition);
 
    package Optional_Indentation_Kinds is new
      Gnatformat.Utils.Optional (Indentation_Kind);
@@ -64,6 +65,11 @@ package Gnatformat.Configuration is
      Gnatformat.Utils.Optional (Keyword_Casing_Kind);
    subtype Optional_Keyword_Casing_Kind is
      Optional_Keyword_Casing_Kinds.Optional_Type;
+
+   package Optional_Identifier_Casing_Kinds is new
+     Gnatformat.Utils.Optional (Identifier_Casing_Kind);
+   subtype Optional_Identifier_Casing_Kind is
+     Optional_Identifier_Casing_Kinds.Optional_Type;
 
    package Optional_Positives is new Gnatformat.Utils.Optional (Positive);
    subtype Optional_Positive is Optional_Positives.Optional_Type;
@@ -137,6 +143,21 @@ package Gnatformat.Configuration is
    --  Language_Fallback option is available, the function returns the default
    --  keyword-casing value defined by
    --  Default_Basic_Format_Options.Keyword_Casing.Value.
+
+   function Get_Identifier_Casing
+     (Self              : Format_Options_Type;
+      Source_Filename   : String;
+      Language_Fallback : Supported_Languages := Ada_Language)
+      return Identifier_Casing_Kind;
+   --  Retrieves the identifier-casing option for the specified Source_Filename
+   --  if it exists.
+   --  If the identifier-casing option for Source_Filename does not exist, the
+   --  function will fall back to the identifier-casing option associated with
+   --  the given Language_Fallback if it is available.
+   --  If neither the Source_Filename identifier-casing option nor the
+   --  Language_Fallback option is available, the function returns the default
+   --  identifier-casing value defined by
+   --  Default_Basic_Format_Options.Identifier_Casing.Value.
 
    function Get_Ignore (Self : Format_Options_Type) return String_Hashed_Set;
    --  Retrieves the already resolved ignore option, i.e., the contents (list
@@ -326,6 +347,19 @@ package Gnatformat.Configuration is
       Source_Filename : String);
    --  Sets the format option Keyword_Casing for the provided Source_Filename
 
+   procedure With_Identifier_Casing
+     (Self              : in out Format_Options_Builder_Type;
+      Identifier_Casing : Identifier_Casing_Kind;
+      Language          : Supported_Languages);
+   --  Sets the format option Identifier_Casing for the provided Language
+
+   procedure With_Identifier_Casing
+     (Self              : in out Format_Options_Builder_Type;
+      Identifier_Casing : Identifier_Casing_Kind;
+      Source_Filename   : String);
+   --  Sets the format option Identifier_Casing for the provided
+   --  Source_Filename
+
    procedure With_From_Attribute
      (Self      : in out Format_Options_Builder_Type;
       Attribute : GPR2.Project.Attribute.Object);
@@ -511,6 +545,11 @@ private
    Q_Keyword_Casing_Attribute_Id : constant GPR2.Q_Attribute_Id :=
      (Package_Id, Keyword_Casing_Attribute_Id);
 
+   Identifier_Casing_Attribute_Id   : constant GPR2.Attribute_Id :=
+     GPR2."+" ("identifier_casing");
+   Q_Identifier_Casing_Attribute_Id : constant GPR2.Q_Attribute_Id :=
+     (Package_Id, Identifier_Casing_Attribute_Id);
+
    type Basic_Format_Options_Type is record
       Width                    : Optional_Positive := (Is_Set => False);
       Indentation              : Optional_Positive := (Is_Set => False);
@@ -522,6 +561,8 @@ private
       Charset                  : Optional_Unbounded_String :=
         (Is_Set => False);
       Keyword_Casing           : Optional_Keyword_Casing_Kind :=
+        (Is_Set => False);
+      Identifier_Casing        : Optional_Identifier_Casing_Kind :=
         (Is_Set => False);
       Layout                   : Optional_Layout := (Is_Set => False);
       Override_Layout          : Optional_Files_Vector := (Is_Set => False);
@@ -557,6 +598,7 @@ private
          Value  =>
            Ada.Strings.Unbounded.To_Unbounded_String (Default_Charset)),
       Keyword_Casing           => (Is_Set => True, Value => Keep),
+      Identifier_Casing        => (Is_Set => True, Value => Keep),
       Layout                   => (Is_Set => True, Value => Default_Layout),
       Override_Layout          =>
         (Is_Set => True, Value => Files_Vectors.Empty_Vector));
@@ -569,6 +611,7 @@ private
       End_Of_Line              => (Is_Set => False),
       Charset                  => (Is_Set => False),
       Keyword_Casing           => (Is_Set => False),
+      Identifier_Casing        => (Is_Set => False),
       Layout                   => (Is_Set => False),
       Override_Layout          => (Is_Set => False));
 

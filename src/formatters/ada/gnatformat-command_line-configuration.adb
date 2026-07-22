@@ -62,6 +62,9 @@ package body Gnatformat.Command_Line.Configuration is
       Keyword_Casing_Value           :
         constant Gnatformat.Configuration.Optional_Keyword_Casing_Kind :=
           Keyword_Casing.Get;
+      Identifier_Casing_Value        :
+        constant Gnatformat.Configuration.Optional_Identifier_Casing_Kind :=
+          Identifier_Casing.Get;
       Ignore_Value                   :
         constant Gnatformat.Configuration.Optional_Unbounded_String :=
           Ignore.Get;
@@ -106,6 +109,11 @@ package body Gnatformat.Command_Line.Configuration is
          Format_Options_Builder.With_Keyword_Casing
            (Keyword_Casing => Keyword_Casing_Value.Value,
             Language       => Ada_Language);
+      end if;
+      if Identifier_Casing_Value.Is_Set then
+         Format_Options_Builder.With_Identifier_Casing
+           (Identifier_Casing => Identifier_Casing_Value.Value,
+            Language          => Ada_Language);
       end if;
       if Ignore_Value.Is_Set then
          Format_Options_Builder.With_Ignore

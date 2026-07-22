@@ -1,0 +1,18 @@
+description:
+  Range formatting with identifier casing enabled via the project's Format
+  package recases cross-unit dotted names within the selected node
+  (pkg.my_constant and pkg.do_something resolve to Pkg.My_Constant and
+  Pkg.Do_Something through the project unit provider).
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "test/main.adb",
+    "--range-format",
+    "-SL 4",
+    "-SC 4",
+    "-EL 6",
+    "-EC 20",
+    "--pipe",
+  ]

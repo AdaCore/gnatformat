@@ -24,10 +24,19 @@ The formatting of your sources can be customized by the following options:
   indentation size in case of your source code line should break relatively to the previous line.
   By default this value is set to ``indentation - 1``.
 * ``--keyword-casing``: allows to choose the Ada language keyword casing through the options:
-  ``keep``  - which preserves the current casing of keywords, 
-  ``lower`` - which convert all the keywords in lower case  and 
+  ``keep``  - which preserves the current casing of keywords,
+  ``lower`` - which convert all the keywords in lower case  and
   ``upper`` - which converst all the keywords in upper case.
   By default this option is set to ``keep``.
+* ``--identifier-casing``: allows to fix the casing of identifiers through the options:
+  ``keep`` - which preserves the current casing of identifiers and
+  ``definition`` - which rewrites every identifier occurrence (references, ``end`` labels and
+  declarations) to match the casing of its declaration, resolved with Libadalang.
+  Cross-unit references are resolved when a project is provided (with ``-P``); otherwise only
+  references whose declaration is in the same source file are fixed. Identifiers inside
+  formatting-off regions (e.g. ``--!format off``) are left untouched. In range-formatting mode
+  (``--range-format``) only the identifiers within the selected region are recased. By default this
+  option is set to ``keep``.
 * ``--layout``: allows to choose one of the builtin layouts (i.e., ``default`` or ``tall``).
   By default is set to ``default``.
 * ``--override-layout``: allows to define the usage of custom configurations for specific nodes. 
@@ -82,6 +91,10 @@ The lines below shows the implementation of the ``Format`` package as part of th
     for Keyword_Casing ("Ada") use "keep"; -- this is the default
 
     for Keyword_Casing ("some_source.ads") use "lower";
+
+    for Identifier_Casing ("Ada") use "keep"; -- this is the default
+
+    for Identifier_Casing ("some_source.ads") use "definition";
 
     for Layout ("Ada") use "default"; -- this is the default
 

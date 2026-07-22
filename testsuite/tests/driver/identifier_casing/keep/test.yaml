@@ -1,0 +1,3 @@
+description: Test the --identifier-casing switch with keep (no-op)
+driver: gnatformat
+args: ["test.adb", "--pipe", "--identifier-casing", "keep"]

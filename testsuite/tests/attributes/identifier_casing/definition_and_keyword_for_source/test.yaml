@@ -1,0 +1,5 @@
+description: Test the Identifier_Casing attribute indexed by a specific source
+  filename when that source already has another per-source attribute
+  (Keyword_Casing), exercising the update of an existing source entry.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

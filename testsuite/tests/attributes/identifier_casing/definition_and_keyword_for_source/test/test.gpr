@@ -1,0 +1,12 @@
+project Test is
+   for Source_Dirs use (".");
+   for Main use ("test.adb");
+
+   --  "test.adb" already has a per-source entry from Keyword_Casing by the time
+   --  Identifier_Casing is processed, so the Identifier_Casing attribute updates
+   --  the existing source entry rather than inserting a new one.
+   package Format is
+      for Keyword_Casing ("test.adb") use "upper";
+      for Identifier_Casing ("test.adb") use "definition";
+   end Format;
+end Test;

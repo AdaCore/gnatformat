@@ -17,6 +17,10 @@ with GPR2.Build.Source.Sets; use GPR2.Build.Source.Sets;
 with GPR2.Options;
 with GPR2.Project.Tree;
 
+with Langkit_Support.File_Readers;
+
+with Libadalang.Analysis;
+
 package Gnatformat.Project is
 
    GPR_Options : GPR2.Options.Object;
@@ -65,6 +69,13 @@ package Gnatformat.Project is
      (Project_Tree : GPR2.Project.Tree.Object) return Source_List;
    --  Transforms the Gnatformat.Command_Line.Sources provided by the user into
    --  an GPR2.Project.Source.Set.Object.
+
+   function Create_Resolution_Context
+     (Project_Tree : GPR2.Project.Tree.Object;
+      File_Reader  : Langkit_Support.File_Readers.File_Reader_Reference :=
+        Langkit_Support.File_Readers.No_File_Reader_Reference)
+      return Libadalang.Analysis.Analysis_Context;
+   --  Creates an analysis context used for identifier-casing name resolution
 
    procedure Load_Project
      (Project_Tree : in out GPR2.Project.Tree.Object;

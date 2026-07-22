@@ -1,0 +1,8 @@
+main.adb(<DeclBlock main.adb:5:4-9:8>) - 5:1-9:8
+^
+   declare
+      Local_Var : Integer := 0;
+   begin
+      Local_Var := My_Var + Local_Var;
+   end;$
+

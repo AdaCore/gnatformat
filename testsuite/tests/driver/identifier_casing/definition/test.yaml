@@ -1,0 +1,4 @@
+description: Test the --identifier-casing switch with definition (intra-file
+  references; operators left untouched)
+driver: gnatformat
+args: ["test.adb", "--pipe", "--identifier-casing", "definition"]

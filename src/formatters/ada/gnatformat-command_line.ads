@@ -75,6 +75,16 @@ package Gnatformat.Command_Line is
    --  Converts a string to
    --  Gnatformat.Configuration.Optional_Keyword_Casing_Kind
 
+   function To_Optional_Identifier_Casing_Kind
+     (Identifier_Casing_Kind : String)
+      return Gnatformat.Configuration.Optional_Identifier_Casing_Kind
+   is ((Is_Set => True,
+        Value  =>
+          Gnatformat.Configuration.Identifier_Casing_Kind'Value
+            (Identifier_Casing_Kind)));
+   --  Converts a string to
+   --  Gnatformat.Configuration.Optional_Identifier_Casing_Kind
+
    package Root_Project_Only is new
      Parse_Flag
        (Parser => Parser,
@@ -199,6 +209,20 @@ package Gnatformat.Command_Line is
         Convert     => To_Optional_Keyword_Casing_Kind,
         Default_Val =>
           Gnatformat.Configuration.Optional_Keyword_Casing_Kinds.None);
+
+   package Identifier_Casing is new
+     Parse_Option
+       (Parser      => Parser,
+        Long        => "--identifier-casing",
+        Help        =>
+          "Identifier casing: keep | definition (default value = keep). "
+          & "When set to definition, rewrites identifier occurrences to match "
+          & "the casing of their declaration (requires name resolution)",
+        Arg_Type    =>
+          Gnatformat.Configuration.Optional_Identifier_Casing_Kind,
+        Convert     => To_Optional_Identifier_Casing_Kind,
+        Default_Val =>
+          Gnatformat.Configuration.Optional_Identifier_Casing_Kinds.None);
 
    package Charset is new
      Parse_Option

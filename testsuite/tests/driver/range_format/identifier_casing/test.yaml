@@ -1,0 +1,18 @@
+description:
+  Range formatting with --identifier-casing definition recases identifier
+  occurrences within the selected node to match their canonical definition
+  (the inner Local_Var and the outer My_Var). Identifiers outside the
+  selection (line 4) are left untouched.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 5",
+    "-SC 4",
+    "-EL 9",
+    "-EC 8",
+    "--pipe",
+    "--identifier-casing",
+    "definition",
+  ]

@@ -53,4 +53,16 @@ package Gnatformat.Formatting is
    --  Configuration. The section is computed based on the bottommost node that
    --  includes Selection_Range.
 
+   function Restore_Off_On_Sections
+     (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;
+      Formatted_Source : Ada.Strings.Unbounded.Unbounded_String)
+      return Ada.Strings.Unbounded.Unbounded_String;
+   --  Restores sections of the formatted source code that are delimitted by
+   --  the off/on markers by copying them from the original source code.
+   --
+   --  The current markers are:
+   --  '--!format off' and '--!format on'
+   --  '--!pp off' and '--!pp on'
+   --  '--  begin read only' and '--  end read only'
+
 end Gnatformat.Formatting;

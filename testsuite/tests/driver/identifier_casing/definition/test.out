@@ -1,0 +1,9 @@
+procedure Test is
+   type Color is (Red, Green, Blue);
+   C : Color := Green;
+   N : Integer := 0;
+begin
+   N := N + 1;
+   C := Blue;
+end Test;
+
