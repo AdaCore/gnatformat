@@ -77,43 +77,35 @@ package body Gnatformat.Command_Line.Configuration is
    begin
       if Charset_Value.Is_Set then
          Gnatformat.Configuration.With_Charset
-           (Self     => Format_Options_Builder,
-            Charset  => Charset_Value.Value,
-            Language => Ada_Language);
+           (Self => Format_Options_Builder, Charset => Charset_Value.Value);
       end if;
       if Width_Value.Is_Set then
          Gnatformat.Configuration.With_Width
-           (Self     => Format_Options_Builder,
-            Width    => Width_Value.Value,
-            Language => Ada_Language);
+           (Self => Format_Options_Builder, Width => Width_Value.Value);
       end if;
       if Indentation_Value.Is_Set then
          Format_Options_Builder.With_Indentation
-           (Indentation => Indentation_Value.Value, Language => Ada_Language);
+           (Indentation => Indentation_Value.Value);
       end if;
       if Indentation_Kind_Value.Is_Set then
          Format_Options_Builder.With_Indentation_Kind
-           (Indentation_Kind => Indentation_Kind_Value.Value,
-            Language         => Ada_Language);
+           (Indentation_Kind => Indentation_Kind_Value.Value);
       end if;
       if Indentation_Continuation_Value.Is_Set then
          Format_Options_Builder.With_Indentation_Continuation
-           (Indentation_Continuation => Indentation_Continuation_Value.Value,
-            Language                 => Ada_Language);
+           (Indentation_Continuation => Indentation_Continuation_Value.Value);
       end if;
       if End_Of_Line_Value.Is_Set then
          Format_Options_Builder.With_End_Of_Line
-           (End_Of_Line => End_Of_Line_Value.Value, Language => Ada_Language);
+           (End_Of_Line => End_Of_Line_Value.Value);
       end if;
       if Keyword_Casing_Value.Is_Set then
          Format_Options_Builder.With_Keyword_Casing
-           (Keyword_Casing => Keyword_Casing_Value.Value,
-            Language       => Ada_Language);
+           (Keyword_Casing => Keyword_Casing_Value.Value);
       end if;
       if Identifier_Casing_Value.Is_Set then
          Format_Options_Builder.With_Identifier_Casing
-           (Identifier_Casing => Identifier_Casing_Value.Value,
-            Language          => Ada_Language);
+           (Identifier_Casing => Identifier_Casing_Value.Value);
       end if;
       if Ignore_Value.Is_Set then
          Format_Options_Builder.With_Ignore
@@ -121,13 +113,11 @@ package body Gnatformat.Command_Line.Configuration is
               (Ada.Strings.Unbounded.To_String (Ignore_Value.Value)));
       end if;
       if Layout_Value.Is_Set then
-         Format_Options_Builder.With_Layout
-           (Layout => Layout_Value.Value, Language => Ada_Language);
+         Format_Options_Builder.With_Layout (Layout => Layout_Value.Value);
       end if;
       if Override_Layout_Value.Is_Set then
          Format_Options_Builder.With_Override_Layout
-           (Override_Layout_Files => Override_Layout_Value,
-            Language              => Ada_Language);
+           (Override_Layout_Files => Override_Layout_Value);
       end if;
 
       return Format_Options_Builder.Build;

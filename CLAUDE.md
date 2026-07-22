@@ -65,7 +65,7 @@ baseline). Install test deps with `pip install -r requirements-dev.txt`.
 
 The public library API lives in `src/`:
 
-- `gnatformat.ads` — root package; defines `Supported_Languages`, version constants, and the `Gnatformat_Trace` handle
+- `gnatformat.ads` — root package; defines version constants and the `Gnatformat_Trace` handle
 - `gnatformat-configuration.ads/.adb` — `Format_Options_Type` (width, indentation, charset, end-of-line, keyword casing, ignore); `Format_Options_Builder_Type` for constructing options; `From_Project` to read options from a GPR2 project's `package Format`; `Load_Unparsing_Configuration` for formatting rules
 - `gnatformat-formatting.ads/.adb` — core `Format` and `Range_Format` functions; takes an `Analysis_Unit` + `Format_Options_Type` and returns formatted text or a `Formatting_Edit_Type`
 - `gnatformat-edits.ads/.adb` — `Text_Edit_Type` / `Formatting_Edit_Type` / `Formatting_Edits_Type`; `Apply_Edits` to write edits to disk
