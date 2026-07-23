@@ -144,7 +144,7 @@ package body Gnatformat.Configuration is
       Basic_Format_Options : constant Basic_Format_Options_Type :=
         (if Format_Options.Sources.Contains (Source)
          then Format_Options.Sources.Element (Source)
-         else Format_Options.Language (Ada_Language));
+         else Format_Options.Language);
 
    begin
       return
@@ -443,16 +443,14 @@ package body Gnatformat.Configuration is
    -----------------
 
    function Get_Charset
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Ada.Strings.Unbounded.Unbounded_String
    is
       use Optional_Unbounded_Strings;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Charset
+        Into (Self, Source_Filename).Charset
         or Default_Basic_Format_Options.Charset.Value;
    end Get_Charset;
 
@@ -461,16 +459,14 @@ package body Gnatformat.Configuration is
    ---------------------
 
    function Get_End_Of_Line
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return End_Of_Line_Kind
    is
       use Optional_End_Of_Line_Kinds;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).End_Of_Line
+        Into (Self, Source_Filename).End_Of_Line
         or Default_Basic_Format_Options.End_Of_Line.Value;
    end Get_End_Of_Line;
 
@@ -479,16 +475,14 @@ package body Gnatformat.Configuration is
    ------------------------
 
    function Get_Keyword_Casing
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Keyword_Casing_Kind
    is
       use Optional_Keyword_Casing_Kinds;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Keyword_Casing
+        Into (Self, Source_Filename).Keyword_Casing
         or Default_Basic_Format_Options.Keyword_Casing.Value;
    end Get_Keyword_Casing;
 
@@ -497,16 +491,14 @@ package body Gnatformat.Configuration is
    ---------------------------
 
    function Get_Identifier_Casing
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Identifier_Casing_Kind
    is
       use Optional_Identifier_Casing_Kinds;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Identifier_Casing
+        Into (Self, Source_Filename).Identifier_Casing
         or Default_Basic_Format_Options.Identifier_Casing.Value;
    end Get_Identifier_Casing;
 
@@ -524,14 +516,12 @@ package body Gnatformat.Configuration is
    ----------------
 
    function Get_Layout
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Layout_Kind is
+     (Self : Format_Options_Type; Source_Filename : String) return Layout_Kind
+   is
    begin
       return
-        (if Into (Self, Source_Filename, Language_Fallback).Layout.Is_Set
-         then Into (Self, Source_Filename, Language_Fallback).Layout.Value
+        (if Into (Self, Source_Filename).Layout.Is_Set
+         then Into (Self, Source_Filename).Layout.Value
          else Default_Basic_Format_Options.Layout.Value);
    end Get_Layout;
 
@@ -540,9 +530,7 @@ package body Gnatformat.Configuration is
    -------------------------
 
    function Get_Override_Layout
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return GNATCOLL.VFS.File_Array
    is
       function Files_Vector_To_Files_Array
@@ -583,14 +571,10 @@ package body Gnatformat.Configuration is
       end Files_Vector_To_Files_Array;
    begin
       return
-        (if Into (Self, Source_Filename, Language_Fallback)
-              .Override_Layout
-              .Is_Set
+        (if Into (Self, Source_Filename).Override_Layout.Is_Set
          then
            Files_Vector_To_Files_Array
-             (Into (Self, Source_Filename, Language_Fallback)
-                .Override_Layout
-                .Value)
+             (Into (Self, Source_Filename).Override_Layout.Value)
          else
            Files_Vector_To_Files_Array
              (Default_Basic_Format_Options.Override_Layout.Value));
@@ -601,15 +585,13 @@ package body Gnatformat.Configuration is
    ---------------------
 
    function Get_Indentation
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive
+     (Self : Format_Options_Type; Source_Filename : String) return Positive
    is
       use Optional_Positives;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Indentation
+        Into (Self, Source_Filename).Indentation
         or Default_Basic_Format_Options.Indentation.Value;
    end Get_Indentation;
 
@@ -618,16 +600,13 @@ package body Gnatformat.Configuration is
    ----------------------------------
 
    function Get_Indentation_Continuation
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive
+     (Self : Format_Options_Type; Source_Filename : String) return Positive
    is
       use Optional_Positives;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback)
-          .Indentation_Continuation
+        Into (Self, Source_Filename).Indentation_Continuation
         or Default_Basic_Format_Options.Indentation_Continuation.Value;
    end Get_Indentation_Continuation;
 
@@ -636,16 +615,14 @@ package body Gnatformat.Configuration is
    --------------------------
 
    function Get_Indentation_Kind
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Indentation_Kind
    is
       use Optional_Indentation_Kinds;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Indentation_Kind
+        Into (Self, Source_Filename).Indentation_Kind
         or Default_Basic_Format_Options.Indentation_Kind.Value;
    end Get_Indentation_Kind;
 
@@ -654,15 +631,13 @@ package body Gnatformat.Configuration is
    ---------------
 
    function Get_Width
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive
+     (Self : Format_Options_Type; Source_Filename : String) return Positive
    is
       use Optional_Positives;
 
    begin
       return
-        Into (Self, Source_Filename, Language_Fallback).Width
+        Into (Self, Source_Filename).Width
         or Default_Basic_Format_Options.Width.Value;
    end Get_Width;
 
@@ -727,9 +702,20 @@ package body Gnatformat.Configuration is
    ----------
 
    function Into
-     (Self : Format_Options_Type; Language : Supported_Languages)
+     (Self : Format_Options_Type)
       return Prettier_Ada.Documents.Format_Options_Type
-   is (Into (Self.Language (Language)));
+   is (Into (Self.Language));
+
+   -----------
+   --  Into --
+   -----------
+
+   function Into
+     (Format_Options : Format_Options_Type; Source_Filename : String)
+      return Basic_Format_Options_Type
+   is (if Format_Options.Sources.Contains (Source_Filename)
+       then Format_Options.Sources.Element (Source_Filename)
+       else Format_Options.Language);
 
    ----------
    -- Into --
@@ -740,32 +726,7 @@ package body Gnatformat.Configuration is
       return Prettier_Ada.Documents.Format_Options_Type
    is (if Self.Sources.Contains (Source_Filename)
        then Into (Self.Sources.Element (Source_Filename))
-       else Prettier_Ada.Documents.Default_Format_Options);
-
-   -----------
-   --  Into --
-   -----------
-
-   function Into
-     (Format_Options    : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages) return Basic_Format_Options_Type
-   is (if Format_Options.Sources.Contains (Source_Filename)
-       then Format_Options.Sources.Element (Source_Filename)
-       else Format_Options.Language (Language_Fallback));
-
-   ----------
-   -- Into --
-   ----------
-
-   function Into
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages)
-      return Prettier_Ada.Documents.Format_Options_Type
-   is (if Self.Sources.Contains (Source_Filename)
-       then Into (Self.Sources.Element (Source_Filename))
-       else Into (Self, Language_Fallback));
+       else Into (Self));
 
    -----------------------------
    --  Load_Unparsing_Config  --
@@ -850,11 +811,7 @@ package body Gnatformat.Configuration is
 
    begin
 
-      for Supported_Language in Supported_Languages loop
-         Overwrite
-           (Target.Language (Supported_Language),
-            Source.Language (Supported_Language));
-      end loop;
+      Overwrite (Target.Language, Source.Language);
 
       while Has_Element (Source_Cursor) loop
          if Target.Sources.Contains (Key (Source_Cursor)) then
@@ -880,11 +837,10 @@ package body Gnatformat.Configuration is
    ------------------
 
    procedure With_Charset
-     (Self     : in out Format_Options_Builder_Type;
-      Charset  : Ada.Strings.Unbounded.Unbounded_String;
-      Language : Supported_Languages) is
+     (Self    : in out Format_Options_Builder_Type;
+      Charset : Ada.Strings.Unbounded.Unbounded_String) is
    begin
-      Self.Format_Options.Language (Language).Charset :=
+      Self.Format_Options.Language.Charset :=
         (Is_Set => True, Value => Charset);
    end With_Charset;
 
@@ -937,10 +893,9 @@ package body Gnatformat.Configuration is
 
    procedure With_End_Of_Line
      (Self        : in out Format_Options_Builder_Type;
-      End_Of_Line : End_Of_Line_Kind;
-      Language    : Supported_Languages) is
+      End_Of_Line : End_Of_Line_Kind) is
    begin
-      Self.Format_Options.Language (Language).End_Of_Line :=
+      Self.Format_Options.Language.End_Of_Line :=
         (Is_Set => True, Value => End_Of_Line);
    end With_End_Of_Line;
 
@@ -950,10 +905,9 @@ package body Gnatformat.Configuration is
 
    procedure With_Keyword_Casing
      (Self           : in out Format_Options_Builder_Type;
-      Keyword_Casing : Gnatformat.Configuration.Keyword_Casing_Kind;
-      Language       : Supported_Languages) is
+      Keyword_Casing : Gnatformat.Configuration.Keyword_Casing_Kind) is
    begin
-      Self.Format_Options.Language (Language).Keyword_Casing :=
+      Self.Format_Options.Language.Keyword_Casing :=
         (Is_Set => True, Value => Keyword_Casing);
    end With_Keyword_Casing;
 
@@ -986,10 +940,9 @@ package body Gnatformat.Configuration is
 
    procedure With_Identifier_Casing
      (Self              : in out Format_Options_Builder_Type;
-      Identifier_Casing : Gnatformat.Configuration.Identifier_Casing_Kind;
-      Language          : Supported_Languages) is
+      Identifier_Casing : Gnatformat.Configuration.Identifier_Casing_Kind) is
    begin
-      Self.Format_Options.Language (Language).Identifier_Casing :=
+      Self.Format_Options.Language.Identifier_Casing :=
         (Is_Set => True, Value => Identifier_Casing);
    end With_Identifier_Casing;
 
@@ -1272,15 +1225,14 @@ package body Gnatformat.Configuration is
                      & " = "
                      & Ada.Strings.Unbounded.To_String
                          (Attribute_Value.Charset));
-                  Self.With_Charset (Attribute_Value.Charset, Ada_Language);
+                  Self.With_Charset (Attribute_Value.Charset);
 
                when End_Of_Line              =>
                   Gnatformat_Trace.Trace
                     (End_Of_Line'Image
                      & " = "
                      & Attribute_Value.End_Of_Line'Image);
-                  Self.With_End_Of_Line
-                    (Attribute_Value.End_Of_Line, Ada_Language);
+                  Self.With_End_Of_Line (Attribute_Value.End_Of_Line);
 
                when Indentation              =>
                   Gnatformat_Trace.Trace
@@ -1288,8 +1240,7 @@ package body Gnatformat.Configuration is
                      & " = "
                      & Attribute_Value.Indentation'Image);
 
-                  Self.With_Indentation
-                    (Attribute_Value.Indentation, Ada_Language);
+                  Self.With_Indentation (Attribute_Value.Indentation);
 
                when Indentation_Continuation =>
                   Gnatformat_Trace.Trace
@@ -1297,7 +1248,7 @@ package body Gnatformat.Configuration is
                      & " = "
                      & Attribute_Value.Indentation_Continuation'Image);
                   Self.With_Indentation_Continuation
-                    (Attribute_Value.Indentation_Continuation, Ada_Language);
+                    (Attribute_Value.Indentation_Continuation);
 
                when Indentation_Kind         =>
                   Gnatformat_Trace.Trace
@@ -1305,15 +1256,14 @@ package body Gnatformat.Configuration is
                      & " = "
                      & Attribute_Value.Indentation_Kind'Image);
                   Self.With_Indentation_Kind
-                    (Attribute_Value.Indentation_Kind, Ada_Language);
+                    (Attribute_Value.Indentation_Kind);
 
                when Keyword_Casing           =>
                   Gnatformat_Trace.Trace
                     (Keyword_Casing'Image
                      & " = "
                      & Attribute_Value.Keyword_Casing'Image);
-                  Self.With_Keyword_Casing
-                    (Attribute_Value.Keyword_Casing, Ada_Language);
+                  Self.With_Keyword_Casing (Attribute_Value.Keyword_Casing);
 
                when Identifier_Casing        =>
                   Gnatformat_Trace.Trace
@@ -1321,12 +1271,12 @@ package body Gnatformat.Configuration is
                      & " = "
                      & Attribute_Value.Identifier_Casing'Image);
                   Self.With_Identifier_Casing
-                    (Attribute_Value.Identifier_Casing, Ada_Language);
+                    (Attribute_Value.Identifier_Casing);
 
                when Width                    =>
                   Gnatformat_Trace.Trace
                     (Width'Image & " = " & Attribute_Value.Width'Image);
-                  Self.With_Width (Attribute_Value.Width, Ada_Language);
+                  Self.With_Width (Attribute_Value.Width);
 
                when Ignore                   =>
                   Gnatformat_Trace.Trace
@@ -1335,15 +1285,14 @@ package body Gnatformat.Configuration is
                when Layout                   =>
                   Gnatformat_Trace.Trace
                     (Layout'Image & " = " & Attribute_Value.Layout'Image);
-                  Self.With_Layout (Attribute_Value.Layout, Ada_Language);
+                  Self.With_Layout (Attribute_Value.Layout);
 
                when Override_Layout          =>
                   Gnatformat_Trace.Trace
                     (Override_Layout'Image
                      & " = "
                      & Attribute_Value.Override_Layout'Image);
-                  Self.With_Override_Layout
-                    (Attribute_Value.Override_Layout, Ada_Language);
+                  Self.With_Override_Layout (Attribute_Value.Override_Layout);
 
                when Unknown                  =>
                   Gnatformat_Trace.Trace ("Unknown attribute");
@@ -1537,12 +1486,9 @@ package body Gnatformat.Configuration is
    -----------------
 
    procedure With_Layout
-     (Self     : in out Format_Options_Builder_Type;
-      Layout   : Layout_Kind;
-      Language : Supported_Languages) is
+     (Self : in out Format_Options_Builder_Type; Layout : Layout_Kind) is
    begin
-      Self.Format_Options.Language (Language).Layout :=
-        (Is_Set => True, Value => Layout);
+      Self.Format_Options.Language.Layout := (Is_Set => True, Value => Layout);
    end With_Layout;
 
    -----------------
@@ -1570,8 +1516,7 @@ package body Gnatformat.Configuration is
 
    procedure With_Override_Layout
      (Self                  : in out Format_Options_Builder_Type;
-      Override_Layout_Files : Optional_Files_Vector;
-      Language              : Supported_Languages)
+      Override_Layout_Files : Optional_Files_Vector)
    is
       use GNATCOLL.VFS;
       function Resolve_File (F : Virtual_File) return Virtual_File
@@ -1597,7 +1542,7 @@ package body Gnatformat.Configuration is
                 [for F of Override_Layout_Files.Value => Resolve_File (F)])
          else Override_Layout_Files);
 
-      Self.Format_Options.Language (Language).Override_Layout :=
+      Self.Format_Options.Language.Override_Layout :=
         Resolved_Override_Layout_Files;
    end With_Override_Layout;
 
@@ -1696,21 +1641,16 @@ package body Gnatformat.Configuration is
    ----------------------
 
    procedure With_Indentation
-     (Self        : in out Format_Options_Builder_Type;
-      Indentation : Positive;
-      Language    : Supported_Languages) is
+     (Self : in out Format_Options_Builder_Type; Indentation : Positive) is
    begin
-      Self.Format_Options.Language (Language).Indentation :=
+      Self.Format_Options.Language.Indentation :=
         (Is_Set => True, Value => Indentation);
 
       if Self.Implicit_Indentation_Continuation
         --  Avoid overwriting
-        and
-          not Self.Format_Options.Language (Language)
-                .Indentation_Continuation
-                .Is_Set
+        and not Self.Format_Options.Language.Indentation_Continuation.Is_Set
       then
-         Self.Format_Options.Language (Language).Indentation_Continuation :=
+         Self.Format_Options.Language.Indentation_Continuation :=
            (Is_Set => True,
             Value  => (if Indentation = 1 then 1 else Indentation - 1));
       end if;
@@ -1722,10 +1662,9 @@ package body Gnatformat.Configuration is
 
    procedure With_Indentation_Continuation
      (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Language                 : Supported_Languages) is
+      Indentation_Continuation : Positive) is
    begin
-      Self.Format_Options.Language (Language).Indentation_Continuation :=
+      Self.Format_Options.Language.Indentation_Continuation :=
         (Is_Set => True, Value => Indentation_Continuation);
    end With_Indentation_Continuation;
 
@@ -1783,10 +1722,9 @@ package body Gnatformat.Configuration is
 
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
-      Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
-      Language         : Supported_Languages) is
+      Indentation_Kind : Gnatformat.Configuration.Indentation_Kind) is
    begin
-      Self.Format_Options.Language (Language).Indentation_Kind :=
+      Self.Format_Options.Language.Indentation_Kind :=
         (Is_Set => True, Value => Indentation_Kind);
    end With_Indentation_Kind;
 
@@ -1816,12 +1754,9 @@ package body Gnatformat.Configuration is
    ----------------
 
    procedure With_Width
-     (Self     : in out Format_Options_Builder_Type;
-      Width    : Positive;
-      Language : Supported_Languages) is
+     (Self : in out Format_Options_Builder_Type; Width : Positive) is
    begin
-      Self.Format_Options.Language (Language).Width :=
-        (Is_Set => True, Value => Width);
+      Self.Format_Options.Language.Width := (Is_Set => True, Value => Width);
    end With_Width;
 
    ------------------------------------------
@@ -1896,7 +1831,7 @@ package body Gnatformat.Configuration is
 
          --  No custom format options. Fallback to language defaults.
 
-         return Self.Cache.Constant_Reference (Id).Language (Ada_Language);
+         return Self.Cache.Constant_Reference (Id).Language;
       end if;
 
       --  This project view does not have an unparsing configuration yet.
@@ -1906,12 +1841,10 @@ package body Gnatformat.Configuration is
       declare
          Unparsing_Configuration : constant Unparsing_Configuration_Type :=
            (Language =>
-              [Ada_Language =>
-                 Compute_Unparsing_Configuration
-                   (Format_Options                  =>
-                      Format_Options.Language (Ada_Language),
-                    Default_Unparsing_Configuration => Self.Default,
-                    Diagnostics                     => Diagnostics)],
+              Compute_Unparsing_Configuration
+                (Format_Options                  => Format_Options.Language,
+                 Default_Unparsing_Configuration => Self.Default,
+                 Diagnostics                     => Diagnostics),
             Sources  =>
               String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map);
 
@@ -1976,13 +1909,11 @@ package body Gnatformat.Configuration is
       if Self.Initialize_No_Project then
          Self.Initialize_No_Project := False;
          Self.No_Project.Language :=
-           [Compute_Unparsing_Configuration
-              (Format_Options.Language (Ada_Language),
-               Self.Default,
-               Diagnostics)];
+           Compute_Unparsing_Configuration
+             (Format_Options.Language, Self.Default, Diagnostics);
       end if;
 
-      return Self.No_Project.Language (Ada_Language);
+      return Self.No_Project.Language;
    end Get;
 
 end Gnatformat.Configuration;

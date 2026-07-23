@@ -101,61 +101,52 @@ package Gnatformat.Configuration is
    type Format_Options_Type is private;
 
    function Get_Charset
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Retrieves the charset option for the specified Source_Filename if it
    --  exists.
    --  If the charset option for Source_Filename does not exist, the function
-   --  will fall back to the charset option associated with the given
-   --  Language_Fallback if it is available.
-   --  If neither the Source_Filename charset option nor the Language_Fallback
+   --  will fall back to the language-level charset option if it is available.
+   --  If neither the Source_Filename charset option nor the language-level
    --  option is available, the function returns the default charset defined
    --  by Default_Basic_Format_Options.Charset.Value.
 
    function Get_End_Of_Line
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return End_Of_Line_Kind;
    --  Retrieves the end-of-line option for the specified Source_Filename if it
    --  exists.
    --  If the end-of-line option for Source_Filename does not exist, the
-   --  function will fall back to the end-of-line option associated with the
-   --  given Language_Fallback if it is available.
+   --  function will fall back to the language-level end-of-line option if it
+   --  is available.
    --  If neither the Source_Filename end-of-line option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  end-of-line value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
    function Get_Keyword_Casing
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Keyword_Casing_Kind;
    --  Retrieves the keyword-casing option for the specified Source_Filename if
    --  it exists.
    --  If the keyword-casing option for Source_Filename does not exist, the
-   --  function will fall back to the keyword-casing option associated with the
-   --  given Language_Fallback if it is available.
+   --  function will fall back to the language-level keyword-casing option if
+   --  it is available.
    --  If neither the Source_Filename keyword-casing option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  keyword-casing value defined by
    --  Default_Basic_Format_Options.Keyword_Casing.Value.
 
    function Get_Identifier_Casing
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Identifier_Casing_Kind;
    --  Retrieves the identifier-casing option for the specified Source_Filename
    --  if it exists.
    --  If the identifier-casing option for Source_Filename does not exist, the
-   --  function will fall back to the identifier-casing option associated with
-   --  the given Language_Fallback if it is available.
+   --  function will fall back to the language-level identifier-casing option
+   --  if it is available.
    --  If neither the Source_Filename identifier-casing option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  identifier-casing value defined by
    --  Default_Basic_Format_Options.Identifier_Casing.Value.
 
@@ -166,75 +157,62 @@ package Gnatformat.Configuration is
    --  built with an ignore option.
 
    function Get_Layout
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
-      return Layout_Kind;
+     (Self : Format_Options_Type; Source_Filename : String) return Layout_Kind;
    --  Retrieves the layout option if specified otherwise the function returns
    --  the value defined by Default_Basic_Format_Options.Layout.Value.
 
    function Get_Override_Layout
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return GNATCOLL.VFS.File_Array;
    --  Retrieves the override layout file array if this option is set or
    --  returns Empty_File_Array otherwise.
 
    function Get_Indentation
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
+     (Self : Format_Options_Type; Source_Filename : String) return Positive;
    --  Retrieves the indentation option for the specified Source_Filename if it
    --  exists.
    --  If the indentation option for Source_Filename does not exist, the
-   --  function will fall back to the indentation option associated with the
-   --  given Language_Fallback if it is available.
+   --  function will fall back to the language-level indentation option if it
+   --  is available.
    --  If neither the Source_Filename indentation option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  indentation value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
    function Get_Indentation_Kind
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language)
+     (Self : Format_Options_Type; Source_Filename : String)
       return Indentation_Kind;
    --  Retrieves the indentaiton-kind option for the specified Source_Filename
    --  if it exists.
    --  If the indentaiton-kind option for Source_Filename does not exist, the
-   --  function will fall back to the indentaiton-kind option associated with
-   --  the given Language_Fallback if it is available.
+   --  function will fall back to the language-level indentaiton-kind option
+   --  if it is available.
    --  If neither the Source_Filename indentaiton-kind option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  indentaiton-kind value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
    function Get_Indentation_Continuation
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
+     (Self : Format_Options_Type; Source_Filename : String) return Positive;
    --  Retrieves the indentaiton-continuation option for the specified
    --  Source_Filename it exists.
    --  If the indentaiton-continuation option for Source_Filename does not
-   --  exist, the function will fall back to the indentaiton-continuation
-   --  option associated with the given Language_Fallback if it is available.
+   --  exist, the function will fall back to the language-level
+   --  indentaiton-continuation option if it is available.
    --  If neither the Source_Filename indentaiton-continuation option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  indentaiton-continuation value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
    function Get_Width
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages := Ada_Language) return Positive;
+     (Self : Format_Options_Type; Source_Filename : String) return Positive;
    --  Retrieves the width option for the specified Source_Filename if it
    --  exists.
    --  If the width option for Source_Filename does not exist, the
-   --  function will fall back to the width option associated with the
-   --  given Language_Fallback if it is available.
+   --  function will fall back to the language-level width option if it is
+   --  available.
    --  If neither the Source_Filename width option nor the
-   --  Language_Fallback option is available, the function returns the default
+   --  language-level option is available, the function returns the default
    --  width value defined by
    --  Default_Basic_Format_Options.End_Of_Line.Value.
 
@@ -243,29 +221,18 @@ package Gnatformat.Configuration is
    --  Creates a Format_Options_Type by parsing Project's Format package
 
    function Into
-     (Self : Format_Options_Type; Language : Supported_Languages)
+     (Self : Format_Options_Type)
       return Prettier_Ada.Documents.Format_Options_Type;
-   --  Converts a Format_Options_type for the provided Language into an
-   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
-   --  associated to Language, then returns Default_Format_Options.
+   --  Converts a Format_Options_type into an equivalent Prettier_Ada
+   --  Format_Options.Type based on its language-level options.
 
    function Into
      (Self : Format_Options_Type; Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Source_Filename into an
    --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
-   --  associated to Source_Filename, then returns Default_Format_Options.
-
-   function Into
-     (Self              : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages)
-      return Prettier_Ada.Documents.Format_Options_Type;
-   --  Converts a Format_Options_type for the provided Source_Filename into an
-   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
-   --  for this source, then fallback to the configuration associated to
-   --  Langauge_Fallback. If there's no configuration for Language_Fallback
-   --  returns Default_Format_Options.
+   --  for this source, then fallback to the language-level configuration. If
+   --  there's no language-level configuration returns Default_Format_Options.
 
    procedure Overwrite
      (Target : in out Format_Options_Type; Source : Format_Options_Type);
@@ -312,10 +279,9 @@ package Gnatformat.Configuration is
    --  Returns the format options current state
 
    procedure With_Charset
-     (Self     : in out Format_Options_Builder_Type;
-      Charset  : Ada.Strings.Unbounded.Unbounded_String;
-      Language : Supported_Languages);
-   --  Sets the format option Charset for the provided Language
+     (Self    : in out Format_Options_Builder_Type;
+      Charset : Ada.Strings.Unbounded.Unbounded_String);
+   --  Sets the format option Charset for the Ada language
 
    procedure With_Charset
      (Self            : in out Format_Options_Builder_Type;
@@ -325,9 +291,8 @@ package Gnatformat.Configuration is
 
    procedure With_End_Of_Line
      (Self        : in out Format_Options_Builder_Type;
-      End_Of_Line : End_Of_Line_Kind;
-      Language    : Supported_Languages);
-   --  Sets the format option End_Of_Line for the provided Language
+      End_Of_Line : End_Of_Line_Kind);
+   --  Sets the format option End_Of_Line for the Ada language
 
    procedure With_End_Of_Line
      (Self            : in out Format_Options_Builder_Type;
@@ -337,9 +302,8 @@ package Gnatformat.Configuration is
 
    procedure With_Keyword_Casing
      (Self           : in out Format_Options_Builder_Type;
-      Keyword_Casing : Keyword_Casing_Kind;
-      Language       : Supported_Languages);
-   --  Sets the format option Keyword_Casing for the provided Language
+      Keyword_Casing : Keyword_Casing_Kind);
+   --  Sets the format option Keyword_Casing for the Ada language
 
    procedure With_Keyword_Casing
      (Self            : in out Format_Options_Builder_Type;
@@ -349,9 +313,8 @@ package Gnatformat.Configuration is
 
    procedure With_Identifier_Casing
      (Self              : in out Format_Options_Builder_Type;
-      Identifier_Casing : Identifier_Casing_Kind;
-      Language          : Supported_Languages);
-   --  Sets the format option Identifier_Casing for the provided Language
+      Identifier_Casing : Identifier_Casing_Kind);
+   --  Sets the format option Identifier_Casing for the Ada language
 
    procedure With_Identifier_Casing
      (Self              : in out Format_Options_Builder_Type;
@@ -372,9 +335,7 @@ package Gnatformat.Configuration is
    --  Sets the Ignore option
 
    procedure With_Layout
-     (Self     : in out Format_Options_Builder_Type;
-      Layout   : Layout_Kind;
-      Language : Supported_Languages);
+     (Self : in out Format_Options_Builder_Type; Layout : Layout_Kind);
    --  Sets the Layout option
 
    procedure With_Layout
@@ -385,8 +346,7 @@ package Gnatformat.Configuration is
 
    procedure With_Override_Layout
      (Self                  : in out Format_Options_Builder_Type;
-      Override_Layout_Files : Optional_Files_Vector;
-      Language              : Supported_Languages);
+      Override_Layout_Files : Optional_Files_Vector);
    --  Sets the Override-Layout option
 
    procedure With_Override_Layout
@@ -396,10 +356,8 @@ package Gnatformat.Configuration is
    --  Sets the Override-Layout option
 
    procedure With_Indentation
-     (Self        : in out Format_Options_Builder_Type;
-      Indentation : Positive;
-      Language    : Supported_Languages);
-   --  Sets the format option Indentation for the provided Language
+     (Self : in out Format_Options_Builder_Type; Indentation : Positive);
+   --  Sets the format option Indentation for the Ada language
 
    procedure With_Indentation
      (Self            : in out Format_Options_Builder_Type;
@@ -409,10 +367,8 @@ package Gnatformat.Configuration is
 
    procedure With_Indentation_Continuation
      (Self                     : in out Format_Options_Builder_Type;
-      Indentation_Continuation : Positive;
-      Language                 : Supported_Languages);
-   --  Sets the format option Indentation_Continuation for the provided
-   --  Language.
+      Indentation_Continuation : Positive);
+   --  Sets the format option Indentation_Continuation for the Ada language
 
    procedure With_Indentation_Continuation
      (Self                     : in out Format_Options_Builder_Type;
@@ -423,9 +379,8 @@ package Gnatformat.Configuration is
 
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
-      Indentation_Kind : Gnatformat.Configuration.Indentation_Kind;
-      Language         : Supported_Languages);
-   --  Sets the format option Indentation_Kind for the provided Language
+      Indentation_Kind : Gnatformat.Configuration.Indentation_Kind);
+   --  Sets the format option Indentation_Kind for the Ada language
 
    procedure With_Indentation_Kind
      (Self             : in out Format_Options_Builder_Type;
@@ -434,10 +389,8 @@ package Gnatformat.Configuration is
    --  Sets the format option Indentation_Kind for the provided Source_Filename
 
    procedure With_Width
-     (Self     : in out Format_Options_Builder_Type;
-      Width    : Positive;
-      Language : Supported_Languages);
-   --  Sets the format option Width for the provided Language
+     (Self : in out Format_Options_Builder_Type; Width : Positive);
+   --  Sets the format option Width for the Ada language
 
    procedure With_Width
      (Self            : in out Format_Options_Builder_Type;
@@ -575,12 +528,10 @@ private
    --  Prettier_Ada Format_Options.Type.
 
    function Into
-     (Format_Options    : Format_Options_Type;
-      Source_Filename   : String;
-      Language_Fallback : Supported_Languages)
+     (Format_Options : Format_Options_Type; Source_Filename : String)
       return Basic_Format_Options_Type;
    --  Gets Basic_Format_Options_Type for Source_Filename if existent,
-   --  otherwise fallsback Language_Fallback's Basic_Format_Options_Type.
+   --  otherwise fallsback to the language-level Basic_Format_Options_Type.
 
    procedure Overwrite
      (Target : in out Basic_Format_Options_Type;
@@ -625,12 +576,9 @@ private
    subtype String_To_Basic_Format_Options_Hash_Map is
      String_To_Basic_Format_Options_Hash_Maps.Map;
 
-   type Supported_Languages_Format_Options_Type is
-     array (Supported_Languages) of Basic_Format_Options_Type;
-
    type Format_Options_Type is record
-      Language        : Supported_Languages_Format_Options_Type :=
-        [others => Undefined_Basic_Format_Options];
+      Language        : Basic_Format_Options_Type :=
+        Undefined_Basic_Format_Options;
       Sources         : String_To_Basic_Format_Options_Hash_Map :=
         String_To_Basic_Format_Options_Hash_Maps.Empty_Map;
       --  Empty_Map for Sources has the same meaning as undefined
@@ -638,12 +586,12 @@ private
    end record;
 
    Default_Format_Options : constant Format_Options_Type :=
-     (Language        => [others => Default_Basic_Format_Options],
+     (Language        => Default_Basic_Format_Options,
       Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
       Ignored_Sources => (Is_Set => False));
 
    Undefined_Format_Options : constant Format_Options_Type :=
-     (Language        => [others => Undefined_Basic_Format_Options],
+     (Language        => Undefined_Basic_Format_Options,
       Sources         => String_To_Basic_Format_Options_Hash_Maps.Empty_Map,
       Ignored_Sources => (Is_Set => False));
 
@@ -683,14 +631,10 @@ private
    subtype String_To_Basic_Unparsing_Configuration_Hash_Map is
      String_To_Basic_Unparsing_Configuration_Hash_Maps.Map;
 
-   type Supported_Languages_Unparsing_Configuration_Type is
-     array (Supported_Languages)
-     of Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
-
    type Unparsing_Configuration_Type is record
-      Language : Supported_Languages_Unparsing_Configuration_Type :=
-        [Ada_Language =>
-           Langkit_Support.Generic_API.Unparsing.No_Unparsing_Configuration];
+      Language :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
+          Langkit_Support.Generic_API.Unparsing.No_Unparsing_Configuration;
       Sources  : String_To_Basic_Unparsing_Configuration_Hash_Map :=
         String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map;
    end record;

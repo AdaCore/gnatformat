@@ -104,9 +104,7 @@ package body Gnatformat.Formatting is
    is (Format
          (Libadalang.Generic_API.To_Generic_Unit (Unit),
           Gnatformat.Configuration.Into
-            (Format_Options,
-             Ada.Directories.Simple_Name (Unit.Get_Filename),
-             Ada_Language),
+            (Format_Options, Ada.Directories.Simple_Name (Unit.Get_Filename)),
           Configuration));
 
    -----------------------------
@@ -1516,7 +1514,7 @@ package body Gnatformat.Formatting is
       Estimated_Indentation : Natural := 0;
 
       Prettier_Format_Options : Prettier_Ada.Documents.Format_Options_Type :=
-        Gnatformat.Configuration.Into (Format_Options, Ada_Language);
+        Gnatformat.Configuration.Into (Format_Options);
 
       Offset_Set : Boolean := False;
 
@@ -1582,15 +1580,13 @@ package body Gnatformat.Formatting is
          use Ada.Directories;
          Current_Indentation : constant Natural :=
            Gnatformat.Configuration.Get_Indentation
-             (Self              => Format_Options,
-              Source_Filename   => Simple_Name (Unit.Get_Filename),
-              Language_Fallback => Ada_Language);
+             (Self            => Format_Options,
+              Source_Filename => Simple_Name (Unit.Get_Filename));
 
          Current_Continuation_Indent : constant Natural :=
            Gnatformat.Configuration.Get_Indentation_Continuation
-             (Self              => Format_Options,
-              Source_Filename   => Simple_Name (Unit.Get_Filename),
-              Language_Fallback => Ada_Language);
+             (Self            => Format_Options,
+              Source_Filename => Simple_Name (Unit.Get_Filename));
       begin
          Initial_Indentation :=
            Get_Initial_Indentation

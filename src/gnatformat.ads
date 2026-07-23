@@ -15,6 +15,4 @@ package Gnatformat is
    Version    : constant String := "debug";
    Build_Date : constant String := "debug";
 
-   type Supported_Languages is (Ada_Language);
-
 end Gnatformat;
