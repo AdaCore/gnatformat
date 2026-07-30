@@ -46,13 +46,10 @@ procedure test_main is
    --  --!pp on
 
    function some_sum
-     (a : Integer;
-      -- very long test documentation with much characters, which build words that hopefully make sense together
+     (a : Integer; -- very long test documentation with much characters, which build words that hopefully make sense together
       -- and caused a line break --- this works
-      b : Integer;
-      -- test docu
-      c : Integer;
-      -- test docu
+      b : Integer; -- test docu
+      c : Integer; -- test docu
       d : Integer -- very long test documentation with much characters, which build words that hopefully make sense together
       -- and caused a line break --- this is shifted to the front
       ) return Integer -- some sum
