@@ -29,14 +29,16 @@ The formatting of your sources can be customized by the following options:
   ``upper`` - which converst all the keywords in upper case.
   By default this option is set to ``keep``.
 * ``--identifier-casing``: allows to fix the casing of identifiers through the options:
-  ``keep`` - which preserves the current casing of identifiers and
+  ``keep`` - which preserves the current casing of identifiers,
   ``definition`` - which rewrites every identifier occurrence (references, ``end`` labels and
-  declarations) to match the casing of its declaration, resolved with Libadalang.
-  Cross-unit references are resolved when a project is provided (with ``-P``); otherwise only
-  references whose declaration is in the same source file are fixed. Identifiers inside
-  formatting-off regions (e.g. ``--!format off``) are left untouched. In range-formatting mode
-  (``--range-format``) only the identifiers within the selected region are recased. By default this
-  option is set to ``keep``.
+  declarations) to match the casing of its declaration, resolved with Libadalang, and
+  ``lower`` (``my_var``), ``upper`` (``MY_VAR``) and ``mixed`` (``My_Var``) - which recase
+  every identifier lexically, without requiring name resolution.
+  For ``definition``, cross-unit references are resolved when a project is provided (with ``-P``);
+  otherwise only references whose declaration is in the same source file are fixed. Identifiers
+  inside formatting-off regions (e.g. ``--!format off``) are left untouched. In range-formatting
+  mode (``--range-format``) only the identifiers within the selected region are recased. By default
+  this option is set to ``keep``.
 * ``--layout``: allows to choose one of the builtin layouts (i.e., ``default`` or ``tall``).
   By default is set to ``default``.
 * ``--override-layout``: allows to define the usage of custom configurations for specific nodes. 

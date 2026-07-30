@@ -215,9 +215,11 @@ package Gnatformat.Command_Line is
        (Parser      => Parser,
         Long        => "--identifier-casing",
         Help        =>
-          "Identifier casing: keep | definition (default value = keep). "
-          & "When set to definition, rewrites identifier occurrences to match "
-          & "the casing of their declaration (requires name resolution)",
+          "Identifier casing: keep | definition | lower | upper | mixed"
+          & " (default value = keep). definition rewrites identifier "
+          & "occurrences to match the casing of their declaration (requires "
+          & "name resolution); lower, upper and mixed recase "
+          & "identifiers lexically (my_var | MY_VAR | My_Var)",
         Arg_Type    =>
           Gnatformat.Configuration.Optional_Identifier_Casing_Kind,
         Convert     => To_Optional_Identifier_Casing_Kind,

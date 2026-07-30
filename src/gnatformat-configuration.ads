@@ -45,7 +45,22 @@ package Gnatformat.Configuration is
    type Layout_Kind is (Default, Tall);
    type End_Of_Line_Kind is (LF, CRLF);
    type Keyword_Casing_Kind is (Keep, Lower, Upper);
-   type Identifier_Casing_Kind is (Keep, Definition);
+   type Identifier_Casing_Kind is (Keep, Definition, Lower, Upper, Mixed);
+   --  Keep leaves identifiers untouched. Definition rewrites each identifier
+   --  occurrence to match the casing of its canonical defining name (requires
+   --  name resolution). Lower, Upper and Mixed recase identifiers
+   --  lexically (my_var, MY_VAR and My_Var respectively), without name
+   --  resolution.
+
+   subtype Normalizing_Identifier_Casing_Kind is
+     Identifier_Casing_Kind range Definition .. Mixed;
+   --  The Identifier_Casing_Kind values that rewrite identifier occurrences
+   --  (every value except Keep)
+
+   subtype Lexical_Identifier_Casing_Kind is
+     Identifier_Casing_Kind range Lower .. Mixed;
+   --  The Identifier_Casing_Kind values that recase identifiers lexically,
+   --  without name resolution
 
    package Optional_Indentation_Kinds is new
      Gnatformat.Utils.Optional (Indentation_Kind);

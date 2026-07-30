@@ -1,0 +1,6 @@
+procedure test is
+   my_var : integer := 0;
+begin
+   my_var := my_var + 1;
+end test;
+

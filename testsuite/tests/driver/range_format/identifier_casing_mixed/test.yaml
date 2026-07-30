@@ -1,0 +1,17 @@
+description:
+  Range formatting with --identifier-casing mixed lexically recases
+  identifier occurrences within the selected node (the declare block).
+  Identifiers outside the selection (lines 2 and 4) are left untouched.
+driver: gnatformat
+args:
+  [
+    "main.adb",
+    "--range-format",
+    "-SL 5",
+    "-SC 4",
+    "-EL 9",
+    "-EC 8",
+    "--pipe",
+    "--identifier-casing",
+    "mixed",
+  ]

@@ -53,9 +53,11 @@ The specific options allowing to customize the formatting of your sources are:
   ``upper`` - which converst all the keywords in upper case.
   In the absence of this option, the default value is ``keep``.
 * ``--identifier-casing``: allows to fix the casing of identifiers through the options:
-  ``keep`` - which preserves the current casing of identifiers and
+  ``keep`` - which preserves the current casing of identifiers,
   ``definition`` - which rewrites every identifier occurrence (references, ``end`` labels and
-  declarations) to match the casing of its declaration, resolved with Libadalang.
+  declarations) to match the casing of its declaration, resolved with Libadalang, and
+  ``lower`` (``my_var``), ``upper`` (``MY_VAR``) and ``mixed`` (``My_Var``) - which recase
+  every identifier lexically, without requiring name resolution.
   In the absence of this option, the default value is ``keep``.
 * ``--layout``: allows to choose one of the builtin layouts (i.e., ``default`` or ``tall``).
   In the absence of this option, the default value is ``default``.

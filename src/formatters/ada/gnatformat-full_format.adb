@@ -228,7 +228,10 @@ package body Gnatformat.Full_Format is
               when Gnatformat.Configuration.Definition =>
                 Resolution_Context.Get_From_File
                   (Source.Display_Full_Name (Normalize => True), Charset),
-              when Gnatformat.Configuration.Keep       =>
+              when Gnatformat.Configuration.Keep
+                 | Gnatformat.Configuration.Lower
+                 | Gnatformat.Configuration.Upper
+                 | Gnatformat.Configuration.Mixed      =>
                 Format_Context.Get_From_File
                   (Source.Display_Full_Name (Normalize => True), Charset));
 
@@ -255,9 +258,13 @@ package body Gnatformat.Full_Format is
                 Gnatformat.Formatting.Format
                   (Unit           =>
                      (case Identifier_Casing is
-                        when Gnatformat.Configuration.Definition =>
-                          Gnatformat.Identifier_Casing.Normalized_Unit (Unit),
-                        when Gnatformat.Configuration.Keep       => Unit),
+                        when Gnatformat.Configuration.Keep  => Unit,
+                        when Gnatformat.Configuration.Definition
+                           | Gnatformat.Configuration.Lower
+                           | Gnatformat.Configuration.Upper
+                           | Gnatformat.Configuration.Mixed =>
+                          Gnatformat.Identifier_Casing.Normalized_Unit
+                            (Unit, Identifier_Casing)),
                    Format_Options => Project_Formatting_Config,
                    Configuration  => Unparsing_Config));
       end Format_Source;
@@ -466,7 +473,10 @@ package body Gnatformat.Full_Format is
                  when Gnatformat.Configuration.Definition =>
                    Resolution_Context.Get_From_File
                      (Source.Display_Full_Name, Charset),
-                 when Gnatformat.Configuration.Keep       =>
+                 when Gnatformat.Configuration.Keep
+                    | Gnatformat.Configuration.Lower
+                    | Gnatformat.Configuration.Upper
+                    | Gnatformat.Configuration.Mixed      =>
                    Format_Context.Get_From_File
                      (Source.Display_Full_Name, Charset));
 
@@ -502,9 +512,13 @@ package body Gnatformat.Full_Format is
                  Gnatformat.Formatting.Format
                    (Unit           =>
                       (case Identifier_Casing is
-                         when Gnatformat.Configuration.Definition =>
-                           Gnatformat.Identifier_Casing.Normalized_Unit (Unit),
-                         when Gnatformat.Configuration.Keep       => Unit),
+                         when Gnatformat.Configuration.Keep  => Unit,
+                         when Gnatformat.Configuration.Definition
+                            | Gnatformat.Configuration.Lower
+                            | Gnatformat.Configuration.Upper
+                            | Gnatformat.Configuration.Mixed =>
+                           Gnatformat.Identifier_Casing.Normalized_Unit
+                             (Unit, Identifier_Casing)),
                     Format_Options => Format_Options,
                     Configuration  => Unparsing_Config);
 
