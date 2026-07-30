@@ -1,0 +1,16 @@
+description: |
+  Test Identifier_Casing definition with a child package. The canonical
+  defining name of a child unit is a dotted name, so occurrences referencing
+  it (the with clause, the prefixed reference in main.adb and the end label
+  in pkg-child.ads) are recased against the dotted name's suffix, covering
+  the Ada_Dotted_Name branch of Canonical_Spelling.
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "test/pkg.ads",
+    "test/pkg-child.ads",
+    "test/main.adb",
+    "--pipe",
+  ]

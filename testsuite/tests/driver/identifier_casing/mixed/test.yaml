@@ -1,0 +1,4 @@
+description: Test the --identifier-casing switch with mixed (recases
+  identifiers lexically, including attribute designators)
+driver: gnatformat
+args: ["test.adb", "--pipe", "--identifier-casing", "mixed"]

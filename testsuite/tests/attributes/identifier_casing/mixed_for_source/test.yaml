@@ -1,8 +1,7 @@
 description: |
   Test that an Identifier_Casing attribute indexed by a specific source
   filename takes precedence over the language-level attribute. main.adb is
-  recased with its source-specific definition casing (including the cross-unit
-  references to Pkg) while pkg.ads falls back to the language-level upper
-  casing.
+  recased with its source-specific mixed casing while pkg.ads falls back to
+  the language-level upper casing.
 driver: gnatformat
 args: ["-P", "test/test.gpr", "--pipe"]

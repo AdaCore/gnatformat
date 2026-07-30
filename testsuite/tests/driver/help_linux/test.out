@@ -52,10 +52,12 @@ optional arguments:
                                lf)
    --keyword-casing            Keyword casing: keep | lower | upper (default 
                                value = keep)
-   --identifier-casing         Identifier casing: keep | definition (default 
-                               value = keep). When set to definition, rewrites 
-                               identifier occurrences to match the casing of 
-                               their declaration (requires name resolution)
+   --identifier-casing         Identifier casing: keep | definition | lower | 
+                               upper | mixed (default value = keep). definition 
+                               rewrites identifier occurrences to match the 
+                               casing of their declaration (requires name 
+                               resolution); lower, upper and mixed recase 
+                               identifiers lexically (my_var | MY_VAR | My_Var)
    --charset                   Charset to use for source decoding (default value
                                 = iso-8859-1)
    --ignore                    Ignore file with the sources that will be ignored

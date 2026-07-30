@@ -4,6 +4,6 @@ project Test is
 
    package Format is
       for Identifier_Casing ("Ada") use "upper";
-      for Identifier_Casing ("main.adb") use "definition";
+      for Identifier_Casing ("main.adb") use "mixed";
    end Format;
 end Test;

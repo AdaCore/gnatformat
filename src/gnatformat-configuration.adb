@@ -313,7 +313,8 @@ package body Gnatformat.Configuration is
          Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Identifier_Casing_Attribute_Id,
-         "Identifier casing: keep | definition (default value = keep)");
+         "Identifier casing: keep | definition | lower | upper | mixed "
+         & "(default value = keep)");
 
       GPR2.Project.Registry.Attribute.Add
         (Name                 => Q_Layout_Attribute_Id,

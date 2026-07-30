@@ -30,7 +30,10 @@ package body Gnatformat.Range_Format is
    function Casing_Normalized_Unit
      (Resolution_Context : Libadalang.Analysis.Analysis_Context;
       Filename           : String;
-      Charset            : String) return Libadalang.Analysis.Analysis_Unit;
+      Charset            : String;
+      Casing             :
+        Gnatformat.Configuration.Normalizing_Identifier_Casing_Kind)
+      return Libadalang.Analysis.Analysis_Unit;
    --  Parses Filename in Resolution_Context and returns its identifier-casing
    --  normalized form (see Gnatformat.Identifier_Casing.Normalized_Unit).
    --  Falls back to the parsed unit when it has diagnostics.
@@ -42,7 +45,10 @@ package body Gnatformat.Range_Format is
    function Casing_Normalized_Unit
      (Resolution_Context : Libadalang.Analysis.Analysis_Context;
       Filename           : String;
-      Charset            : String) return Libadalang.Analysis.Analysis_Unit
+      Charset            : String;
+      Casing             :
+        Gnatformat.Configuration.Normalizing_Identifier_Casing_Kind)
+      return Libadalang.Analysis.Analysis_Unit
    is
       Original_Unit : constant Libadalang.Analysis.Analysis_Unit :=
         Resolution_Context.Get_From_File (Filename, Charset);
@@ -52,7 +58,8 @@ package body Gnatformat.Range_Format is
          return Original_Unit;
       end if;
 
-      return Gnatformat.Identifier_Casing.Normalized_Unit (Original_Unit);
+      return
+        Gnatformat.Identifier_Casing.Normalized_Unit (Original_Unit, Casing);
    end Casing_Normalized_Unit;
 
    --------------------
@@ -133,18 +140,25 @@ package body Gnatformat.Range_Format is
                    when Gnatformat.Configuration.Definition =>
                      Gnatformat.Project.Create_Resolution_Context
                        (Project_Tree),
-                   when Gnatformat.Configuration.Keep       =>
+                   when Gnatformat.Configuration.Keep
+                      | Gnatformat.Configuration.Lower
+                      | Gnatformat.Configuration.Upper
+                      | Gnatformat.Configuration.Mixed      =>
                      Libadalang.Analysis.Create_Context);
 
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
               (case Identifier_Casing is
-                 when Gnatformat.Configuration.Definition =>
+                 when Gnatformat.Configuration.Keep  =>
+                   Resolution_Context.Get_From_File (Source_Path, Charset),
+                 when Gnatformat.Configuration.Definition
+                    | Gnatformat.Configuration.Lower
+                    | Gnatformat.Configuration.Upper
+                    | Gnatformat.Configuration.Mixed =>
                    Casing_Normalized_Unit
                      (Resolution_Context => Resolution_Context,
                       Filename           => Source_Path,
-                      Charset            => Charset),
-                 when Gnatformat.Configuration.Keep       =>
-                   Resolution_Context.Get_From_File (Source_Path, Charset));
+                      Charset            => Charset,
+                      Casing             => Identifier_Casing));
 
             Edits : Gnatformat.Edits.Formatting_Edit_Type;
 
@@ -211,14 +225,18 @@ package body Gnatformat.Range_Format is
 
             Unit : constant Libadalang.Analysis.Analysis_Unit :=
               (case Identifier_Casing is
-                 when Gnatformat.Configuration.Definition =>
+                 when Gnatformat.Configuration.Keep  =>
+                   Resolution_Context.Get_From_File
+                     (Source_Path, Default_Charset),
+                 when Gnatformat.Configuration.Definition
+                    | Gnatformat.Configuration.Lower
+                    | Gnatformat.Configuration.Upper
+                    | Gnatformat.Configuration.Mixed =>
                    Casing_Normalized_Unit
                      (Resolution_Context => Resolution_Context,
                       Filename           => Source_Path,
-                      Charset            => Default_Charset),
-                 when Gnatformat.Configuration.Keep       =>
-                   Resolution_Context.Get_From_File
-                     (Source_Path, Default_Charset));
+                      Charset            => Default_Charset,
+                      Casing             => Identifier_Casing));
 
             Unparsing_Diagnostics :
               Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;

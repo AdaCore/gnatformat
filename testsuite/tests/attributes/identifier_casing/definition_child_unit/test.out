@@ -1,0 +1,18 @@
+--  pkg.ads
+package Pkg is
+end Pkg;
+
+--  pkg-child.ads
+package Pkg.Child is
+   My_Constant : constant Integer := 42;
+end Pkg.Child;
+
+--  main.adb
+with Pkg.Child;
+
+procedure Main is
+   X : Integer := Pkg.Child.My_Constant;
+begin
+   null;
+end Main;
+
