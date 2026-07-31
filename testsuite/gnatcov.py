@@ -36,6 +36,12 @@ class GNATcov:
         """Path of the root of the repository. This will be used with GNATcoverage
         reporting to produce a Cobertura report with relative paths."""
 
+        self.source_search_dir = testsuite.env.options.gnatcov_source_search
+        """Directory in which gnatcov looks for sources (recursively) when
+        annotating the coverage reports, for when the sources are not available
+        at the location recorded in the SID files (e.g. when GNATformat was
+        instrumented on another machine)."""
+
         self.ensure_clean_dir(self.temp_dir)
         os.mkdir(self.traces_dir)
 
@@ -131,6 +137,18 @@ class GNATcov:
             ]
         )
 
+        # Make sources available to "gnatcov coverage": sources used during
+        # the instrumentation of GNATformat may not be available at the same
+        # location (for instance if GNATformat was instrumented on another
+        # machine).
+        source_search_args = []
+        if self.source_search_dir:
+            src_dirs_list = os.path.join(self.temp_dir, "src_dirs.txt")
+            with open(src_dirs_list, "w") as f:
+                for root, _, _ in os.walk(self.source_search_dir):
+                    f.write(root + "\n")
+            source_search_args = ["--source-search=@" + src_dirs_list]
+
         # Now, generate all requested reports from this checkpoint
         logging.info(
             "Generating coverage reports ({})".format(", ".join(sorted(formats)))
@@ -150,6 +168,8 @@ class GNATcov:
                 "--checkpoint",
                 ckpt_file,
             ]
+
+            cmd += source_search_args
 
             if fmt == "cobertura" and self.source_root:
                 cmd += ["--source-root", self.source_root]

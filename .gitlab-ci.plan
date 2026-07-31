@@ -1,0 +1,39 @@
+def build_(qualifier={}):
+    anod_build("gnatformat", qualifier=qualifier)
+
+
+def build_cov_(qualifier={}):
+    anod_build("gnatformat", qualifier=qualifier | {"coverage": True})
+
+
+def test_cov_(qualifier={}):
+    with defaults(qualifier=qualifier | {"coverage": True}):
+        anod_install("gnatformat")
+        anod_test("gnatformat")
+
+
+def build_als_(qualifier={}):
+    with defaults(qualifier=qualifier):
+        anod_install("gnatformat")
+        anod_build("als")
+
+
+# Edge
+
+edge_qualifier = {"edge": True}
+
+
+def build_edge():
+    build_(edge_qualifier)
+
+
+def build_cov_edge():
+    build_cov_(edge_qualifier)
+
+
+def test_cov_edge():
+    test_cov_(edge_qualifier)
+
+
+def build_als_edge():
+    build_als_(edge_qualifier)
