@@ -1,67 +1,92 @@
-variables:
-  EXTRA_ANOD_TEST_ARGS: ""
-
 workflow:
   rules:
     # Run the generic CI on merge requests only
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
+stages:
+  - build
+  - test
+  - check
+
 include:
-  - component: $CI_SERVER_FQDN/eng/gitlab-templates/gnatformat@main # Using the version from the main branch until there is a release
+
+  #########
+  # BUILD #
+  #########
+
+  # Build GNATformat and save the component for the ALS check job
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/build@~latest
+    inputs:
+      anod-args: run build_$ACI_TRACK
+      save-component: true
+
+  # Build the coverage-instrumented GNATformat and save the component for the
+  # coverage testsuite job
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/build@~latest
+    inputs:
+      job-name: build-cov
+      anod-args: run build_cov_$ACI_TRACK
+      save-component: true
+
+  # Build ALS reusing the component built by build:linux
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/build@~latest
+    inputs:
+      job-name: build-als
+      anod-args: run build_als_$ACI_TRACK
+      needs: [build:linux]
+      cpus: 16
+      # Build the ALS from the head of its git repository instead of the
+      # nightly source package, so that ALS fixes for coordinated GNATformat
+      # changes are picked up as soon as they are merged.
+      # Depends-On still wins. generic_anod_ci processes MR-description
+      # dependencies before --add-dep entries and gives them priority.
+      generic-anod-ci-args: --add-dep eng/ide/ada_language_server
+
+  ########
+  # TEST #
+  ########
+
+  # Run the testsuite in coverage mode, reusing the component built by
+  # build-cov:linux
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/test@~latest
+    inputs:
+      job-name: test-cov
+      anod-args: run test_cov_$ACI_TRACK
+      needs: [build-cov:linux]
+
+  #########
+  # CHECK #
+  #########
+
+  # Check that the MR references a GitLab issue
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/check-issue@~latest
+
+  # Check that the sources are properly formatted
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/gnatformat@~latest
     inputs:
       stage: check
       anod-spec: gnatformat $ACI_TRACK_QUALIFIER
       gnatformat-args: -P gnat/gnatformat_driver.gpr --check
-      install-gnatformat: True
+      install-gnatformat: true
       install-gnatformat-extra-anod-args: -Qedge
 
-stages:
-  - check
-  - build
-  - coverage
-
-issue-check:
-  stage: check
-  interruptible: true
-  needs: []
+# Publish the coverage reports produced by the coverage testsuite run
+test-cov:linux:
   variables:
-    GIT_STRATEGY: none
-  services:
-    - image:pe-base
-  script:
-    - require_issue
-
-build_and_test:
-  stage: build
-  interruptible: true
-  needs:
-    - issue-check
-  services:
-    - image:pe-base
-    - cpu:8
-    - mem:16
-  script:
-    - generic_anod_ci
+    RUNNER_AFTER_SCRIPT_TIMEOUT: 10m
+  after_script:
+    # Source the env prepared by generic_anod_ci
     - . /tmp/ci_env.sh
-    - anod test gnatformat $ACI_TRACK_QUALIFIER $EXTRA_ANOD_TEST_ARGS
-    - testsuite_reports
-  artifacts:
-    reports:
-      junit: xunit-*.xml
-
-coverage-run:
-  extends: build_and_test
-  stage: coverage
-  variables:
-    EXTRA_ANOD_TEST_ARGS: "-Q coverage"
-  script:
-    - !reference [build_and_test, script]
     - GNATFORMAT_BUILD_SPACE=$(anod info test gnatformat $ACI_TRACK_QUALIFIER -Q coverage --show working_dir)
     - RESULTS_DIR=$GNATFORMAT_BUILD_SPACE/results/new
     # Save coverage results
     - mkdir -v $CI_PROJECT_DIR/coverage
     - cp -rv $RESULTS_DIR/coverage-cobertura $CI_PROJECT_DIR/coverage/
     - cp -rv $RESULTS_DIR/coverage-xml $CI_PROJECT_DIR/coverage/
+    # Display coverage stats; the coverage regex below picks up the statement
+    # coverage. Decision coverage remains visible in this output and in the
+    # published reports.
+    - echo_coverage_stats --coverage-file $RESULTS_DIR/coverage-xml/index.xml
     # Export to gitlab pages
     - |
       if [[ $CI_PIPELINE_SOURCE = "merge_request_event" ]]; then
@@ -71,6 +96,7 @@ coverage-run:
       fi
     - target_subdir=$target_subdir/ada-coverage
     - publish-pages $RESULTS_DIR/coverage-dhtml/ --target-subdir $target_subdir --expires 30
+  coverage: '/^Stmt Coverage:\s+(\d+\.\d+\%) \(\d+ \/ \d+\)$/'
   artifacts:
     when: always # Upload on errors too
     reports:
@@ -80,25 +106,4 @@ coverage-run:
         path: coverage/coverage-cobertura/cobertura.xml
     paths:
       - coverage/
-
-coverage-report-statement:
-  stage: coverage
-  interruptible: true
-  services:
-    - image:pe-base
-  needs:
-    - coverage-run
-  script:
-    - echo_coverage_stats --coverage-file $CI_PROJECT_DIR/coverage/coverage-xml/index.xml
-  coverage: '/^Stmt Coverage:\s+(\d+\.\d+\%) \(\d+ \/ \d+\)$/'
-
-coverage-report-decision:
-  stage: coverage
-  interruptible: true
-  services:
-    - image:pe-base
-  needs:
-    - coverage-run
-  script:
-    - echo_coverage_stats --coverage-file $CI_PROJECT_DIR/coverage/coverage-xml/index.xml
-  coverage: '/^Decision Coverage:\s+(\d+\.\d+\%) \(\d+ \/ \d+\)$/'
+      - anod-logs/

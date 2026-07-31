@@ -164,6 +164,14 @@ class GNATformatTestsuite(Testsuite):
             " CLI argument for producing a Cobertura report with"
             " relative source paths.",
         )
+        parser.add_argument(
+            "--gnatcov-source-search",
+            help="If provided, gnatcov will look for sources in this"
+            " directory (recursively) when annotating the coverage"
+            " reports. This is needed when the sources are not available"
+            " at the location recorded in the SID files, e.g. when"
+            " GNATformat was instrumented on another machine.",
+        )
 
     def set_up(self):
         args = self.main.args
