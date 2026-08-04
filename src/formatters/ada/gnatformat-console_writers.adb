@@ -18,6 +18,12 @@ package body Gnatformat.Console_Writers is
       Line       : String;
       Extra_Line : Boolean := True) is
    begin
+      --  When standard output is a pipe or a file it is fully buffered, so
+      --  flush it before writing to standard error to keep both streams
+      --  deterministically interleaved when they are merged.
+
+      Ada.Text_IO.Flush (Ada.Text_IO.Standard_Output);
+
       if Extra_Line then
          if Self.Print_New_Line then
             Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
@@ -57,6 +63,12 @@ package body Gnatformat.Console_Writers is
          else
             Self.Print_New_Line := True;
          end if;
+
+         --  When standard output is a pipe or a file it is fully buffered,
+         --  so flush it before writing to standard error to keep both
+         --  streams deterministically interleaved when they are merged.
+
+         Ada.Text_IO.Flush (Ada.Text_IO.Standard_Output);
 
          Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Line);
       end if;
