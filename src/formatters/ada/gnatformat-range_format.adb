@@ -171,20 +171,11 @@ package body Gnatformat.Range_Format is
                  Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
                Unparsing_Config      :
                  constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                   (case Project_Source.Visible is
-                      when True  =>
-                        Gnatformat.Configuration.Get
-                          (Unparsing_Configuration_Cache,
-                           Project_Source.File.Display_Base_Name,
-                           Project_Source.Visible_Source.Owning_View,
-                           Format_Options,
-                           Unparsing_Diagnostics),
-                      when False =>
-                        Gnatformat.Configuration.Get
-                          (Unparsing_Configuration_Cache,
-                           Project_Source.File.Display_Base_Name,
-                           Format_Options,
-                           Unparsing_Diagnostics));
+                   Gnatformat.Configuration.Get
+                     (Unparsing_Configuration_Cache,
+                      Project_Source.File.Display_Base_Name,
+                      Format_Options,
+                      Unparsing_Diagnostics);
 
             begin
                Edits :=

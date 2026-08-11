@@ -328,18 +328,10 @@ package body Gnatformat.Full_Format is
                  Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
                Unparsing_Config      :
                  constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                   (if Source.Visible
-                    then
-                      Unparsing_Configuration_Cache.Get
-                        (Source_Simple_Name,
-                         Source.Visible_Source.Owning_View,
-                         View_Format_Options,
-                         Unparsing_Diagnostics)
-                    else
-                      Unparsing_Configuration_Cache.Get
-                        (Source_Simple_Name,
-                         View_Format_Options,
-                         Unparsing_Diagnostics));
+                   Unparsing_Configuration_Cache.Get
+                     (Source_Simple_Name,
+                      View_Format_Options,
+                      Unparsing_Diagnostics);
 
             begin
                if Unparsing_Config
