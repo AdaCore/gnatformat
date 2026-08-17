@@ -428,11 +428,9 @@ package Gnatformat.Configuration is
       Diagnostics     :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
-   --  Returns the unparsing configuration for the given source.
-   --  If the source has a Keyword_Casing attribute, the configuration is
-   --  computed on demand and cached.
-   --  Otherwise, the language-level configuration is returned from the cache
-   --  keyed by Project.Id, loading it on first access.
+   pragma Obsolescent ("use the Get overload without Project");
+   --  Same as the overloaded Get. Project is ignored: the configuration
+   --  only depends on the format options.
 
    function Get
      (Self            : in out Unparsing_Configuration_Cache_Type;
@@ -441,8 +439,9 @@ package Gnatformat.Configuration is
       Diagnostics     :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
-   --  Same as the above, but without project caching. Computes the
-   --  configuration on demand and caches it.
+   --  Returns the unparsing configuration for the given source. The
+   --  configuration is computed on demand and cached, keyed by the format
+   --  options that apply to Source_Filename.
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
@@ -553,6 +552,10 @@ private
       Source : Basic_Format_Options_Type);
    --  Overwrites Target's options by Source's ones
 
+   function Hash
+     (Self : Basic_Format_Options_Type) return Ada.Containers.Hash_Type;
+   --  Computes Self's hash by combining the hashes of all of its options.
+
    Default_Basic_Format_Options : constant Basic_Format_Options_Type :=
      (Width                    => (Is_Set => True, Value => 79),
       Indentation              => (Is_Set => True, Value => 3),
@@ -635,42 +638,31 @@ private
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Boolean;
 
-   package String_To_Basic_Unparsing_Configuration_Hash_Maps is new
-     Ada.Containers.Indefinite_Hashed_Maps
-       (Key_Type        => String,
+   package Basic_Format_Options_To_Unparsing_Config_Hashed_Maps is new
+     Ada.Containers.Hashed_Maps
+       (Key_Type        => Basic_Format_Options_Type,
         Element_Type    =>
           Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration,
-        Hash            => Ada.Strings.Hash,
+        Hash            => Hash,
         Equivalent_Keys => "=");
 
-   subtype String_To_Basic_Unparsing_Configuration_Hash_Map is
-     String_To_Basic_Unparsing_Configuration_Hash_Maps.Map;
-
-   type Unparsing_Configuration_Type is record
-      Language :
-        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration :=
-          Langkit_Support.Generic_API.Unparsing.No_Unparsing_Configuration;
-      Sources  : String_To_Basic_Unparsing_Configuration_Hash_Map :=
-        String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map;
-   end record;
-
-   package View_Ids_To_Unparsing_Config_Hashed_Maps is new
-     Ada.Containers.Hashed_Maps
-       (Key_Type        => GPR2.View_Ids.View_Id,
-        Element_Type    => Unparsing_Configuration_Type,
-        Hash            => GPR2.View_Ids.Hash,
-        Equivalent_Keys => GPR2.View_Ids."=");
-
-   subtype View_Id_To_Unparsing_Config_Hashed_Map is
-     View_Ids_To_Unparsing_Config_Hashed_Maps.Map;
+   subtype Basic_Format_Options_To_Unparsing_Config_Hashed_Map is
+     Basic_Format_Options_To_Unparsing_Config_Hashed_Maps.Map;
 
    type Unparsing_Configuration_Cache_Type is tagged record
-      Default               : GNATCOLL.VFS.Virtual_File;
-      Cache                 : View_Id_To_Unparsing_Config_Hashed_Map;
-      No_Project            : Unparsing_Configuration_Type;
-      --  For standalone sources
-      Initialize_No_Project : Boolean;
-      --  No_Project is lazily initialized
+      Default : GNATCOLL.VFS.Virtual_File;
+      Cache   : Basic_Format_Options_To_Unparsing_Config_Hashed_Map;
+      --  Unparsing configurations keyed by the format options that apply to
+      --  the formatted source. The configuration only depends on the format
+      --  options.
+      --
+      --  Only Layout, Keyword_Casing and Override_Layout currently affect the
+      --  computed configuration, so keys that differ only in another options
+      --  (e.g. Width or Charset) cache duplicate, equivalent configurations.
+      --  Keying by the full record (see Hash implementation) anyway is
+      --  deliberate for ease of maintenance (Hash only needs to be updated if
+      --  a new option is added, but not if Compute_Unparsing_Configuration
+      --  simply starts using existing options).
    end record;
 
    Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;

@@ -4,6 +4,7 @@
 --
 
 with Ada.Exceptions;
+with Ada.Strings.Unbounded.Hash;
 with Ada.Text_IO.Unbounded_IO;
 
 with GNAT.Traceback.Symbolic;
@@ -717,6 +718,100 @@ package body Gnatformat.Configuration is
    is (if Format_Options.Sources.Contains (Source_Filename)
        then Format_Options.Sources.Element (Source_Filename)
        else Format_Options.Language);
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash
+     (Self : Basic_Format_Options_Type) return Ada.Containers.Hash_Type
+   is
+      use type Ada.Containers.Hash_Type;
+
+      --  Algorithm: Prime Multiplier / Polynomial Hashing
+      --
+      --  hash_n = hash_n-1 x 31 + Hash (field_n)
+      --
+      --  Where "hash_n" is Self's hash after "field_n", "field_n" is the nth
+      --  field of Self, and "Hash" is the hash function applicable to it.
+      --
+      --  Initial seed  can be an arbitrary number.
+      --
+      --  Each format option is encoded as follows:
+      --  - Options with "Is_Set => False" have a hash value of 0.
+      --  - Positive options contribute their value, which is >= 1 (there are
+      --    no negative options).
+      --  - Enumeration options contribute 'Pos + 1 (to avoid 0 since it is
+      --    used for unset options).
+      --  - Charset contributes the full string hash.
+      --  - Override_Layout contributes its set/unset state (1/0) followed by
+      --    each file's hash, so an unset vector and a set-but-empty vector
+      --    hash differently.
+
+      Result : Ada.Containers.Hash_Type := 17; -- Initial seed
+
+      procedure Combine (Value : Ada.Containers.Hash_Type);
+      --  Folds Value into Result (Result := Result * 31 + Value)
+
+      -------------
+      -- Combine --
+      -------------
+
+      procedure Combine (Value : Ada.Containers.Hash_Type) is
+      begin
+         Result := Result * 31 + Value;
+      end Combine;
+
+   begin
+      Combine
+        (if Self.Width.Is_Set
+         then Ada.Containers.Hash_Type (Self.Width.Value)
+         else 0);
+      Combine
+        (if Self.Indentation.Is_Set
+         then Ada.Containers.Hash_Type (Self.Indentation.Value)
+         else 0);
+      Combine
+        (if Self.Indentation_Kind.Is_Set
+         then Indentation_Kind'Pos (Self.Indentation_Kind.Value) + 1
+         else 0);
+      Combine
+        (if Self.Indentation_Continuation.Is_Set
+         then Ada.Containers.Hash_Type (Self.Indentation_Continuation.Value)
+         else 0);
+      Combine
+        (if Self.End_Of_Line.Is_Set
+         then End_Of_Line_Kind'Pos (Self.End_Of_Line.Value) + 1
+         else 0);
+      Combine
+        (if Self.Charset.Is_Set
+         then Ada.Strings.Unbounded.Hash (Self.Charset.Value)
+         else 0);
+      Combine
+        (if Self.Keyword_Casing.Is_Set
+         then Keyword_Casing_Kind'Pos (Self.Keyword_Casing.Value) + 1
+         else 0);
+      Combine
+        (if Self.Identifier_Casing.Is_Set
+         then Identifier_Casing_Kind'Pos (Self.Identifier_Casing.Value) + 1
+         else 0);
+      Combine
+        (if Self.Layout.Is_Set
+         then Layout_Kind'Pos (Self.Layout.Value) + 1
+         else 0);
+
+      if Self.Override_Layout.Is_Set then
+         Combine (1);
+         for File of Self.Override_Layout.Value loop
+            Combine (GNATCOLL.VFS.Full_Name_Hash (File));
+         end loop;
+
+      else
+         Combine (0);
+      end if;
+
+      return Result;
+   end Hash;
 
    ----------
    -- Into --
@@ -1768,11 +1863,9 @@ package body Gnatformat.Configuration is
      (Default_Unparsing_Configuration : GNATCOLL.VFS.Virtual_File)
       return Unparsing_Configuration_Cache_Type
    is (Unparsing_Configuration_Cache_Type'
-         (Default               => Default_Unparsing_Configuration,
-          Cache                 =>
-            View_Ids_To_Unparsing_Config_Hashed_Maps.Empty_Map,
-          No_Project            => <>,
-          Initialize_No_Project => True));
+         (Default => Default_Unparsing_Configuration,
+          Cache   =>
+            Basic_Format_Options_To_Unparsing_Config_Hashed_Maps.Empty_Map));
 
    ---------
    -- Get --
@@ -1787,77 +1880,10 @@ package body Gnatformat.Configuration is
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
-      Id : constant GPR2.View_Ids.View_Id := Project.Id;
+      pragma Unreferenced (Project);
 
    begin
-      --  Check if this project view already has a cached unparsing
-      --  configuration.
-
-      if Self.Cache.Contains (Id) then
-         --  Use cache for this source if existent
-
-         if Self.Cache.Constant_Reference (Id).Sources.Contains
-              (Source_Filename)
-         then
-            return
-              Self.Cache.Constant_Reference (Id).Sources.Element
-                (Source_Filename);
-         end if;
-
-         --  No cache for this source.
-         --  Check if has custom format options.
-
-         if Format_Options.Sources.Contains (Source_Filename) then
-            --  Source specific unparsing configuration are computed on
-            --  demand since there's no guarantee they will ever be used.
-
-            declare
-               Source_Format_Options          :
-                 constant Basic_Format_Options_Type :=
-                   Format_Options.Sources.Element (Source_Filename);
-               Source_Unparsing_Configuration :
-                 constant Langkit_Support
-                            .Generic_API
-                            .Unparsing
-                            .Unparsing_Configuration :=
-                   Compute_Unparsing_Configuration
-                     (Source_Format_Options, Self.Default, Diagnostics);
-
-            begin
-               Self.Cache.Reference (Id).Sources.Include
-                 (Source_Filename, Source_Unparsing_Configuration);
-               return Source_Unparsing_Configuration;
-            end;
-         end if;
-
-         --  No custom format options. Fallback to language defaults.
-
-         return Self.Cache.Constant_Reference (Id).Language;
-      end if;
-
-      --  This project view does not have an unparsing configuration yet.
-      --  Compute one. Source specific unparsing configuration are computed on
-      --  demand since there's no guarantee they will ever be used.
-
-      declare
-         Unparsing_Configuration : constant Unparsing_Configuration_Type :=
-           (Language =>
-              Compute_Unparsing_Configuration
-                (Format_Options                  => Format_Options.Language,
-                 Default_Unparsing_Configuration => Self.Default,
-                 Diagnostics                     => Diagnostics),
-            Sources  =>
-              String_To_Basic_Unparsing_Configuration_Hash_Maps.Empty_Map);
-
-      begin
-         Self.Cache.Include (Id, Unparsing_Configuration);
-
-         --  At this point, this project unparsing configuration is cached.
-         --  Recurse.
-
-         return
-           Self.Get (Source_Filename, Project, Format_Options, Diagnostics);
-      end;
+      return Self.Get (Source_Filename, Format_Options, Diagnostics);
    end Get;
 
    ---------
@@ -1870,51 +1896,37 @@ package body Gnatformat.Configuration is
       Format_Options  : Format_Options_Type;
       Diagnostics     :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
-      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration is
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      Basic_Format_Options : constant Basic_Format_Options_Type :=
+        Into (Format_Options, Source_Filename);
+
    begin
-      --  Try to get a cached unparsing configuration
+      --  Try to get a cached unparsing configuration for these format
+      --  options.
 
-      if Self.No_Project.Sources.Contains (Source_Filename) then
-         return Self.No_Project.Sources.Element (Source_Filename);
+      if Self.Cache.Contains (Basic_Format_Options) then
+         return Self.Cache.Element (Basic_Format_Options);
       end if;
 
-      --  No cache for this source.
-      --  Check if has custom format options.
+      --  No cache for these format options. Unparsing configurations are
+      --  computed on demand since there's no guarantee they will ever be
+      --  used.
 
-      if Format_Options.Sources.Contains (Source_Filename) then
-         --  Source specific unparsing configurations are computed on
-         --  demand since there's no guarantee they will ever be used.
+      declare
+         Unparsing_Configuration :
+           constant Langkit_Support
+                      .Generic_API
+                      .Unparsing
+                      .Unparsing_Configuration :=
+             Compute_Unparsing_Configuration
+               (Basic_Format_Options, Self.Default, Diagnostics);
 
-         declare
-            Source_Format_Options          :
-              constant Basic_Format_Options_Type :=
-                Format_Options.Sources.Element (Source_Filename);
-            Source_Unparsing_Configuration :
-              constant Langkit_Support
-                         .Generic_API
-                         .Unparsing
-                         .Unparsing_Configuration :=
-                Compute_Unparsing_Configuration
-                  (Source_Format_Options, Self.Default, Diagnostics);
+      begin
+         Self.Cache.Insert (Basic_Format_Options, Unparsing_Configuration);
 
-         begin
-            Self.No_Project.Sources.Include
-              (Source_Filename, Source_Unparsing_Configuration);
-
-            return Source_Unparsing_Configuration;
-         end;
-      end if;
-
-      --  Language specific unparsing configurations are computed on demand
-
-      if Self.Initialize_No_Project then
-         Self.Initialize_No_Project := False;
-         Self.No_Project.Language :=
-           Compute_Unparsing_Configuration
-             (Format_Options.Language, Self.Default, Diagnostics);
-      end if;
-
-      return Self.No_Project.Language;
+         return Unparsing_Configuration;
+      end;
    end Get;
 
 end Gnatformat.Configuration;
