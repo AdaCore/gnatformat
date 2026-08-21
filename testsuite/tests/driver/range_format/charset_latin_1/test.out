@@ -1,0 +1,4 @@
+test.ads(<ObjectDecl ["Nom"] test.ads:3:4-3:32>) - 3:1-3:32
+^
+   Nom : constant String := "José";$
+

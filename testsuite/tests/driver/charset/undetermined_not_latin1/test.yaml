@@ -1,0 +1,5 @@
+description: |
+  A source neither valid UTF-8 nor plausible iso-8859-1 must be skipped
+  with a warning, which counts as success
+driver: gnatformat
+args: ["test.ads"]

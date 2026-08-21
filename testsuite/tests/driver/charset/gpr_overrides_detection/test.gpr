@@ -1,0 +1,6 @@
+project Test is
+   for Source_Dirs use (".");
+   package Format is
+      for Charset ("Ada") use "utf-8";
+   end Format;
+end Test;

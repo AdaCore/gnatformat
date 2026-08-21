@@ -66,8 +66,14 @@ The specific options allowing to customize the formatting of your sources are:
   using your specified formatting preferences.
 * ``--end-of-line``: allows you to choose the end of line sequence (i.e., ``lf`` or ``crlf``).
   In the absence of this option, the default value is ``lf``.
-* ``--charset``: allows you to specify the charset to use for source decoding.
-  In absence of this option, the default value is ``iso-8859-1``.
+* ``--charset``: allows you to specify the charset to use for source decoding. The
+  formatted sources are encoded back using the same charset, so the input encoding is
+  preserved. In absence of this option (and of the project's ``Charset`` attribute),
+  the encoding of each source is detected (byte order mark, then UTF-8 validation),
+  falling back to ``iso-8859-1`` when plausible. Sources whose encoding cannot be
+  determined are skipped with a warning, or reported as an error in range formatting
+  mode. A byte order mark compatible with the configured charset is preserved; sources with an
+  incompatible one fail to format with an error.
 * ``--ignore``: allows you to to specify a file with the source file names that must not be
   formatted.
 * ``--gitdiff``: allows you to format only the lines added since a given commit.

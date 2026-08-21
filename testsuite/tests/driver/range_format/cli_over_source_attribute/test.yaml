@@ -1,0 +1,3 @@
+description: In range formatting, --width must win over a source-specific Width
+driver: gnatformat
+args: ["-P", "test.gpr", "--width=100", "test.ads", "--range-format", "-SL 2", "-SC 1", "-EL 2", "-EC 68", "--pipe"]

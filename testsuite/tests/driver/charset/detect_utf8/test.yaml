@@ -1,0 +1,5 @@
+description: |
+  A valid non-ASCII UTF-8 source must be detected as utf-8, so line widths
+  are counted in characters, not bytes
+driver: gnatformat
+args: ["--pipe", "test.ads"]

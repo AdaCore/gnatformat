@@ -1,0 +1,3 @@
+package Test is
+   Accented_Name : constant String := "éééééééééééééééééééééééééééééé";
+end Test;

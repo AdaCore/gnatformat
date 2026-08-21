@@ -143,9 +143,7 @@ package body Gnatformat.Configuration is
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
       Basic_Format_Options : constant Basic_Format_Options_Type :=
-        (if Format_Options.Sources.Contains (Source)
-         then Format_Options.Sources.Element (Source)
-         else Format_Options.Language);
+        Into (Format_Options, Source);
 
    begin
       return
@@ -446,15 +444,8 @@ package body Gnatformat.Configuration is
 
    function Get_Charset
      (Self : Format_Options_Type; Source_Filename : String)
-      return Ada.Strings.Unbounded.Unbounded_String
-   is
-      use Optional_Unbounded_Strings;
-
-   begin
-      return
-        Into (Self, Source_Filename).Charset
-        or Default_Basic_Format_Options.Charset.Value;
-   end Get_Charset;
+      return Optional_Unbounded_String
+   is (Into (Self, Source_Filename).Charset);
 
    ---------------------
    -- Get_End_Of_Line --
@@ -714,10 +705,15 @@ package body Gnatformat.Configuration is
 
    function Into
      (Format_Options : Format_Options_Type; Source_Filename : String)
-      return Basic_Format_Options_Type
-   is (if Format_Options.Sources.Contains (Source_Filename)
-       then Format_Options.Sources.Element (Source_Filename)
-       else Format_Options.Language);
+      return Basic_Format_Options_Type is
+   begin
+      return Result : Basic_Format_Options_Type := Format_Options.Language do
+         if Format_Options.Sources.Contains (Source_Filename) then
+            Overwrite
+              (Result, Format_Options.Sources.Element (Source_Filename));
+         end if;
+      end return;
+   end Into;
 
    ----------
    -- Hash --
@@ -820,9 +816,7 @@ package body Gnatformat.Configuration is
    function Into
      (Self : Format_Options_Type; Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type
-   is (if Self.Sources.Contains (Source_Filename)
-       then Into (Self.Sources.Element (Source_Filename))
-       else Into (Self));
+   is (Into (Basic_Format_Options_Type'(Into (Self, Source_Filename))));
 
    -----------------------------
    --  Load_Unparsing_Config  --
@@ -908,6 +902,15 @@ package body Gnatformat.Configuration is
    begin
 
       Overwrite (Target.Language, Source.Language);
+
+      --  Source's language-level options also take precedence over Target's
+      --  source-specific ones: otherwise, since source-specific options win
+      --  over language-level ones (see Into), a source-specific option of
+      --  Target would hide the corresponding language-level one of Source.
+
+      for Target_Source_Options of Target.Sources loop
+         Overwrite (Target_Source_Options, Source.Language);
+      end loop;
 
       while Has_Element (Source_Cursor) loop
          if Target.Sources.Contains (Key (Source_Cursor)) then

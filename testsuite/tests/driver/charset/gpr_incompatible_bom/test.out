@@ -1,0 +1,2 @@
+--  test.ads failed to format
+The source starts with a UTF-8 byte order mark, which contradicts the configured charset "iso-8859-1". Configure a compatible charset instead, such as "UTF-8".

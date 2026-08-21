@@ -1,0 +1,3 @@
+description: Range formatting must honour source-specific project attributes
+driver: gnatformat
+args: ["-P", "test.gpr", "test.ads", "--range-format", "-SL 2", "-SC 1", "-EL 2", "-EC 68", "--pipe"]
