@@ -155,8 +155,8 @@ class GNATformatOnDiskDriver(GNATformatDriver):
        - args: An array with the arguments to be passed to gnatformat; they
          must not include --pipe
        - program, status_code: same as for the "gnatformat" driver
-       - baselines_dir: optional name of the baselines directory (default:
-         "expected")
+       - baselines_dir: optional name of the baselines directory, directly
+         under the test directory (default: "expected")
 
     2. Include an "expected" directory mirroring the layout of the test
        directory: once gnatformat has run, the formatted "<path>" must be byte
@@ -174,7 +174,19 @@ class GNATformatOnDiskDriver(GNATformatDriver):
 
     @property
     def baselines_dir(self) -> str:
-        return self.test_env.get("baselines_dir", "expected")
+        """Return the name of the baselines directory, under the test directory."""
+
+        name = self.test_env.get("baselines_dir", "expected")
+
+        # The driver deletes and writes through this directory: only accept a
+        # plain directory name, so that it cannot point outside the test and
+        # working directories.
+        if not isinstance(name, str) or Path(name).name != name or name == "..":
+            raise TestAbortWithError(
+                f"baselines_dir must be a directory name, not a path: {name!r}"
+            )
+
+        return name
 
     @override
     def run(self):
@@ -188,8 +200,19 @@ class GNATformatOnDiskDriver(GNATformatDriver):
 
         # The baselines were copied to the working directory along with the
         # rest of the test directory: remove them so that gnatformat cannot
-        # pick them up as sources.
-        shutil.rmtree(self.working_dir(self.baselines_dir), ignore_errors=True)
+        # pick them up as sources. Removing them must succeed, otherwise the
+        # formatted files could include the baselines themselves.
+        copied_baselines = Path(self.working_dir(self.baselines_dir))
+        if not copied_baselines.is_dir():
+            raise TestAbortWithError(
+                f"missing {self.baselines_dir!r} directory in the test directory"
+            )
+        try:
+            shutil.rmtree(copied_baselines)
+        except OSError as exc:
+            raise TestAbortWithError(
+                f"cannot remove the copied {self.baselines_dir!r} directory: {exc}"
+            ) from exc
 
         self.validate_status_code(
             self.shell(valgrind_wrap(self.env, [program] + args), catch_error=False)
@@ -208,9 +231,23 @@ class GNATformatOnDiskDriver(GNATformatDriver):
         """Return the baselines, as paths relative to the baselines directory."""
 
         root = Path(self.test_dir(self.baselines_dir))
-        return sorted(
-            path.relative_to(root) for path in root.rglob("*") if path.is_file()
-        )
+        result = []
+
+        # Path.walk does not follow symbolic links to directories; reject any
+        # symbolic link so that baselines are always regular files under root.
+        for dirpath, dirnames, filenames in root.walk():
+            for name in dirnames + filenames:
+                path = dirpath / name
+                if path.is_symlink():
+                    raise TestAbortWithError(
+                        "baselines must be regular files, found a symbolic"
+                        f" link: {path.relative_to(root).as_posix()}"
+                    )
+            result.extend(
+                dirpath.joinpath(name).relative_to(root) for name in filenames
+            )
+
+        return sorted(result)
 
     @override
     def compute_failures(self) -> list[str]:
