@@ -5,22 +5,28 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 
-from __future__ import annotations
-
+import difflib
 import os
+import shutil
 import sys
 from os import sep
+from pathlib import Path
 from typing import override
 
 import e3.env
 from e3.testsuite import Testsuite
-from e3.testsuite.driver.classic import ProcessResult, TestAbortWithFailure
+from e3.testsuite.driver.classic import (
+    ProcessResult,
+    TestAbortWithError,
+    TestAbortWithFailure,
+)
 from e3.testsuite.driver.diff import (
     DiffTestDriver,
     PatternSubstitute,
     RefiningChain,
     ReplacePath,
 )
+from e3.testsuite.result import FailureReason, Log, binary_repr, truncated
 from gnatcov import GNATcov
 
 
@@ -54,7 +60,7 @@ def valgrind_wrap(env: e3.env.Env, argv: list[str]) -> list[str]:
 
 class GNATformatDriver(DiffTestDriver):
     """
-    Driver to run gnatformat.
+    Driver to run gnatformat with --pipe.
 
     Usage Instructions:
 
@@ -132,10 +138,185 @@ class GNATformatDriver(DiffTestDriver):
         return (filename, is_regexp)
 
 
+class GNATformatOnDiskDriver(GNATformatDriver):
+    """
+    Driver to run gnatformat on sources formatted in place, comparing the
+    resulting files byte for byte with baselines.
+
+    The "gnatformat" driver goes through --pipe, which is unsuitable for tests
+    about line endings. On Windows, standard output turns every LF into CRLF, so a
+    CRLF formatted source comes out as CR CR LF.
+
+    Usage Instructions:
+
+    1. Place a "test.yaml" file in the test directory with the following keys:
+       - driver: "gnatformat_on_disk"
+       - description: A description of the test's purpose
+       - args: An array with the arguments to be passed to gnatformat; they
+         must not include --pipe
+       - program, status_code: same as for the "gnatformat" driver
+       - baselines_dir: optional name of the baselines directory (default:
+         "expected")
+
+    2. Include an "expected" directory mirroring the layout of the test
+       directory: once gnatformat has run, the formatted "<path>" must be byte
+       for byte identical to "expected/<path>". Files without a counterpart
+       under "expected" are not checked. Running the testsuite with --rewrite
+       overwrites these baselines with the formatted sources (create an empty
+       file to bootstrap a new baseline).
+
+    3. Optionally include a "test.out" file with the expected process output
+       (e.g. warnings); when it is missing, no output is expected.
+
+    The baselines directory is removed from the working directory before
+    gnatformat runs, so that it can never be picked up as a source directory.
+    """
+
+    @property
+    def baselines_dir(self) -> str:
+        return self.test_env.get("baselines_dir", "expected")
+
+    @override
+    def run(self):
+        program = self.test_env.get("program", "gnatformat")
+        args = self.test_env.get("args", [])
+        if "--pipe" in args or "-p" in args:
+            raise TestAbortWithError(
+                "the gnatformat_on_disk driver formats sources in place:"
+                " remove --pipe from args"
+            )
+
+        # The baselines were copied to the working directory along with the
+        # rest of the test directory: remove them so that gnatformat cannot
+        # pick them up as sources.
+        shutil.rmtree(self.working_dir(self.baselines_dir), ignore_errors=True)
+
+        self.validate_status_code(
+            self.shell(valgrind_wrap(self.env, [program] + args), catch_error=False)
+        )
+
+    @property
+    @override
+    def baseline(self) -> tuple[str | None, str | bytes, bool]:
+        filename, is_regexp = self.baseline_file
+        if not os.path.isfile(self.test_dir(filename)):
+            empty: str | bytes = b"" if self.default_encoding == "binary" else ""
+            return (self.test_dir(filename), empty, is_regexp)
+        return super().baseline
+
+    def baseline_files(self) -> list[Path]:
+        """Return the baselines, as paths relative to the baselines directory."""
+
+        root = Path(self.test_dir(self.baselines_dir))
+        return sorted(
+            path.relative_to(root) for path in root.rglob("*") if path.is_file()
+        )
+
+    @override
+    def compute_failures(self) -> list[str]:
+        # Check the process output against "test.out" (or nothing)
+
+        failures = super().compute_failures()
+
+        # Check each formatted file against its baseline, byte for byte
+
+        baselines = self.baseline_files()
+        if not baselines:
+            raise TestAbortWithError(
+                f"no baseline found in the {self.baselines_dir!r} directory"
+            )
+
+        for relative_path in baselines:
+            failures.extend(self.compute_bytes_diff(relative_path))
+
+        return failures
+
+    def compute_bytes_diff(self, relative_path: Path) -> list[str]:
+        """
+        Compare the formatted file at ``relative_path`` (relative to the working
+        directory) with its baseline, byte for byte.
+
+        Return the list of failure messages (empty if the file matches),
+        logging the diff and rewriting the baseline if requested.
+        """
+
+        display_name = relative_path.as_posix()
+        baseline_path = Path(self.test_dir(self.baselines_dir)) / relative_path
+        actual_path = Path(self.working_dir()) / relative_path
+
+        expected = baseline_path.read_bytes()
+
+        if not actual_path.is_file():
+            message = f"missing formatted file: {display_name}"
+            self.result.log += f"\n{message}\n"
+            self.result.failure_reasons.add(FailureReason.DIFF)
+            return [message]
+
+        actual = actual_path.read_bytes()
+        if actual == expected:
+            return []
+
+        message = f"unexpected content for {display_name}"
+        if self.rewrite_baseline:
+            baseline_path.write_bytes(actual)
+            message += " (baseline updated)"
+
+        # Show the differences with CR and other non-printable bytes escaped,
+        # so that line ending differences stand out in the diff.
+
+        def colorize(line: str) -> str:
+            if line.startswith("-"):
+                color = self.Fore.RED
+            elif line.startswith("+"):
+                color = self.Fore.GREEN
+            elif line.startswith("@"):
+                color = self.Fore.CYAN
+            else:
+                color = ""
+            return color + line + self.Style.RESET_ALL
+
+        diff_lines = difflib.unified_diff(
+            binary_repr(expected).split("\n"),
+            binary_repr(actual).split("\n"),
+            fromfile=f"{self.baselines_dir}/{display_name}",
+            tofile=display_name,
+            n=self.diff_context_size,
+            lineterm="",
+        )
+        diff_log = (
+            self.Style.RESET_ALL
+            + self.Style.BRIGHT
+            + f"Diff failure: {message}\n"
+            + "\n".join(colorize(line) for line in diff_lines)
+            + "\n"
+        )
+        self.result.log += "\n" + truncated(
+            diff_log, self.testsuite_options.truncate_logs
+        )
+
+        # Same bookkeeping as DiffTestDriver.compute_diff: the "expected/out"
+        # logs support a single diff, so drop them past the first failure.
+
+        self.failing_diff_count += 1
+        if self.failing_diff_count == 1:
+            self.result.expected = Log(binary_repr(expected))
+            self.result.out = Log(binary_repr(actual))
+            self.result.diff = Log(diff_log)
+        else:
+            self.result.expected = None
+            self.result.out = None
+            assert isinstance(self.result.diff, Log)
+            self.result.diff += "\n" + diff_log
+
+        self.result.failure_reasons.add(FailureReason.DIFF)
+        return [message]
+
+
 class GNATformatTestsuite(Testsuite):
     tests_subdir = "tests"
     test_driver_map = {
         "gnatformat": GNATformatDriver,
+        "gnatformat_on_disk": GNATformatOnDiskDriver,
     }
 
     def add_options(self, parser):

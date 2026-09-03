@@ -1,6 +1,0 @@
-procedure Test is
-   My_Var : Integer := 0;
-begin
-   My_Var := My_Var + 1;
-end Test;
-

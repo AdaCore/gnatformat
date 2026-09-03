@@ -1,9 +1,4 @@
-description: |  
-  Imported GNATpp test
-driver: gnatformat
-args: [
-       "-P",
-       "pretty.gpr",
-       "Pretty.adb",
-       "--pipe"
-      ]
+description: |
+  Imported GNATpp test; the project requests CRLF line endings
+driver: gnatformat_on_disk
+args: ["-P", "pretty.gpr", "Pretty.adb"]

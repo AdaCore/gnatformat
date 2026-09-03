@@ -1,0 +1,6 @@
+# Test inputs and baselines must reach the working tree byte for byte on every
+# platform: several tests exercise line-ending handling (LF, CRLF, mixed) and
+# the GNATformatOnDiskDriver test driver compares formatted files exactly with
+# their baselines, so Git must never convert their line endings (e.g. with
+# core.autocrlf on Windows).
+testsuite/tests/** -text
