@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 #
-# Copyright (C) 2024, AdaCore
+# Copyright (C) 2026, AdaCore
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 
@@ -257,19 +257,19 @@ class GNATformatOnDiskDriver(GNATformatDriver):
         root = self.baselines_root()
         result = []
 
-        # Path.walk does not follow symbolic links to directories; reject any
-        # symbolic link so that baselines are always regular files under root.
-        for dirpath, dirnames, filenames in root.walk():
-            for name in dirnames + filenames:
+        # Path.walk does not follow symbolic links, and lists every entry that
+        # is not an actual directory (symbolic links, FIFOs, ...) as a file.
+        # Therefore, accept regular files only, so that baselines always are actual
+        # files under root that can be read without surprises.
+        for dirpath, _, filenames in root.walk():
+            for name in filenames:
                 path = dirpath / name
-                if path.is_symlink():
+                if path.is_symlink() or not path.is_file():
                     raise TestAbortWithError(
-                        "baselines must be regular files, found a symbolic"
-                        f" link: {path.relative_to(root).as_posix()}"
+                        "baselines must be regular files, found:"
+                        f" {path.relative_to(root).as_posix()}"
                     )
-            result.extend(
-                dirpath.joinpath(name).relative_to(root) for name in filenames
-            )
+                result.append(path.relative_to(root))
 
         return sorted(result)
 
