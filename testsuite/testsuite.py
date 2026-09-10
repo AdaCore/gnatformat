@@ -179,9 +179,14 @@ class GNATformatOnDiskDriver(GNATformatDriver):
         name = self.test_env.get("baselines_dir", "expected")
 
         # The driver deletes and writes through this directory: only accept a
-        # plain directory name, so that it cannot point outside the test and
-        # working directories.
-        if not isinstance(name, str) or Path(name).name != name or name == "..":
+        # non-empty plain directory name, so that it cannot point outside the
+        # test and working directories, nor at those directories themselves.
+        if (
+            not isinstance(name, str)
+            or not name
+            or Path(name).name != name
+            or name == ".."
+        ):
             raise TestAbortWithError(
                 f"baselines_dir must be a directory name, not a path: {name!r}"
             )
