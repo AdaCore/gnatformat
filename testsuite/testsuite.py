@@ -203,17 +203,15 @@ class GNATformatOnDiskDriver(GNATformatDriver):
                 " remove --pipe from args"
             )
 
+        # Check the baselines directory of the test before touching its copy
+        self.baselines_root()
+
         # The baselines were copied to the working directory along with the
         # rest of the test directory: remove them so that gnatformat cannot
         # pick them up as sources. Removing them must succeed, otherwise the
         # formatted files could include the baselines themselves.
-        copied_baselines = Path(self.working_dir(self.baselines_dir))
-        if not copied_baselines.is_dir():
-            raise TestAbortWithError(
-                f"missing {self.baselines_dir!r} directory in the test directory"
-            )
         try:
-            shutil.rmtree(copied_baselines)
+            shutil.rmtree(self.working_dir(self.baselines_dir))
         except OSError as exc:
             raise TestAbortWithError(
                 f"cannot remove the copied {self.baselines_dir!r} directory: {exc}"
@@ -232,10 +230,31 @@ class GNATformatOnDiskDriver(GNATformatDriver):
             return (self.test_dir(filename), empty, is_regexp)
         return super().baseline
 
+    def baselines_root(self) -> Path:
+        """
+        Return the baselines directory of the test.
+
+        Baselines are read, and rewritten, through this directory: abort the
+        test unless it is an actual directory, as a symbolic link could lead
+        outside the test directory (Path.walk follows a symbolic link given
+        as its root).
+        """
+
+        root = Path(self.test_dir(self.baselines_dir))
+        if root.is_symlink():
+            raise TestAbortWithError(
+                f"the {self.baselines_dir!r} directory must not be a symbolic link"
+            )
+        if not root.is_dir():
+            raise TestAbortWithError(
+                f"missing {self.baselines_dir!r} directory in the test directory"
+            )
+        return root
+
     def baseline_files(self) -> list[Path]:
         """Return the baselines, as paths relative to the baselines directory."""
 
-        root = Path(self.test_dir(self.baselines_dir))
+        root = self.baselines_root()
         result = []
 
         # Path.walk does not follow symbolic links to directories; reject any
