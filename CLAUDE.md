@@ -59,6 +59,18 @@ Tests use the [e3-testsuite](https://e3-testsuite.readthedocs.io/en/latest/) fra
 directory contains a `test.yaml` (driver config and args) and a `test.out` (expected output
 baseline). Install test deps with `pip install -r requirements-dev.txt`.
 
+Two drivers are available (see their docstrings in `testsuite/testsuite.py`):
+- `gnatformat` — runs `gnatformat --pipe` and diffs stdout against `test.out`, with line endings
+  canonicalized. On Windows stdout is a text-mode stream, so CRLF output comes out as CR CR LF:
+  never use this driver (nor `strict_line_endings`) to check line endings.
+- `gnatformat_on_disk` — formats the sources in place and compares each file under `expected/`
+  byte for byte with the formatted file of the same relative path. Use it for anything about
+  line endings or exact bytes. `--rewrite` refreshes the baselines (create an empty file to
+  bootstrap one).
+
+`.gitattributes` disables line-ending conversion under `testsuite/tests/` so fixtures and
+baselines reach every platform byte for byte.
+
 ## Code Architecture
 
 ### Library (`src/`)
