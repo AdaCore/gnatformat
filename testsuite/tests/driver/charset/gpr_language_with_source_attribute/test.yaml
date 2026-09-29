@@ -1,0 +1,5 @@
+description: |
+  A language-level Charset attribute must apply to a source that has
+  another source-specific attribute
+driver: gnatformat_on_disk
+args: ["-P", "test.gpr"]

@@ -47,6 +47,23 @@ The formatting of your sources can be customized by the following options:
 * ``--end-of-line`` is an option allowing to choose the end of line sequence in your file
   (i.e., ``lf`` or ``crlf``). By default, this value is set to ``lf``.
 * ``--charset`` is an option allowing to specify the charset to use for the sources decoding.
+  The formatted sources are encoded back using the same charset, so the input encoding is
+  preserved. When neither this option nor the project's ``Charset`` attribute is set, the
+  encoding of each source is detected: a byte order mark decides it, otherwise sources
+  with non-ASCII contents that are valid UTF-8 are treated as ``utf-8``, and anything
+  else falls back to ``iso-8859-1`` when plausible. Sources whose encoding cannot be
+  determined are skipped with a warning: files containing NUL bytes (which suggests
+  UTF-16 or UTF-32 without a byte order mark) or bytes that never appear in ISO 8859
+  text (C1 control characters, typically Windows-1252 punctuation). In range formatting
+  mode such a source is reported as an error instead. When a charset is configured and the
+  source starts with a byte order mark compatible with it (``utf-8`` for a UTF-8 byte order
+  mark, ``utf-16`` or ``utf-16le`` for a UTF-16 little endian one, and so on), the byte order
+  mark is honoured and preserved. A source starting with any other byte order mark (e.g. a
+  UTF-16 little endian one with ``utf-16be``, or a UTF-8 one with ``iso-8859-1``) fails to
+  format with an error naming the byte order mark and the configured charset, since that
+  charset cannot be right for it. The ``--gitdiff`` mode also skips sources that start with
+  a byte order mark. In range formatting mode, the text of the printed edit is encoded in
+  the source's charset, like the rest of the formatted output.
 * ``--ignore`` is an option allowing to specify a file with the source file names that must not be
   formatted.
 * ``--gitdiff`` is an option to format only the lines added since a given commit.
@@ -114,7 +131,7 @@ The lines below shows the implementation of the ``Format`` package as part of th
 
     for End_Of_Line ("some_source.ads") use "crlf";
 
-    for Charset ("Ada") use "iso-8869-1"; -- this is the default
+    for Charset ("Ada") use "iso-8859-1"; -- by default, the charset is detected per source
 
     for Charset ("some_source.ads") use "utf-8";
 

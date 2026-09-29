@@ -58,8 +58,11 @@ optional arguments:
                                casing of their declaration (requires name 
                                resolution); lower, upper and mixed recase 
                                identifiers lexically (my_var | MY_VAR | My_Var)
-   --charset                   Charset to use for source decoding (default value
-                                = iso-8859-1)
+   --charset                   Charset to use for source decoding and formatted 
+                               source encoding. When not set, it is detected per
+                                source (byte order mark, then UTF-8 validation, 
+                               then iso-8859-1 when plausible) and sources whose
+                                encoding cannot be determined are not formatted
    --ignore                    Ignore file with the sources that will be ignored
    --gitdiff                   Only format lines added since given commit
    --range-format              Range formatting mode

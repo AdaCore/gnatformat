@@ -1,0 +1,5 @@
+--  Commentaire accentué : é à ç
+
+package Test is
+   Nom : constant String := "José";
+end Test;

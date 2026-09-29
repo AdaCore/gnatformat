@@ -1,0 +1,5 @@
+description: |
+  --charset=utf-8 must strip a UTF-8 byte order mark for parsing and
+  preserve it
+driver: gnatformat_on_disk
+args: ["--charset=utf-8", "test.ads"]

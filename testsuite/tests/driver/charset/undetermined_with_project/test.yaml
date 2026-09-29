@@ -1,0 +1,3 @@
+description: An undetermined project source must be skipped with a warning
+driver: gnatformat
+args: ["-P", "test.gpr", "--pipe"]

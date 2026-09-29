@@ -1,0 +1,4 @@
+description: A detected iso-8859-1 source must be written back in iso-8859-1
+driver: gnatformat
+encoding: iso-8859-1
+args: ["--pipe", "test.ads"]

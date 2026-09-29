@@ -23,9 +23,15 @@ package Gnatformat.Range_Format is
         Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File :=
         GNATCOLL.VFS.No_File;
-      Default_Charset              : String :=
-        Gnatformat.Configuration.Default_Charset;
-      Pipe                         : Boolean := False);
-   --  Range formats the Selection_Range of Source.
+      Format_Options               :
+        Gnatformat.Configuration.Format_Options_Type);
+   --  Range formats the Selection_Range of Source and prints the resulting
+   --  edit to stdout.
+   --  Format_Options is used when Source is not associated with a project.
+   --  Source is decoded, and the edit encoded, with the charset explicitly
+   --  configured for it if any, otherwise with the one detected from its
+   --  contents (see Gnatformat.Encodings). Bails out with an error when the
+   --  encoding cannot be determined or Source starts with a byte order mark
+   --  incompatible with its configured charset.
 
 end Gnatformat.Range_Format;

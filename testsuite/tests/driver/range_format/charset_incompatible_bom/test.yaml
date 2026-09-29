@@ -1,0 +1,6 @@
+description: |
+  Range formatting must reject a byte order mark incompatible with the
+  configured charset instead of crashing
+driver: gnatformat
+args: ["test.ads", "--charset=iso-8859-1", "--range-format", "-SL 2", "-SC 1", "-EL 2", "-EC 16", "--pipe"]
+status_code: 1

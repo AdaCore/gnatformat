@@ -1,0 +1,1 @@
+--  test.ads was skipped because it contains NUL bytes, which suggests UTF-16 or UTF-32 without a byte order mark. Use --charset to format it.

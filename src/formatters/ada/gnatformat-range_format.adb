@@ -3,10 +3,12 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Exceptions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with Gnatformat.Bail;
+with Gnatformat.Encodings;
 with Gnatformat.Formatting;
 with Gnatformat.Edits;
 with Gnatformat.Identifier_Casing;
@@ -23,6 +25,8 @@ with Libadalang.Analysis;
 with Libadalang.Generic_API.Unparsing;
 
 package body Gnatformat.Range_Format is
+
+   package Encodings renames Gnatformat.Encodings;
 
    package Langkit_Support_Unparsing renames
      Langkit_Support.Generic_API.Unparsing;
@@ -75,9 +79,8 @@ package body Gnatformat.Range_Format is
         Gnatformat.Configuration.Format_Options_Type;
       Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File :=
         GNATCOLL.VFS.No_File;
-      Default_Charset              : String :=
-        Gnatformat.Configuration.Default_Charset;
-      Pipe                         : Boolean := False)
+      Format_Options               :
+        Gnatformat.Configuration.Format_Options_Type)
    is
       Unparsing_Configuration_Cache :
         Gnatformat.Configuration.Unparsing_Configuration_Cache_Type :=
@@ -106,67 +109,66 @@ package body Gnatformat.Range_Format is
               Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
                 Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
-            Format_Options : Gnatformat.Configuration.Format_Options_Type :=
-              Gnatformat.Configuration.Get
-                (Project_Format_Options_Cache, Project_Tree.Root_Project);
-
-            Project_Formatting_Config :
-              constant Gnatformat.Configuration.Format_Options_Type :=
+            View_Format_Options :
+              Gnatformat.Configuration.Format_Options_Type :=
                 (case Project_Source.Visible is
                    when True  =>
                      Gnatformat.Configuration.Get
                        (Project_Format_Options_Cache,
                         Project_Source.Visible_Source.Owning_View),
-                   when False => Format_Options);
-
-            Charset : constant String :=
-              Ada.Strings.Unbounded.To_String
-                (Gnatformat.Configuration.Get_Charset
-                   (Project_Formatting_Config,
-                    Project_Source.File.Display_Base_Name));
+                   when False =>
+                     Gnatformat.Configuration.Get
+                       (Project_Format_Options_Cache,
+                        Project_Tree.Root_Project));
 
             Source_Path : constant String :=
               Project_Source.File.Display_Full_Name (Normalize => True);
 
-            Identifier_Casing :
-              constant Gnatformat.Configuration.Identifier_Casing_Kind :=
-                Gnatformat.Configuration.Get_Identifier_Casing
-                  (Project_Formatting_Config,
-                   Project_Source.File.Display_Base_Name);
-
-            Resolution_Context :
-              constant Libadalang.Analysis.Analysis_Context :=
-                (case Identifier_Casing is
-                   when Gnatformat.Configuration.Definition =>
-                     Gnatformat.Project.Create_Resolution_Context
-                       (Project_Tree),
-                   when Gnatformat.Configuration.Keep
-                      | Gnatformat.Configuration.Lower
-                      | Gnatformat.Configuration.Upper
-                      | Gnatformat.Configuration.Mixed      =>
-                     Libadalang.Analysis.Create_Context);
-
-            Unit : constant Libadalang.Analysis.Analysis_Unit :=
-              (case Identifier_Casing is
-                 when Gnatformat.Configuration.Keep  =>
-                   Resolution_Context.Get_From_File (Source_Path, Charset),
-                 when Gnatformat.Configuration.Definition
-                    | Gnatformat.Configuration.Lower
-                    | Gnatformat.Configuration.Upper
-                    | Gnatformat.Configuration.Mixed =>
-                   Casing_Normalized_Unit
-                     (Resolution_Context => Resolution_Context,
-                      Filename           => Source_Path,
-                      Charset            => Charset,
-                      Casing             => Identifier_Casing));
-
-            Edits : Gnatformat.Edits.Formatting_Edit_Type;
-
          begin
             Gnatformat.Configuration.Overwrite
-              (Format_Options, CLI_Formatting_Config);
+              (View_Format_Options, CLI_Formatting_Config);
 
             declare
+               Encoding : constant Encodings.Source_Encoding :=
+                 Encodings.Resolve_Encoding
+                   (View_Format_Options, Project_Source.File);
+
+               Parsing_Charset : constant String :=
+                 Encodings.Parsing_Charset (Encoding);
+
+               Identifier_Casing :
+                 constant Gnatformat.Configuration.Identifier_Casing_Kind :=
+                   Gnatformat.Configuration.Get_Identifier_Casing
+                     (View_Format_Options,
+                      Project_Source.File.Display_Base_Name);
+
+               Resolution_Context :
+                 constant Libadalang.Analysis.Analysis_Context :=
+                   (case Identifier_Casing is
+                      when Gnatformat.Configuration.Definition =>
+                        Gnatformat.Project.Create_Resolution_Context
+                          (Project_Tree),
+                      when Gnatformat.Configuration.Keep
+                         | Gnatformat.Configuration.Lower
+                         | Gnatformat.Configuration.Upper
+                         | Gnatformat.Configuration.Mixed      =>
+                        Libadalang.Analysis.Create_Context);
+
+               Unit : constant Libadalang.Analysis.Analysis_Unit :=
+                 (case Identifier_Casing is
+                    when Gnatformat.Configuration.Keep  =>
+                      Resolution_Context.Get_From_File
+                        (Source_Path, Parsing_Charset),
+                    when Gnatformat.Configuration.Definition
+                       | Gnatformat.Configuration.Lower
+                       | Gnatformat.Configuration.Upper
+                       | Gnatformat.Configuration.Mixed =>
+                      Casing_Normalized_Unit
+                        (Resolution_Context => Resolution_Context,
+                         Filename           => Source_Path,
+                         Charset            => Parsing_Charset,
+                         Casing             => Identifier_Casing));
+
                Unparsing_Diagnostics :
                  Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
                Unparsing_Config      :
@@ -174,22 +176,29 @@ package body Gnatformat.Range_Format is
                    Gnatformat.Configuration.Get
                      (Unparsing_Configuration_Cache,
                       Project_Source.File.Display_Base_Name,
-                      Format_Options,
+                      View_Format_Options,
                       Unparsing_Diagnostics);
 
-            begin
-               Edits :=
+               Edits : Gnatformat.Edits.Formatting_Edit_Type :=
                  Gnatformat.Formatting.Range_Format
                    (Unit            => Unit,
                     Selection_Range => Selection_Range,
-                    Format_Options  => Format_Options,
+                    Format_Options  => View_Format_Options,
                     Configuration   => Unparsing_Config);
-            end;
 
-            if Pipe then
+            begin
+               --  The formatted text is UTF-8 encoded. Encode it back into
+               --  the same charset used to decode the source so that the
+               --  edit keeps the input encoding.
+
+               Edits.Text_Edit.Text :=
+                 Encodings.Encode
+                   (Edits.Text_Edit.Text,
+                    Ada.Strings.Unbounded.To_String (Encoding.Charset));
+
                Ada.Text_IO.Put_Line (Gnatformat.Edits.Image (Edits));
                Ada.Text_IO.New_Line;
-            end if;
+            end;
          end;
 
       else
@@ -205,10 +214,16 @@ package body Gnatformat.Range_Format is
             Source_Path : constant String :=
               Source.Display_Full_Name (Normalize => True);
 
+            Encoding : constant Encodings.Source_Encoding :=
+              Encodings.Resolve_Encoding (Format_Options, Source);
+
+            Parsing_Charset : constant String :=
+              Encodings.Parsing_Charset (Encoding);
+
             Identifier_Casing :
               constant Gnatformat.Configuration.Identifier_Casing_Kind :=
                 Gnatformat.Configuration.Get_Identifier_Casing
-                  (CLI_Formatting_Config, Source.Display_Base_Name);
+                  (Format_Options, Source.Display_Base_Name);
 
             Resolution_Context :
               constant Libadalang.Analysis.Analysis_Context :=
@@ -218,7 +233,7 @@ package body Gnatformat.Range_Format is
               (case Identifier_Casing is
                  when Gnatformat.Configuration.Keep  =>
                    Resolution_Context.Get_From_File
-                     (Source_Path, Default_Charset),
+                     (Source_Path, Parsing_Charset),
                  when Gnatformat.Configuration.Definition
                     | Gnatformat.Configuration.Lower
                     | Gnatformat.Configuration.Upper
@@ -226,7 +241,7 @@ package body Gnatformat.Range_Format is
                    Casing_Normalized_Unit
                      (Resolution_Context => Resolution_Context,
                       Filename           => Source_Path,
-                      Charset            => Default_Charset,
+                      Charset            => Parsing_Charset,
                       Casing             => Identifier_Casing));
 
             Unparsing_Diagnostics :
@@ -236,23 +251,50 @@ package body Gnatformat.Range_Format is
                 Gnatformat.Configuration.Get
                   (Unparsing_Configuration_Cache,
                    Source.Display_Base_Name,
-                   CLI_Formatting_Config,
+                   Format_Options,
                    Unparsing_Diagnostics);
 
-            Edits : constant Gnatformat.Edits.Formatting_Edit_Type :=
+            Edits : Gnatformat.Edits.Formatting_Edit_Type :=
               Gnatformat.Formatting.Range_Format
                 (Unit            => Unit,
                  Selection_Range => Selection_Range,
-                 Format_Options  => CLI_Formatting_Config,
+                 Format_Options  => Format_Options,
                  Configuration   => Unparsing_Config);
 
          begin
-            if Pipe then
-               Ada.Text_IO.Put_Line (Gnatformat.Edits.Image (Edits));
-               Ada.Text_IO.New_Line;
-            end if;
+            --  The formatted text is UTF-8 encoded. Encode it back into the
+            --  same charset used to decode the source so that the edit keeps
+            --  the input encoding.
+
+            Edits.Text_Edit.Text :=
+              Encodings.Encode
+                (Edits.Text_Edit.Text,
+                 Ada.Strings.Unbounded.To_String (Encoding.Charset));
+
+            Ada.Text_IO.Put_Line (Gnatformat.Edits.Image (Edits));
+            Ada.Text_IO.New_Line;
          end;
       end if;
+
+   exception
+      when E : Encodings.Undetermined_Encoding_Error =>
+         Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            Source.Display_Base_Name
+            & " cannot be formatted because "
+            & Ada.Exceptions.Exception_Message (E)
+            & ". Use --charset to format it.");
+         Gnatformat.Bail.Bail (1);
+
+      when E : Encodings.Incompatible_BOM_Error =>
+         Ada.Text_IO.New_Line (Ada.Text_IO.Standard_Error);
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error,
+            Source.Display_Base_Name & " cannot be formatted.");
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error, Ada.Exceptions.Exception_Message (E));
+         Gnatformat.Bail.Bail (1);
    end Range_Format;
 
 end Gnatformat.Range_Format;

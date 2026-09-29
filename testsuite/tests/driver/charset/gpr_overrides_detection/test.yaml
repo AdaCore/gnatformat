@@ -1,0 +1,5 @@
+description: The Charset attribute must take precedence over charset detection
+driver: gnatformat
+encoding: iso-8859-1
+args: ["-P", "test.gpr", "--pipe"]
+status_code: 1

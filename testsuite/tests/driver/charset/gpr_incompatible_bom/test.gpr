@@ -1,0 +1,5 @@
+project Test is
+   package Format is
+      for Charset ("Ada") use "iso-8859-1";
+   end Format;
+end Test;

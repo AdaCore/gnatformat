@@ -5,7 +5,6 @@
 
 with Ada.Command_Line;
 with Ada.Exceptions;
-with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with GNAT.Traceback.Symbolic;
@@ -31,18 +30,6 @@ with GPR2.Project.Tree;
 with Langkit_Support.Slocs;
 
 procedure Gnatformat.Ada_Driver is
-
-   function Charset return String
-   is (declare
-         CLI_Charset :
-           constant Gnatformat.Configuration.Optional_Unbounded_String :=
-             Gnatformat.Command_Line.Charset.Get;
-       begin
-         (if CLI_Charset.Is_Set
-          then Ada.Strings.Unbounded.To_String (CLI_Charset.Value)
-          else Gnatformat.Configuration.Default_Charset));
-   --  Return charset from command line option or default one if none.
-
 begin
    GNATCOLL.Traces.Parse_Config_File;
 
@@ -172,8 +159,8 @@ begin
                  (Gnatformat.Command_Line.End_Column.Get)),
             CLI_Formatting_Config        => CLI_Formatting_Config,
             Unparsing_Configuration_File => Unparsing_Configuration_File,
-            Default_Charset              => Charset,
-            Pipe                         => Gnatformat.Command_Line.Pipe.Get);
+            Format_Options               =>
+              Gnatformat.Command_Line.Configuration.Get);
 
       else
          Gnatformat.Full_Format.Full_Format
@@ -185,7 +172,6 @@ begin
             Format_Options => Gnatformat.Command_Line.Configuration.Get,
             Check          => Gnatformat.Command_Line.Check.Get,
             Keep_Going     => Gnatformat.Command_Line.Keep_Going.Get,
-            Charset        => Charset,
             Base_Commit_ID => Gnatformat.Command_Line.Gitdiff.Get);
       end if;
    end;
