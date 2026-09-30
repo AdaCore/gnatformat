@@ -28,29 +28,29 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    'sphinx.ext.viewcode',
-    'sphinx_rtd_theme',
+    "sphinx.ext.viewcode",
+    "sphinx_rtd_theme",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 
 def get_copyright():
-    return u'2024-%s, AdaCore' % time.strftime("%Y")
+    return "2024-%s, AdaCore" % time.strftime("%Y")
 
 
 # General information about the project.
-project = u'gnatformat'
+project = "gnatformat"
 copyright = get_copyright()
 
 
@@ -85,7 +85,7 @@ release = version
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -113,7 +113,7 @@ pygments_style = None
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -129,19 +129,19 @@ html_theme_options = {
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-# html_title = None
+html_title = "GNATformat v<release> User's Guide"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'adacore-logo-white.png'
+html_logo = "adacore-logo-white.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = 'favicon.ico'
+html_favicon = "favicon.ico"
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -162,7 +162,7 @@ html_favicon = 'favicon.ico'
 # html_domain_indices = True
 
 # If false, no index is generated.
-# html_use_index = True
+html_use_index = True
 
 # If true, the index is split into individual pages for each letter.
 # html_split_index = False
@@ -185,7 +185,7 @@ html_favicon = 'favicon.ico'
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'gnatformat-doc'
+htmlhelp_basename = "gnatformat-doc"
 
 # -- Options for LaTeX output -------------------------------------------------
 
@@ -198,8 +198,7 @@ htmlhelp_basename = 'gnatformat-doc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual])
 latex_documents = [
-    ('index', 'gnatformat.tex', u'gnatformat Documentation',
-     u'AdaCore', 'manual'),
+    ("index", "gnatformat.tex", "GNATformat User's Guide", "AdaCore", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -229,17 +228,14 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'gnatformat', u'gnatformat Documentation',
-     [u'AdaCore'], 1)
-]
+man_pages = [("index", "gnatformat", "gnatformat Documentation", ["AdaCore"], 1)]
 
 # -- Options for Epub output --------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'gnatformat'
-epub_author = u'AdaCore'
-epub_publisher = u'AdaCore'
+epub_title = "gnatformat"
+epub_author = "AdaCore"
+epub_publisher = "AdaCore"
 epub_copyright = copyright
 
 # The language of the text. It defaults to the language option
