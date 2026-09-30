@@ -1,0 +1,26 @@
+/* Force tables to respect container bounds */
+.rst-content table.docutils,
+table.docutils {
+    width: 100% !important;
+    table-layout: fixed !important;
+}
+
+/* Allow text and paragraph blocks inside cells to wrap */
+.rst-content table.docutils td,
+.rst-content table.docutils th,
+table.docutils td,
+table.docutils th {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* Force inline code blocks inside table cells to wrap long text */
+.rst-content table.docutils td code,
+.rst-content table.docutils td span,
+table.docutils td code,
+table.docutils td span {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+}
