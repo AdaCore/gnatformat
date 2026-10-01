@@ -124,6 +124,14 @@ html_theme_options = {
     "style_nav_header_background": "#12284c",
 }
 
+# Tell Sphinx where static assets are located
+html_static_path = ["_static"]
+
+# Register custom CSS files
+html_css_files = [
+    "tables.css",
+]
+
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
 
@@ -223,6 +231,21 @@ latex_documents = [
 
 # If false, no module index is generated.
 # latex_domain_indices = True
+
+# Ensures LaTeX automatically calculates column widths for simple grid tables
+latex_elements = {
+    # Ensure long table text auto-wraps without running off the page
+    "extraclassoptions": "openany,oneside",
+    "preamble": r"""
+        % Use standard LaTeX table packages supported by Sphinx
+        \usepackage{tabularx}
+        \usepackage{longtable}
+        \usepackage{array}
+        
+        % Allow break points at underscores and hyphens in long identifiers/flags
+        \PassOptionsToPackage{hyphens}{url}
+    """,
+}
 
 # -- Options for manual page output -------------------------------------------
 
