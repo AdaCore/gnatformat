@@ -1,0 +1,6 @@
+description: |
+  A UTF-16 LE byte order mark must be rejected with --charset=utf-16be,
+  leaving the file untouched
+driver: gnatformat_on_disk
+args: ["--charset=utf-16be", "test.ads"]
+status_code: 1

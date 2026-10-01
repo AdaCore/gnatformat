@@ -1,0 +1,5 @@
+description: |
+  --check must accept a correctly formatted UTF-8 source, line widths being
+  counted in characters
+driver: gnatformat
+args: ["--check", "test.ads"]

@@ -1,8 +1,9 @@
 --
---  Copyright (C) 2024-2025, AdaCore
+--  Copyright (C) 2024-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with "gnatcoll_iconv";
 with "gnatformat_common";
 with "libadalang";
 with "prettier_ada";

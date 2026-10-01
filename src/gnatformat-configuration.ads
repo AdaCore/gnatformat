@@ -117,14 +117,14 @@ package Gnatformat.Configuration is
 
    function Get_Charset
      (Self : Format_Options_Type; Source_Filename : String)
-      return Ada.Strings.Unbounded.Unbounded_String;
+      return Optional_Unbounded_String;
    --  Retrieves the charset option for the specified Source_Filename if it
    --  exists.
    --  If the charset option for Source_Filename does not exist, the function
    --  will fall back to the language-level charset option if it is available.
-   --  If neither the Source_Filename charset option nor the language-level
-   --  option is available, the function returns the default charset defined
-   --  by Default_Basic_Format_Options.Charset.Value.
+   --  The result is unset when no charset was explicitly configured for
+   --  Source_Filename or at the language level: no default is applied because
+   --  it is not reasonable to assume an encoding.
 
    function Get_End_Of_Line
      (Self : Format_Options_Type; Source_Filename : String)
@@ -245,13 +245,17 @@ package Gnatformat.Configuration is
      (Self : Format_Options_Type; Source_Filename : String)
       return Prettier_Ada.Documents.Format_Options_Type;
    --  Converts a Format_Options_type for the provided Source_Filename into an
-   --  equivalent Prettier_Ada Format_Options.Type. If there's no configuration
-   --  for this source, then fallback to the language-level configuration. If
-   --  there's no language-level configuration returns Default_Format_Options.
+   --  equivalent Prettier_Ada Format_Options.Type. Each option not configured
+   --  for this source falls back to the language-level configuration, then to
+   --  Default_Format_Options.
 
    procedure Overwrite
      (Target : in out Format_Options_Type; Source : Format_Options_Type);
-   --  Overwrites Target's options by Source's ones
+   --  Overwrites Target's options by Source's ones: every option set in
+   --  Source, whether language-level or source-specific, takes precedence
+   --  over the options of Target, including Target's source-specific ones.
+   --  For instance, with a project as Target and the command line as
+   --  Source, --width wins over the project's Width ("foo.ads") attribute.
 
    Default_Format_Options : constant Format_Options_Type;
 
@@ -544,8 +548,9 @@ private
    function Into
      (Format_Options : Format_Options_Type; Source_Filename : String)
       return Basic_Format_Options_Type;
-   --  Gets Basic_Format_Options_Type for Source_Filename if existent,
-   --  otherwise fallsback to the language-level Basic_Format_Options_Type.
+   --  Gets the Basic_Format_Options_Type that applies to Source_Filename: its
+   --  source-specific options if any, each option falling back to the
+   --  language-level one when it is not set for Source_Filename.
 
    procedure Overwrite
      (Target : in out Basic_Format_Options_Type;

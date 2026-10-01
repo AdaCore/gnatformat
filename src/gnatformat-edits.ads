@@ -56,8 +56,12 @@ package Gnatformat.Edits is
 
    subtype Formatting_Edits_Type is Formatting_Edit_Hashed_Maps.Map;
 
-   procedure Apply_Edits (Edits : Formatting_Edits_Type);
-   --  Applies Edits on disk
+   procedure Apply_Edits
+     (Edits : Formatting_Edits_Type; Charset : String := "utf-8");
+   --  Applies Edits on disk.
+   --  The sources associated to Edits are decoded using Charset and written
+   --  back using the same Charset. The edits' text is expected to be UTF-8
+   --  encoded (as returned by the Gnatformat.Formatting functions).
 
    function Apply_Edits
      (Source : Ada.Strings.Unbounded.Unbounded_String;

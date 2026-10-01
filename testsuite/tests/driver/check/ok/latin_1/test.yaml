@@ -1,0 +1,4 @@
+description: --check must accept a correctly formatted iso-8859-1 source
+driver: gnatformat
+encoding: iso-8859-1
+args: ["--check", "test.ads"]
