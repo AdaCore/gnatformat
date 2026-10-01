@@ -1,0 +1,5 @@
+description: --charset must take precedence over charset detection
+driver: gnatformat
+encoding: iso-8859-1
+args: ["--charset=utf-8", "--pipe", "test.ads"]
+status_code: 1

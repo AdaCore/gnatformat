@@ -1,0 +1,4 @@
+description: Range formatting must encode the edit back into iso-8859-1
+driver: gnatformat
+encoding: iso-8859-1
+args: ["test.ads", "--range-format", "-SL 3", "-SC 1", "-EL 3", "-EC 30", "--pipe"]

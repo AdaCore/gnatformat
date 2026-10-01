@@ -1,0 +1,4 @@
+description: Output must be encoded in the charset given with --charset
+driver: gnatformat
+encoding: iso-8859-15
+args: ["--charset=iso-8859-15", "--pipe", "test.ads"]

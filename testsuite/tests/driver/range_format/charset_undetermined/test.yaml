@@ -1,0 +1,5 @@
+description: |
+  Range formatting must reject a source with an undetermined encoding
+driver: gnatformat
+args: ["test.ads", "--range-format", "-SL 3", "-SC 1", "-EL 3", "-EC 30", "--pipe"]
+status_code: 1

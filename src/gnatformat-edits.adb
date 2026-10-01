@@ -15,11 +15,11 @@ with VSS.Characters;
 with VSS.Characters.Latin;
 with VSS.Strings.Conversions;
 with VSS.String_Vectors;
-with VSS.Text_Streams;
-with VSS.Text_Streams.File_Input;
-with VSS.Text_Streams.File_Output;
 with VSS.Strings.Cursors.Iterators;
 with VSS.Strings.Cursors.Iterators.Characters;
+
+with Gnatformat.Encodings;
+with Gnatformat.Helpers;
 
 package body Gnatformat.Edits is
    package Positive_Vectors is new Ada.Containers.Vectors (Positive, Positive);
@@ -37,8 +37,10 @@ package body Gnatformat.Edits is
      File_Name_To_Virtual_String_Maps.Map;
 
    function Apply_Edits
-     (Edits : Formatting_Edits_Type) return File_Name_To_Virtual_String_Map;
-   --  Apply Edits on memory
+     (Edits : Formatting_Edits_Type; Charset : String)
+      return File_Name_To_Virtual_String_Map;
+   --  Apply Edits on memory. The sources associated to Edits are decoded
+   --  using Charset.
 
    procedure Compute_Line_Length
      (Line        : VSS.Strings.Virtual_String;
@@ -53,11 +55,13 @@ package body Gnatformat.Edits is
    -- Apply_Edits --
    -----------------
 
-   procedure Apply_Edits (Edits : Formatting_Edits_Type) is
+   procedure Apply_Edits
+     (Edits : Formatting_Edits_Type; Charset : String := "utf-8")
+   is
       use File_Name_To_Virtual_String_Maps;
 
       File_Edits   : constant File_Name_To_Virtual_String_Map :=
-        Apply_Edits (Edits);
+        Apply_Edits (Edits, Charset);
       Edits_Cursor : Cursor := File_Edits.First;
 
    begin
@@ -67,16 +71,18 @@ package body Gnatformat.Edits is
 
       while Has_Element (Edits_Cursor) loop
          declare
-            Output : VSS.Text_Streams.File_Output.File_Output_Text_Stream;
             Buffer : constant VSS.Strings.Virtual_String :=
               Element (Edits_Cursor);
-            Ignore : Boolean := True;
 
          begin
-            Output.Create
-              (VSS.Strings.Conversions.To_Virtual_String (Key (Edits_Cursor)));
-            Output.Put (Buffer, Ignore);
-            Output.Close;
+            --  Encode the edited source back into the same Charset used to
+            --  decode it, so that its encoding is preserved.
+
+            Gnatformat.Helpers.Write
+              (Key (Edits_Cursor),
+               Gnatformat.Encodings.Encode
+                 (VSS.Strings.Conversions.To_Unbounded_UTF_8_String (Buffer),
+                  Charset));
 
          exception
             when E : others =>
@@ -92,7 +98,8 @@ package body Gnatformat.Edits is
    -----------------
 
    function Apply_Edits
-     (Edits : Formatting_Edits_Type) return File_Name_To_Virtual_String_Map
+     (Edits : Formatting_Edits_Type; Charset : String)
+      return File_Name_To_Virtual_String_Map
    is
       use Formatting_Edit_Hashed_Maps;
 
@@ -106,12 +113,8 @@ package body Gnatformat.Edits is
 
       while Has_Element (Edits_Cursor) loop
          declare
-            Original_Filename : constant VSS.Strings.Virtual_String :=
-              VSS.Strings.Conversions.To_Virtual_String (Key (Edits_Cursor));
-            Original_File     :
-              VSS.Text_Streams.File_Input.File_Input_Text_Stream;
-            Input_Buffer      : VSS.Strings.Virtual_String;
-            Output_Buffer     : VSS.Strings.Virtual_String;
+            Input_Buffer  : VSS.Strings.Virtual_String;
+            Output_Buffer : VSS.Strings.Virtual_String;
 
             Text_Edits        : constant Constant_Reference_Type :=
               Constant_Reference (Edits, Edits_Cursor);
@@ -124,16 +127,19 @@ package body Gnatformat.Edits is
             Current_Line_Number   : Natural;
             Current_Column_Number : Natural;
 
-            Current_Character : VSS.Characters.Virtual_Character;
-            Success           : Boolean := True;
-
          begin
-            Original_File.Open (Original_Filename, "utf-8");
-            while not Original_File.Is_End_Of_Stream loop
-               Original_File.Get (Current_Character, Success);
-               Input_Buffer.Append (Current_Character);
-            end loop;
-            Original_File.Close;
+            --  Decode the original source from Charset into UTF-8 so that it
+            --  can be manipulated as a Virtual_String alongside the edits'
+            --  text (which is UTF-8 encoded).
+
+            Input_Buffer :=
+              VSS.Strings.Conversions.To_Virtual_String
+                (Ada.Strings.UTF_Encoding.UTF_8_String'
+                   (Ada.Strings.Unbounded.To_String
+                      (Gnatformat.Encodings.Decode
+                         (Gnatformat.Helpers.Read_To_Unbounded_String
+                            (Key (Edits_Cursor)),
+                          Charset))));
 
             declare
                Lines          :

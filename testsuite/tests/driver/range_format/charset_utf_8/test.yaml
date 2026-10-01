@@ -1,0 +1,3 @@
+description: Range formatting must keep the edit of a UTF-8 source in UTF-8
+driver: gnatformat
+args: ["test.ads", "--range-format", "-SL 3", "-SC 1", "-EL 3", "-EC 31", "--pipe"]

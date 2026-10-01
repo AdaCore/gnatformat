@@ -7,6 +7,7 @@ with Ada.Characters.Latin_1;
 with Ada.Containers;
 with Ada.Containers.Vectors;
 with Ada.Directories;
+with Ada.Strings.Wide_Wide_Fixed;
 
 with Langkit_Support.Diagnostics; use Langkit_Support.Diagnostics;
 with Langkit_Support.Text;
@@ -90,6 +91,33 @@ package body Gnatformat.Formatting is
    --  '--!format off' and '--!format on'
    --  '--!pp off' and '--!pp on'
    --  '--  begin read only' and '--  end read only'
+
+   function Contains_Off_On_Markers
+     (Source : Langkit_Support.Text.Text_Type) return Boolean;
+   --  Checks if Source contains any of the On_Off_Section_Markers substrings.
+
+   -----------------------------
+   -- Contains_Off_On_Markers --
+   -----------------------------
+
+   function Contains_Off_On_Markers
+     (Source : Langkit_Support.Text.Text_Type) return Boolean is
+   begin
+      for Markers of On_Off_Section_Markers loop
+         for Kind in Marker_Kind loop
+            if Ada.Strings.Wide_Wide_Fixed.Index
+                 (Source,
+                  Langkit_Support.Text.To_Text
+                    (Ada.Strings.Unbounded.To_String (Markers (Kind))))
+              /= 0
+            then
+               return True;
+            end if;
+         end loop;
+      end loop;
+
+      return False;
+   end Contains_Off_On_Markers;
 
    ------------
    -- Format --
@@ -703,17 +731,26 @@ package body Gnatformat.Formatting is
         Langkit_Support.Generic_API.Unparsing.Unparse_To_Prettier
           (Unit.Root, Configuration);
 
-      Original_Source  : constant Ada.Strings.Unbounded.Unbounded_String :=
-        Ada.Strings.Unbounded.To_Unbounded_String
-          (Langkit_Support.Text.To_UTF8 (Unit.Text));
+      Original_Text    : constant Langkit_Support.Text.Text_Type := Unit.Text;
       Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
         Prettier_Ada.Documents.Format (Document, Format_Options);
 
       Unpaired_Markers : Unpaired_Diagnostic_Vector := [];
 
+      --  Restoring the off/on sections needs the original source converted to
+      --  UTF-8, which is expensive for large sources. Skip both the
+      --  conversion and the restoration for the common case of sources
+      --  without any marker.
+
       Formatted_String : constant Ada.Strings.Unbounded.Unbounded_String :=
-        Restore_Off_On_Sections
-          (Original_Source, Formatted_Source, Unpaired_Markers);
+        (if Contains_Off_On_Markers (Original_Text)
+         then
+           Restore_Off_On_Sections
+             (Ada.Strings.Unbounded.To_Unbounded_String
+                (Langkit_Support.Text.To_UTF8 (Original_Text)),
+              Formatted_Source,
+              Unpaired_Markers)
+         else Formatted_Source);
 
    begin
       if Unpaired_Markers.Length /= 0 then
@@ -1514,7 +1551,8 @@ package body Gnatformat.Formatting is
       Estimated_Indentation : Natural := 0;
 
       Prettier_Format_Options : Prettier_Ada.Documents.Format_Options_Type :=
-        Gnatformat.Configuration.Into (Format_Options);
+        Gnatformat.Configuration.Into
+          (Format_Options, Ada.Directories.Simple_Name (Unit.Get_Filename));
 
       Offset_Set : Boolean := False;
 

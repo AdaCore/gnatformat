@@ -1,0 +1,6 @@
+project Test is
+   package Format is
+      for Charset ("Ada") use "windows-1252";
+      for Width ("test.ads") use "100";
+   end Format;
+end Test;

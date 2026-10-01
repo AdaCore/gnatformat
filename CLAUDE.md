@@ -80,6 +80,7 @@ The public library API lives in `src/`:
 - `gnatformat.ads` — root package; defines version constants and the `Gnatformat_Trace` handle
 - `gnatformat-configuration.ads/.adb` — `Format_Options_Type` (width, indentation, charset, end-of-line, keyword casing, ignore); `Format_Options_Builder_Type` for constructing options; `From_Project` to read options from a GPR2 project's `package Format`; `Load_Unparsing_Configuration` for formatting rules
 - `gnatformat-formatting.ads/.adb` — core `Format` and `Range_Format` functions; takes an `Analysis_Unit` + `Format_Options_Type` and returns formatted text or a `Formatting_Edit_Type`
+- `gnatformat-encodings.ads/.adb` — per-source charset resolution: `Resolve_Encoding` uses the configured charset (checking any byte order mark against it with `Check_BOM`) or detects one (`Detect_From_File`: BOM, then UTF-8 validation, then iso-8859-1); `Decode`/`Encode` convert between a charset and UTF-8 via GNATCOLL.Iconv
 - `gnatformat-edits.ads/.adb` — `Text_Edit_Type` / `Formatting_Edit_Type` / `Formatting_Edits_Type`; `Apply_Edits` to write edits to disk
 - `gnatformat-helpers.ads/.adb` — internal formatting helpers
 - `gnatformat-utils.ads` — generic `Optional` type used throughout
@@ -97,7 +98,7 @@ The CLI binary is assembled here:
 - `gnatformat-abstract_writers.ads` — writer interface (write formatted output)
 - `gnatformat-console_writers.ads/.adb` — writer that outputs to stdout (`--pipe` mode)
 - `gnatformat-file_writers.ads/.adb` — writer that overwrites files in place
-- `gitdiff.ads/.adb` — support for `--git-diff` mode (format only changed lines)
+- `gnatformat-gitdiff.ads/.adb` — support for `--gitdiff` mode (format only changed lines)
 
 ### Git subcommand wrapper (`src/formatters/git/`)
 

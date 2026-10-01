@@ -1,0 +1,6 @@
+description: |
+  A UTF-8 byte order mark must be rejected with a project Charset of
+  iso-8859-1, leaving the file untouched
+driver: gnatformat_on_disk
+args: ["-P", "test.gpr"]
+status_code: 1

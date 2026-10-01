@@ -1,0 +1,5 @@
+description: |
+  --charset=utf-16le must strip a UTF-16 LE byte order mark for parsing and
+  preserve it
+driver: gnatformat_on_disk
+args: ["--charset=utf-16le", "test.ads"]

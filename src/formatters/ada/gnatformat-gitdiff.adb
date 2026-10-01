@@ -3,18 +3,28 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Ada.Containers.Indefinite_Hashed_Maps;
 with Ada.Directories;
+with Ada.Exceptions;
+with Ada.Strings.Hash_Case_Insensitive;
 with GNAT.Expect;
 with GNAT.OS_Lib;
 with GNAT.Regpat;
 
+with GNATCOLL.VFS;
+
+with Langkit_Support.Diagnostics;
 with Langkit_Support.Slocs;
 
+with Gnatformat.Encodings;
 with Gnatformat.Edits; use Gnatformat.Edits;
 with Gnatformat.Formatting;
+with Gnatformat.Project;
 
-package body Gitdiff is
+package body Gnatformat.Gitdiff is
    package Slocs renames Langkit_Support.Slocs;
+
+   package Encodings renames Gnatformat.Encodings;
 
    package Fmt renames Gnatformat.Formatting;
 
@@ -96,8 +106,6 @@ package body Gitdiff is
 
       Set.Include (Edit);
    end Insert_Edit;
-
-   Git_Command_Failed : exception;
 
    procedure CD_To_Toplevel;
    --  This is inspired by and equivalent to the function of the same name in
@@ -205,16 +213,32 @@ package body Gitdiff is
       Set  : Text_Edit_Ordered_Set;
    end record;
 
-   function Open (File_Name : String; Ctx : Context) return File_State;
+   function Open
+     (Source          : GNATCOLL.VFS.Virtual_File;
+      Parsing_Charset : String;
+      Ctx             : Context) return File_State;
 
-   function Open (File_Name : String; Ctx : Context) return File_State is
+   function Open
+     (Source          : GNATCOLL.VFS.Virtual_File;
+      Parsing_Charset : String;
+      Ctx             : Context) return File_State is
    begin
       return X : File_State do
          X.Unit :=
-           Ctx.Lal_Ctx.Get_From_File (File_Name, To_String (Ctx.Charset));
+           Ctx.Lal_Ctx.Get_From_File
+             (Source.Display_Full_Name, Parsing_Charset);
          X.Set := Text_Edit_Ordered_Sets.Empty_Set;
       end return;
    end Open;
+
+   package Charset_Maps is new
+     Ada.Containers.Indefinite_Hashed_Maps
+       (Key_Type        => Source_Path_Type,
+        Element_Type    => Unbounded_String,
+        Hash            => Ada.Strings.Hash_Case_Insensitive,
+        Equivalent_Keys => "=");
+   --  Maps each file to be edited to the charset used to decode it, so that
+   --  its edits are applied and written back with the same charset.
 
    procedure Process_Hunk
      (State                 : in out File_State;
@@ -252,40 +276,137 @@ package body Gitdiff is
    end Process_Hunk;
 
    function Process_File
-     (File_Name : String;
+     (Source    : GNATCOLL.VFS.Virtual_File;
       Ctx       : Context;
+      Writer    : in out Gnatformat.Abstract_Writers.Abstract_Writer'Class;
       Map       : in out Formatting_Edits_Type;
+      Charsets  : in out Charset_Maps.Map;
       Diff_Text : String;
       Cursor    : in out Positive;
       Matcher   : GNAT.Regpat.Pattern_Matcher) return Unbounded_String;
 
    function Process_File
-     (File_Name : String;
+     (Source    : GNATCOLL.VFS.Virtual_File;
       Ctx       : Context;
+      Writer    : in out Gnatformat.Abstract_Writers.Abstract_Writer'Class;
       Map       : in out Formatting_Edits_Type;
+      Charsets  : in out Charset_Maps.Map;
       Diff_Text : String;
       Cursor    : in out Positive;
       Matcher   : GNAT.Regpat.Pattern_Matcher) return Unbounded_String
    is
-      State : File_State := Open (File_Name, Ctx);
+      function Skip_Hunks return Unbounded_String;
+      --  Consumes the hunks of the current file without formatting them and
+      --  returns the name of the next file in the diff, if any.
 
-      E : Diff_Elem;
+      ----------------
+      -- Skip_Hunks --
+      ----------------
+
+      function Skip_Hunks return Unbounded_String is
+         E : Diff_Elem;
+      begin
+         loop
+            E := Get_Next (Diff_Text, Cursor, Matcher);
+
+            case E.Kind is
+               when File =>
+                  return E.File_Name;
+
+               when Hunk =>
+                  null;
+
+               when None =>
+                  return Null_Unbounded_String;
+            end case;
+         end loop;
+      end Skip_Hunks;
+
+      Source_Name : constant String := Source.Display_Base_Name;
+      Source_Path : constant String := Source.Display_Full_Name;
+
+      Encoding : Encodings.Source_Encoding;
+
    begin
-      loop
-         E := Get_Next (Diff_Text, Cursor, Matcher);
-         case E.Kind is
-            when File =>
-               Map.Insert (File_Name, State.Set);
-               return E.File_Name;
+      begin
+         Encoding := Encodings.Resolve_Encoding (Ctx.Options, Source);
 
-            when Hunk =>
-               Process_Hunk (State, E.First_Line, E.Last_Line, Ctx);
+      exception
+         when E : Encodings.Undetermined_Encoding_Error =>
+            Writer.Print_Warning
+              ("--  "
+               & Source_Name
+               & " was skipped because "
+               & Ada.Exceptions.Exception_Message (E)
+               & ". Use --charset to format it.");
 
-            when None =>
-               Map.Insert (File_Name, State.Set);
-               return Null_Unbounded_String;
-         end case;
-      end loop;
+            return Skip_Hunks;
+
+         when E : Encodings.Incompatible_BOM_Error =>
+            Gnatformat.Project.Set_General_Failed;
+
+            Writer.Print_Error ("--  " & Source_Name & " failed to format");
+            Writer.Print_Error (Ada.Exceptions.Exception_Message (E), False);
+
+            return Skip_Hunks;
+      end;
+
+      if Encoding.Has_BOM then
+         --  Edits are applied by line and column on the decoded source, which
+         --  still contains the byte order mark character, while Libadalang's
+         --  source locations do not count it: an edit on the first line would
+         --  land one character off.
+
+         Writer.Print_Warning
+           ("--  "
+            & Source_Name
+            & " was skipped because it starts with a byte order mark, which "
+            & "--gitdiff does not support");
+
+         return Skip_Hunks;
+      end if;
+
+      declare
+         State : File_State :=
+           Open (Source, Encodings.Parsing_Charset (Encoding), Ctx);
+
+         E : Diff_Elem;
+      begin
+         if State.Unit.Has_Diagnostics then
+            --  Range formatting a unit with parse errors fails and would
+            --  abort the whole run. Report the errors and skip the file
+            --  instead, like full formatting does.
+
+            Gnatformat.Project.Set_General_Failed;
+
+            Writer.Print_Error ("--  " & Source_Name & " failed to format");
+            for Diagnostic of State.Unit.Diagnostics loop
+               Writer.Print_Error
+                 (Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic),
+                  False);
+            end loop;
+
+            return Skip_Hunks;
+         end if;
+
+         loop
+            E := Get_Next (Diff_Text, Cursor, Matcher);
+            case E.Kind is
+               when File =>
+                  Map.Insert (Source_Path, State.Set);
+                  Charsets.Insert (Source_Path, Encoding.Charset);
+                  return E.File_Name;
+
+               when Hunk =>
+                  Process_Hunk (State, E.First_Line, E.Last_Line, Ctx);
+
+               when None =>
+                  Map.Insert (Source_Path, State.Set);
+                  Charsets.Insert (Source_Path, Encoding.Charset);
+                  return Null_Unbounded_String;
+            end case;
+         end loop;
+      end;
    end Process_File;
 
    --  The following regular expressions are inspired from the ones used by
@@ -300,7 +421,12 @@ package body Gitdiff is
    Regpat_Flags : constant GNAT.Regpat.Regexp_Flags :=
      GNAT.Regpat.Multiple_Lines;
 
-   procedure Format_New_Lines (Base_Commit_ID : String; Ctx : Context) is
+   procedure Format_New_Lines
+     (Base_Commit_ID : String;
+      Ctx            : Context;
+      Writer         :
+        in out Gnatformat.Abstract_Writers.Abstract_Writer'Class)
+   is
       use GNAT.Regpat;
 
       Args : GNAT.OS_Lib.Argument_List :=
@@ -331,6 +457,8 @@ package body Gitdiff is
 
          Formatting_Edits : Formatting_Edits_Type :=
            Formatting_Edit_Hashed_Maps.Empty_Map;
+
+         Charsets : Charset_Maps.Map;
       begin
          for I in Args'Range loop
             GNAT.OS_Lib.Free (Args (I));
@@ -358,16 +486,24 @@ package body Gitdiff is
 
          Iterate_Over_Files : while File_Name /= Null_Unbounded_String loop
             declare
-               use Ada.Directories;
-               S : constant String := To_String (File_Name);
-            begin
-               if Extension (S) = "ads" or else Extension (S) = "adb" then
+               --  File_Name is relative to the repository's top-level
+               --  directory, which is the current directory since the call
+               --  to CD_To_Toplevel.
 
+               Source : constant GNATCOLL.VFS.Virtual_File :=
+                 GNATCOLL.VFS.Create_From_Base
+                   (GNATCOLL.VFS."+" (To_String (File_Name)));
+
+            begin
+               if GNATCOLL.VFS."+" (Source.File_Extension) in ".ads" | ".adb"
+               then
                   File_Name :=
                     Process_File
-                      (To_String (File_Name),
+                      (Source,
                        Ctx,
+                       Writer,
                        Formatting_Edits,
+                       Charsets,
                        Diff_Text,
                        Cursor,
                        Matcher);
@@ -392,7 +528,20 @@ package body Gitdiff is
             end;
          end loop Iterate_Over_Files;
 
-         Apply_Edits (Formatting_Edits);
+         --  Apply each file's edits with the charset used to decode it, so
+         --  that the formatted lines keep the file's input encoding.
+
+         for Position in Formatting_Edits.Iterate loop
+            declare
+               File_Name  : constant String :=
+                 Formatting_Edit_Hashed_Maps.Key (Position);
+               File_Edits : Formatting_Edits_Type;
+
+            begin
+               File_Edits.Insert (File_Name, Formatting_Edits (Position));
+               Apply_Edits (File_Edits, To_String (Charsets (File_Name)));
+            end;
+         end loop;
       end;
 
    exception
@@ -402,4 +551,4 @@ package body Gitdiff is
          end loop;
          raise;
    end Format_New_Lines;
-end Gitdiff;
+end Gnatformat.Gitdiff;

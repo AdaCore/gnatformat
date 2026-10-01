@@ -231,7 +231,10 @@ package Gnatformat.Command_Line is
        (Parser      => Parser,
         Long        => "--charset",
         Help        =>
-          "Charset to use for source decoding (default value = iso-8859-1)",
+          "Charset to use for source decoding and formatted source encoding. "
+          & "When not set, it is detected per source (byte order mark, then "
+          & "UTF-8 validation, then iso-8859-1 when plausible) and sources "
+          & "whose encoding cannot be determined are not formatted",
         Arg_Type    => Gnatformat.Configuration.Optional_Unbounded_String,
         Convert     => To_Optional_Unbounded_String,
         Default_Val =>

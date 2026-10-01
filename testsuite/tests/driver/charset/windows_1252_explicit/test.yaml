@@ -1,0 +1,6 @@
+description: |
+  --charset=windows-1252 must format a source that detection would skip,
+  keeping its encoding
+driver: gnatformat
+encoding: cp1252
+args: ["--charset=windows-1252", "--pipe", "test.ads"]
