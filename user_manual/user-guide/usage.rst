@@ -8,14 +8,33 @@ How to use |GNATformat|
 As a command line tool
 ----------------------
 
-The ``gnatformat`` command line works as other |GNAT| tools by providing
-|GNAT| project file (:file:`.gpr`)::
+To format a list of source files, provide a |GNAT| project file (:file:`.gpr`)
+and pass one or more source file names as positional arguments::
 
-    gnatformat -P [project_name].gpr
+    gnatformat -P project.gpr src/first.ads src/first.adb
 
-For the given project, this command will format the files from all closures
-of mains or library entry points, recursing on all the subprojects and
-stopping when a project is marked as ``externally built``.
+When source files are listed, only those files are formatted, rather than the
+project's full source set. Sources belonging to the project use its formatting
+settings, with command line options taking precedence. Source names can be
+paths relative to the current directory, absolute paths, or simple file names
+resolved through the loaded project. Existing files outside the project can
+also be listed and formatted. Sources belonging to externally built projects
+are not formatted.
+
+Files are edited in place by default.
+
+To format the project's source set, omit the source list::
+
+    gnatformat -P project.gpr
+
+This command formats the files from all closures of mains or library entry
+points, recursing on all the subprojects and stopping when a project is marked
+as ``externally built``.
+
+Without ``-P``, |GNATformat| implicitly loads a project if exactly one
+:file:`.gpr` file exists in the current directory. ``--no-project`` disables
+project loading and formats the listed files using default settings and any
+command line overrides.
 
 In order to customize your formatting, a few options are available and can
 be listed by executing the ``gnatformat --help`` command.
@@ -26,6 +45,7 @@ The available global options are:
 * ``--project, -P``: specify the project file to load; the .gpr extension can be omitted
   if the file is in the current directory
 * ``-X``: allows to specify an external reference to a scenario variable.
+* ``--no-project``: format the listed source files without loading a project.
 * ``--no-subprojects``: only process the root project, not the subprojects.
 * ``-U``: process all files, not only those that are in the closure of mains.
 * ``--verbose``: prints additional logs.
