@@ -13,15 +13,28 @@ guide.
 
 `gnatformat` can be used as a command line tool or as a library.
 
-As a command line tool, for a given GNAT project, execute
+As a command line tool, pass a project file and a list of source files to format:
 
-```
-gnatformat -P [project_name].gpr
+```sh
+gnatformat -P project.gpr src/first.ads src/first.adb
 ```
 
-For the given project, this command will format the files from all closures of mains
-or library entry points, recursing on all the subprojects and stopping when a project
-is marked as `externally built`.
+Only the listed files are formatted, using the project's formatting settings.
+Files are edited in place.
+
+To format the project's source set, omit the source list:
+
+```sh
+gnatformat -P project.gpr
+```
+
+This command formats the files from all closures of mains or library entry points,
+recursing on all the subprojects and stopping when a project is marked as
+`externally built`.
+
+Without `-P`, GNATformat implicitly loads a project when exactly one `.gpr` file
+exists in the current directory. `--no-project` disables project loading and
+formats the listed files using default settings and any command line overrides.
 
 In order to customize your formatting, a few options are available and can be listed
 by executing the `gnatformat --help` command.
