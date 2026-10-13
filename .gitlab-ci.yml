@@ -42,6 +42,16 @@ include:
       # dependencies before --add-dep entries and gives them priority.
       generic-anod-ci-args: --add-dep eng/ide/ada_language_server
 
+  # Build the user manual, only when its sources change
+  - component: $CI_SERVER_FQDN/eng/gitlab-templates/build@~latest
+    inputs:
+      job-name: build-doc
+      anod-args: run build_doc_$ACI_TRACK
+      rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+          changes:
+            - user_manual/**/*
+
   ########
   # TEST #
   ########
@@ -109,4 +119,33 @@ test-cov:linux:
         path: coverage/coverage-cobertura/cobertura.xml
     paths:
       - coverage/
+      - anod-logs/
+
+# Save the user manual built by build-doc:linux in the job artifacts, and
+# publish its HTML version to GitLab pages. Override the artifact paths of the
+# build component, which contain a variable that expose_as does not support.
+build-doc:linux:
+  variables:
+    RUNNER_AFTER_SCRIPT_TIMEOUT: 10m
+  after_script:
+    # Source the env prepared by generic_anod_ci
+    - . /tmp/ci_env.sh
+    - BUILD_SPACE=$(anod eval gnatformat-doc --primitive build build_space_name $ACI_TRACK_QUALIFIER)
+    - cp -rv $ANOD_DEFAULT_SANDBOX_DIR/x86_64-linux/$BUILD_SPACE/install $CI_PROJECT_DIR/user_manual_build
+    # Export to gitlab pages
+    - |
+      if [[ $CI_PIPELINE_SOURCE = "merge_request_event" ]]; then
+        target_subdir=MRs/$CI_MERGE_REQUEST_IID
+        expires=7
+      else
+        target_subdir=$CI_COMMIT_BRANCH
+        expires=90
+      fi
+    - target_subdir=$target_subdir/user-manual
+    - publish-pages $CI_PROJECT_DIR/user_manual_build/html/ --target-subdir $target_subdir --expires $expires
+    - echo "User manual - https://pages.gitlab.adacore-it.com/eng/ide/gnatformat/$target_subdir/index.html"
+  artifacts:
+    expose_as: "User manual"
+    paths:
+      - user_manual_build/
       - anod-logs/
