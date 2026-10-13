@@ -1,6 +1,6 @@
 
-GNATformat User's Manual
-==========================
+Using GNATformat
+================
 
 .. toctree::
     :maxdepth: 3
