@@ -1,0 +1,6 @@
+description: |
+  Test of the Override_Layout attribute indexed by source file with an
+  absolute path, which must not be resolved against the project file
+  directory.
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

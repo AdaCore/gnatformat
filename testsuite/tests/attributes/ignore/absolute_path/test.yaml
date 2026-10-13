@@ -1,0 +1,6 @@
+description: |
+  Test the Ignore attribute with an absolute path, which must not be resolved
+  against the project file directory, by confirming that test_dep.ads is not
+  formatted
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

@@ -38,6 +38,17 @@ package body Gnatformat.Configuration is
    --  Converts Keyword_Casing to the associated overriding unparsing
    --  configuration.
 
+   function Resolve_File
+     (Self : Format_Options_Builder_Type; File : GNATCOLL.VFS.Virtual_File)
+      return GNATCOLL.VFS.Virtual_File;
+   --  Resolves File against the directory of Self's project file, if any.
+   --  Absolute paths are returned unchanged.
+
+   function Resolve_Files
+     (Self : Format_Options_Builder_Type; Files : Optional_Files_Vector)
+      return Optional_Files_Vector;
+   --  Applies Resolve_File to each file of Files
+
    function "="
      (Left, Right :
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
@@ -932,6 +943,40 @@ package body Gnatformat.Configuration is
    end Overwrite;
 
    ------------------
+   -- Resolve_File --
+   ------------------
+
+   function Resolve_File
+     (Self : Format_Options_Builder_Type; File : GNATCOLL.VFS.Virtual_File)
+      return GNATCOLL.VFS.Virtual_File is
+   begin
+      if not Self.Project.Is_Set or else File.Is_Absolute_Path then
+         return File;
+      end if;
+
+      return
+        GNATCOLL.VFS.Join
+          (GNATCOLL.VFS.Create_From_UTF8
+             (Self.Project.Value.Path_Name.String_Value)
+             .Dir,
+           File);
+   end Resolve_File;
+
+   -------------------
+   -- Resolve_Files --
+   -------------------
+
+   function Resolve_Files
+     (Self : Format_Options_Builder_Type; Files : Optional_Files_Vector)
+      return Optional_Files_Vector
+   is (if Files.Is_Set
+       then
+         Optional_Files_Vector'
+           (Is_Set => True,
+            Value  => [for F of Files.Value => Resolve_File (Self, F)])
+       else Files);
+
+   ------------------
    -- With_Charset --
    ------------------
 
@@ -1525,15 +1570,7 @@ package body Gnatformat.Configuration is
    begin
       declare
          Resolved_Ignore : constant GNATCOLL.VFS.Virtual_File :=
-           (if Self.Project.Is_Set
-            then
-              (declare
-                 Project_File : constant GNATCOLL.VFS.Virtual_File :=
-                   GNATCOLL.VFS.Create_From_UTF8
-                     (Self.Project.Value.Path_Name.String_Value);
-               begin
-                 GNATCOLL.VFS.Join (Project_File.Dir, Ignore))
-            else Ignore);
+           Resolve_File (Self, Ignore);
 
       begin
          Self.Format_Options.Ignored_Sources :=
@@ -1615,34 +1652,10 @@ package body Gnatformat.Configuration is
 
    procedure With_Override_Layout
      (Self                  : in out Format_Options_Builder_Type;
-      Override_Layout_Files : Optional_Files_Vector)
-   is
-      use GNATCOLL.VFS;
-      function Resolve_File (F : Virtual_File) return Virtual_File
-      is (if Self.Project.Is_Set
-          then
-            (declare
-               Project_File : constant GNATCOLL.VFS.Virtual_File :=
-                 GNATCOLL.VFS.Create_From_UTF8
-                   (Self.Project.Value.Path_Name.String_Value);
-             begin
-               GNATCOLL.VFS.Join (Project_File.Dir, F))
-          else F);
-      --  Resolves the override layout files against the project file location
-
-      Resolved_Override_Layout_Files : Optional_Files_Vector;
+      Override_Layout_Files : Optional_Files_Vector) is
    begin
-      Resolved_Override_Layout_Files :=
-        (if Override_Layout_Files.Is_Set
-         then
-           Optional_Files_Vector'
-             (Is_Set => True,
-              Value  =>
-                [for F of Override_Layout_Files.Value => Resolve_File (F)])
-         else Override_Layout_Files);
-
       Self.Format_Options.Language.Override_Layout :=
-        Resolved_Override_Layout_Files;
+        Resolve_Files (Self, Override_Layout_Files);
    end With_Override_Layout;
 
    --------------------------
@@ -1654,30 +1667,10 @@ package body Gnatformat.Configuration is
       Override_Layout_Files : Optional_Files_Vector;
       Source_Filename       : String)
    is
-      use GNATCOLL.VFS;
-      function Resolve_File (F : Virtual_File) return Virtual_File
-      is (if Self.Project.Is_Set
-          then
-            (declare
-               Project_File : constant GNATCOLL.VFS.Virtual_File :=
-                 GNATCOLL.VFS.Create_From_UTF8
-                   (Self.Project.Value.Path_Name.String_Value);
-             begin
-               GNATCOLL.VFS.Join (Project_File.Dir, F))
-          else F);
-      --  Resolves the override layout files against the project file location
+      Resolved_Override_Layout_Files : constant Optional_Files_Vector :=
+        Resolve_Files (Self, Override_Layout_Files);
 
-      Resolved_Override_Layout_Files : Optional_Files_Vector;
    begin
-      Resolved_Override_Layout_Files :=
-        (if Override_Layout_Files.Is_Set
-         then
-           Optional_Files_Vector'
-             (Is_Set => True,
-              Value  =>
-                [for F of Override_Layout_Files.Value => Resolve_File (F)])
-         else Override_Layout_Files);
-
       if Self.Format_Options.Sources.Contains (Source_Filename) then
          Self.Format_Options.Sources.Reference (Source_Filename)
            .Override_Layout :=
