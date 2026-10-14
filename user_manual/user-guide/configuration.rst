@@ -139,6 +139,9 @@ The lines below shows the implementation of the ``Format`` package as part of th
 
   end Format;
 
+The file paths given to the ``Override_Layout`` and ``Ignore`` attributes can be absolute, or
+relative to the directory of the project file.
+
 
 Preprocessing
 -------------
