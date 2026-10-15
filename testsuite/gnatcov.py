@@ -17,6 +17,7 @@ class GNATcov:
 
     * use the `decorate_run()` method to run a program that contributes to code
       coverage (i.e. that instrumented programs);
+    * use `build_library_test()` before running a library test main;
     * call the `report()` method to generate coverage reports.
     """
 
@@ -68,6 +69,41 @@ class GNATcov:
             )
             logging.error("Output:\n" + p.out)
             raise RuntimeError
+
+    def build_library_test(self, test_driver: TestDriver):
+        """Instrument and build test.gpr to collect GNATformat library coverage.
+
+        Selecting GNATformat makes the test main dump the library's buffers.
+        Instrumenting only the test project would omit those buffers from the
+        trace. Other dependencies and the test itself are not coverage targets.
+        """
+        test_driver.shell(
+            [
+                "gnatcov",
+                "instrument",
+                "-P",
+                "test.gpr",
+                "--level=" + self.coverage_level,
+                "--dump-trigger=atexit",
+                "--dump-channel=bin-file",
+                "--no-subprojects",
+                "--projects=gnatformat",
+            ],
+            analyze_output=False,
+        )
+        test_driver.shell(
+            [
+                "gprbuild",
+                "-q",
+                "-p",
+                "-P",
+                "test.gpr",
+                "--implicit-with=gnatcov_rts",
+                "--src-subdirs=gnatcov-instr",
+                "-gnatyN",
+            ],
+            analyze_output=False,
+        )
 
     def decorate_run(
         self,

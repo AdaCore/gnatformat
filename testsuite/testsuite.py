@@ -138,6 +138,24 @@ class GNATformatDriver(DiffTestDriver):
         return (filename, is_regexp)
 
 
+class GNATformatLibraryDriver(GNATformatDriver):
+    """Build test.gpr and run its test main to exercise the library API.
+
+    GNATformat's library project must be available on GPR_PROJECT_PATH.
+    Output and status_code use the same conventions as the CLI driver.
+    """
+
+    def run(self):
+        if self.env.gnatcov:
+            self.env.gnatcov.build_library_test(self)
+        else:
+            self.shell(["gprbuild", "-q", "-p", "-P", "test.gpr"])
+        executable = self.working_dir("test" + self.env.build.os.exeext)
+        self.validate_status_code(
+            self.shell(valgrind_wrap(self.env, [executable]), catch_error=False)
+        )
+
+
 class GNATformatOnDiskDriver(GNATformatDriver):
     """
     Driver to run gnatformat on sources formatted in place, comparing the
@@ -377,6 +395,7 @@ class GNATformatTestsuite(Testsuite):
     tests_subdir = "tests"
     test_driver_map = {
         "gnatformat": GNATformatDriver,
+        "gnatformat_library": GNATformatLibraryDriver,
         "gnatformat_on_disk": GNATformatOnDiskDriver,
     }
 
