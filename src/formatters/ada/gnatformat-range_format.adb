@@ -96,6 +96,30 @@ package body Gnatformat.Range_Format is
                      .Unparsing
                      .Default_Configuration_Filename)));
 
+      procedure Check_Diagnostics
+        (Edit : Gnatformat.Edits.Formatting_Edit_Type);
+      --  Report library diagnostics instead of printing an empty edit
+
+      -----------------------
+      -- Check_Diagnostics --
+      -----------------------
+
+      procedure Check_Diagnostics
+        (Edit : Gnatformat.Edits.Formatting_Edit_Type) is
+      begin
+         if not Edit.Diagnostics.Is_Empty then
+            Ada.Text_IO.Put_Line
+              (Ada.Text_IO.Standard_Error,
+               "--  " & Source.Display_Base_Name & " failed to format");
+            for Diagnostic of Edit.Diagnostics loop
+               Ada.Text_IO.Put_Line
+                 (Ada.Text_IO.Standard_Error,
+                  Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic));
+            end loop;
+            Gnatformat.Bail.Bail (1);
+         end if;
+      end Check_Diagnostics;
+
    begin
       if Project_Tree.Is_Defined then
          Project_Tree.Update_Sources;
@@ -187,6 +211,8 @@ package body Gnatformat.Range_Format is
                     Configuration   => Unparsing_Config);
 
             begin
+               Check_Diagnostics (Edits);
+
                --  The formatted text is UTF-8 encoded. Encode it back into
                --  the same charset used to decode the source so that the
                --  edit keeps the input encoding.
@@ -262,6 +288,8 @@ package body Gnatformat.Range_Format is
                  Configuration   => Unparsing_Config);
 
          begin
+            Check_Diagnostics (Edits);
+
             --  The formatted text is UTF-8 encoded. Encode it back into the
             --  same charset used to decode the source so that the edit keeps
             --  the input encoding.

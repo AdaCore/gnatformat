@@ -727,41 +727,65 @@ package body Gnatformat.Formatting is
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String
    is
-      Document : constant Prettier_Ada.Documents.Document_Type :=
-        Langkit_Support.Generic_API.Unparsing.Unparse_To_Prettier
-          (Unit.Root, Configuration);
-
-      Original_Text    : constant Langkit_Support.Text.Text_Type := Unit.Text;
-      Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
-        Prettier_Ada.Documents.Format (Document, Format_Options);
-
-      Unpaired_Markers : Unpaired_Diagnostic_Vector := [];
-
-      --  Restoring the off/on sections needs the original source converted to
-      --  UTF-8, which is expensive for large sources. Skip both the
-      --  conversion and the restoration for the common case of sources
-      --  without any marker.
-
-      Formatted_String : constant Ada.Strings.Unbounded.Unbounded_String :=
-        (if Contains_Off_On_Markers (Original_Text)
-         then
-           Restore_Off_On_Sections
-             (Ada.Strings.Unbounded.To_Unbounded_String
-                (Langkit_Support.Text.To_UTF8 (Original_Text)),
-              Formatted_Source,
-              Unpaired_Markers)
-         else Formatted_Source);
+      use Ada.Strings.Unbounded;
 
    begin
-      if Unpaired_Markers.Length /= 0 then
-         Gnatformat_Trace.Trace
-           ("WARNING: "
-            & Unpaired_Markers.Length'Image
-            & " unpaired ON markers found in "
-            & Ada.Directories.Simple_Name (Unit.Filename));
+      --  If Unit has diagnostics Raises Formatting_Error and attach
+      --  the diagnostics content to this exception
+
+      if Unit.Has_Diagnostics then
+         declare
+            Message : Unbounded_String;
+         begin
+            for Diagnostic of Unit.Diagnostics loop
+               if Length (Message) > 0 then
+                  Append (Message, Ada.Characters.Latin_1.LF);
+               end if;
+               Append (Message, To_Pretty_String (Diagnostic));
+            end loop;
+            raise Formatting_Error with To_String (Message);
+         end;
       end if;
 
-      return Formatted_String;
+      declare
+         Document : constant Prettier_Ada.Documents.Document_Type :=
+           Langkit_Support.Generic_API.Unparsing.Unparse_To_Prettier
+             (Unit.Root, Configuration);
+
+         Original_Text    : constant Langkit_Support.Text.Text_Type :=
+           Unit.Text;
+         Formatted_Source : constant Ada.Strings.Unbounded.Unbounded_String :=
+           Prettier_Ada.Documents.Format (Document, Format_Options);
+
+         Unpaired_Markers : Unpaired_Diagnostic_Vector := [];
+
+         --  Restoring the off/on sections needs the original source converted to
+         --  UTF-8, which is expensive for large sources. Skip both the
+         --  conversion and the restoration for the common case of sources
+         --  without any marker.
+
+         Formatted_String : constant Ada.Strings.Unbounded.Unbounded_String :=
+           (if Contains_Off_On_Markers (Original_Text)
+            then
+              Restore_Off_On_Sections
+                (Ada.Strings.Unbounded.To_Unbounded_String
+                   (Langkit_Support.Text.To_UTF8 (Original_Text)),
+                 Formatted_Source,
+                 Unpaired_Markers)
+            else Formatted_Source);
+
+      begin
+         if Unpaired_Markers.Length /= 0 then
+            Gnatformat_Trace.Trace
+              ("WARNING: "
+               & Unpaired_Markers.Length'Image
+               & " unpaired ON markers found in "
+               & Ada.Directories.Simple_Name (Unit.Filename));
+         end if;
+
+         return Formatted_String;
+      end;
+
    end Format;
 
    function Format_Unit
@@ -1557,6 +1581,20 @@ package body Gnatformat.Formatting is
       Offset_Set : Boolean := False;
 
    begin
+      --  Preprocessor directives parsed without an active preprocessor, like
+      --  other parsing errors, must be reported before accessing the AST or
+      --  invoking the unparsering.
+
+      if Unit.Has_Diagnostics then
+         return
+           Formatting_Edit_Type'
+             (Unit           => Unit,
+              Text_Edit      => No_Text_Edit,
+              Formatted_Node => No_Ada_Node,
+              Diagnostics    =>
+                Diagnostics_Array_To_Vector (Unit.Diagnostics));
+      end if;
+
       --  If no selection range is provided dispatch to format the whole unit
 
       if Selection_Range = No_Source_Location_Range then

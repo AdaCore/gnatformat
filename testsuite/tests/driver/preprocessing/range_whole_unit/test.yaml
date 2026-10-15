@@ -1,0 +1,12 @@
+description: Range formatting with a project reports inactive preprocessor diagnostics.
+driver: gnatformat
+args:
+  [
+    "-P", "test.gpr",
+    "test.adb",
+    "--range-format",
+    "-SL 6",
+    "-EL 20",
+    "--pipe",
+   ]
+status_code: 1
