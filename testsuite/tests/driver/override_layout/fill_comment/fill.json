@@ -1,0 +1,5 @@
+{
+  "node_configs": {
+    "DottedName": {"node": {"kind": "fill", "document": "recurse"}}
+  }
+}

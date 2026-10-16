@@ -1,0 +1,15 @@
+description: |
+  Test that a comment after a DottedName formatted with a "fill" document is
+  not followed by an extra empty line, and that formatting is idempotent:
+  formatted.adb is the expected formatting of unformatted.adb, and must be left
+  unchanged.
+driver: gnatformat
+args:
+  [
+    "--no-project",
+    "--override-layout",
+    "fill.json",
+    "--pipe",
+    "unformatted.adb",
+    "formatted.adb"
+  ]
