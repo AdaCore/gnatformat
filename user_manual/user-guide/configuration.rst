@@ -25,9 +25,9 @@ The formatting of your sources can be customized by the following options:
   By default this value is set to ``indentation - 1``.
 * ``--keyword-casing``: allows to choose the Ada language keyword casing through the options:
   ``keep``  - which preserves the current casing of keywords,
-  ``lower`` - which convert all the keywords in lower case  and
-  ``upper`` - which converst all the keywords in upper case.
-  By default this option is set to ``keep``.
+  ``lower`` - which converts all keywords to lower case and
+  ``upper`` - which converts all keywords to upper case.
+  The default is ``keep``, which preserves keyword casing.
 * ``--identifier-casing``: allows to fix the casing of identifiers through the options:
   ``keep`` - which preserves the current casing of identifiers,
   ``definition`` - which rewrites every identifier occurrence (references, ``end`` labels and
@@ -81,6 +81,9 @@ The tool allows as well the usage of a custom unparsing configuration file. This
 specified instead of the default one using the ``--unparsing-configuration`` switch taking as
 argument the custom configuration file name. However, for the moment this is only an internal
 switch and its usage is limited for development proposes.
+
+When keyword casing is not set by a command line option or a project attribute,
+this custom configuration controls token casing.
 
 
 The project file attributes

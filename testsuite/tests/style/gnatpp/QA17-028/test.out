@@ -1,6 +1,6 @@
-with ibusiness_unit.synthetic_target_manager;
+WITH ibusiness_unit.synthetic_target_manager;
 
-package body pp_reproducer is
+PACKAGE BODY pp_reproducer IS
 
    procedure pp_reproducer_go is
       synth_tar_manager_ref : ibusiness_unit.reference := NULL;
@@ -30,5 +30,5 @@ package body pp_reproducer is
 
    end pp_reproducer_go;
 
-end pp_reproducer;
+END pp_reproducer;
 

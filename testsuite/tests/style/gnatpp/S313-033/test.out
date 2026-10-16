@@ -25,14 +25,14 @@ procedure Mixed_Keywords is
    procedure Until (X : Boolean);
    procedure until (X : Integer);
 
-   type Interface is interface;
+   type Interface is Interface;
    procedure INTERFACE;
    procedure Interface (X : Boolean);
    procedure interface (X : Integer);
 
-   overriding
+   OVERRIDING
    procedure OVERRIDING;
-   overriding
+   Overriding
    procedure Overriding (X : Boolean);
    overriding
    procedure overriding (X : Integer);

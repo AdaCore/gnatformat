@@ -1,0 +1,10 @@
+description: Test custom token casing and source-specific keyword casing attributes
+driver: gnatformat
+args:
+  [
+    "-P",
+    "test/test.gpr",
+    "--pipe",
+    "--unparsing-configuration",
+    "upper.json"
+  ]

@@ -1390,27 +1390,27 @@ package body ada_main is
 end ada_main;
 
 --  test070.1.ada
-procedure Test070;
+PROCEDURE Test070;
 
 --  test070.2.ada
-with Ada.Text_IO;
-with test_gnatpp;
+WITH Ada.Text_IO;
+WITH test_gnatpp;
 
-procedure test070 is
+PROCEDURE test070 IS
    switch : test_gnatpp.development_switch := test_gnatpp.none;
-begin
+BEGIN
    Ada.Text_IO.Put_Line ("Test070 Start");
 
    Ada.Text_IO.Put_Line
      ("  switch => " & test_gnatpp.development_switch'image (switch));
 
    Ada.Text_IO.Put_Line ("Test070 End");
-end test070;
+END test070;
 
 --  test_gnatpp.1.ada
-package test_gnatpp is
+PACKAGE test_gnatpp IS
 
-   type development_switch is
+   TYPE development_switch IS
      (none,                                                         --  0
 
       general_tracing,                                              --  1
@@ -1440,5 +1440,5 @@ package test_gnatpp is
 
      );
 
-end test_gnatpp;
+END test_gnatpp;
 

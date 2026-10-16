@@ -1,0 +1,10 @@
+description: Test the implicit token default of a custom base configuration
+driver: gnatformat
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "--unparsing-configuration",
+    "custom.json",
+    "test.adb"
+  ]

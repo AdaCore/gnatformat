@@ -1,0 +1,13 @@
+{
+  "node_configs": {
+    "SubpBody": {
+      "node": [
+        "recurse",
+        "hardline"
+      ]
+    }
+  },
+  "token_configs": {
+    "default": "upper"
+  }
+}

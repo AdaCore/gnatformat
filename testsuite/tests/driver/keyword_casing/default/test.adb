@@ -1,0 +1,1 @@
+PROCEDURE Test Is A : Integer := 1; Begin NULL; END Test;

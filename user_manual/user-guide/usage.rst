@@ -68,10 +68,10 @@ The specific options allowing to customize the formatting of your sources are:
 * ``--indentation-continuation``: allows to specify the continuation line indentation size.
   In the absence of this option, the default value is ``indentation - 1``.
 * ``--keyword-casing``: allows to choose the Ada language keyword casing through the options:
-  ``keep``  - which preserves the current casing of keywords, 
-  ``lower`` - which convert all the keywords in lower case  and 
-  ``upper`` - which converst all the keywords in upper case.
-  In the absence of this option, the default value is ``keep``.
+  ``keep``  - which preserves the current casing of keywords,
+  ``lower`` - which converts all keywords to lower case and
+  ``upper`` - which converts all keywords to upper case.
+  The default is ``keep``, which preserves keyword casing.
 * ``--identifier-casing``: allows to fix the casing of identifiers through the options:
   ``keep`` - which preserves the current casing of identifiers,
   ``definition`` - which rewrites every identifier occurrence (references, ``end`` labels and

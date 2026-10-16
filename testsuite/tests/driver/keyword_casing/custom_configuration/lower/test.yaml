@@ -1,0 +1,12 @@
+description: Test lower keyword casing with a custom uppercase base configuration
+driver: gnatformat
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "--unparsing-configuration",
+    "upper.json",
+    "test.adb",
+    "--keyword-casing",
+    "lower"
+  ]
