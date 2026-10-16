@@ -25,21 +25,21 @@ package Test is
       end case;
    end record;
 
-   type REC_4
+   TYPE REC_4
      (NB : LARGE_CHARACTER_NB_TYPE := LARGE_CHARACTER_NB_TYPE'FIRST)
-   is record
+   IS RECORD
       DATA : STRING (POSITIVE (CHARACTER_NB_TYPE'FIRST) .. NB);
-   end record;
+   END RECORD;
 
-   type REC_5 (FIELD : PROTOCOL_FIELD_ENUMERATED_TYPE := DATA_LENGTH) is record
-      case FIELD is
-         when DATA_LENGTH =>
-            null;
+   TYPE REC_5 (FIELD : PROTOCOL_FIELD_ENUMERATED_TYPE := DATA_LENGTH) IS RECORD
+      CASE FIELD IS
+         WHEN DATA_LENGTH =>
+            NULL;
 
-         when PROTOCOL_TYPE =>
+         WHEN PROTOCOL_TYPE =>
             VALUE : INTEGER;
-      end case;
-   end record;
+      END CASE;
+   END RECORD;
 
 end Test;
 

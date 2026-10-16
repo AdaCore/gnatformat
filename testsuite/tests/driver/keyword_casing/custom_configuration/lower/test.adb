@@ -1,0 +1,4 @@
+PROCEDURE Test Is
+Begin
+   NULL;
+END Test;

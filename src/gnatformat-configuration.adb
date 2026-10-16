@@ -86,6 +86,8 @@ package body Gnatformat.Configuration is
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
+      use Optional_Keyword_Casing_Kinds;
+
       Overriddings_Array_Access : GNATCOLL.VFS.File_Array_Access :=
         new GNATCOLL.VFS.File_Array (1 .. 0);
    begin
@@ -98,12 +100,15 @@ package body Gnatformat.Configuration is
             Get_Layout_File (Format_Options.Layout.Value));
       end if;
 
-      --  Handles keyword casing if set
-      if Format_Options.Keyword_Casing.Is_Set then
+      --  Preserve the token casing of a custom base configuration
+      if Format_Options.Keyword_Casing.Is_Set
+        or else Default_Unparsing_Configuration = Get_Layout_File (Default)
+      then
          GNATCOLL.VFS.Append
            (Overriddings_Array_Access,
             Get_Keyword_Casing_Overriding
-              (Format_Options.Keyword_Casing.Value));
+              (Format_Options.Keyword_Casing
+               or Default_Basic_Format_Options.Keyword_Casing.Value));
       end if;
 
       --  Handles the files specified through override layout if set
@@ -113,32 +118,17 @@ package body Gnatformat.Configuration is
          end loop;
       end if;
 
-      --  Creates the files array to load the unparsing configuration
-      --  associated with the current overridings and frees the initially
-      --  allocated array access
-      if Overriddings_Array_Access.all'Length > 0 then
-         declare
-            Overridings : constant GNATCOLL.VFS.File_Array :=
-              Overriddings_Array_Access.all;
-         begin
-            GNATCOLL.VFS.Unchecked_Free (Overriddings_Array_Access);
-            return
-              Load_Unparsing_Configuration
-                (Unparsing_Configuration_File =>
-                   Default_Unparsing_Configuration,
-                 Overriddings                 => Overridings,
-                 Diagnostics                  => Diagnostics);
-         end;
-      end if;
-
-      --  Freeing Overriddings_Array_Access even none of the options are set
-      GNATCOLL.VFS.Unchecked_Free (Overriddings_Array_Access);
-      return
-        Load_Unparsing_Configuration
-          (Unparsing_Configuration_File => Default_Unparsing_Configuration,
-           Overriddings                 => [],
-           Diagnostics                  => Diagnostics);
-
+      declare
+         Overridings : constant GNATCOLL.VFS.File_Array :=
+           Overriddings_Array_Access.all;
+      begin
+         GNATCOLL.VFS.Unchecked_Free (Overriddings_Array_Access);
+         return
+           Load_Unparsing_Configuration
+             (Unparsing_Configuration_File => Default_Unparsing_Configuration,
+              Overriddings                 => Overridings,
+              Diagnostics                  => Diagnostics);
+      end;
    end Compute_Unparsing_Configuration;
 
    -------------------------------------
@@ -312,7 +302,7 @@ package body Gnatformat.Configuration is
          Is_Allowed_In        => GPR2.Project.Registry.Attribute.Everywhere);
       GPR2.Project.Registry.Attribute.Description.Set_Attribute_Description
         (Q_Keyword_Casing_Attribute_Id,
-         "Keyword casing: keep | lower | upper");
+         "Keyword casing: keep | lower | upper (default value = keep)");
 
       GPR2.Project.Registry.Attribute.Add
         (Name                 => Q_Identifier_Casing_Attribute_Id,

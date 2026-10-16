@@ -1,0 +1,3 @@
+description: Test that keyword casing is preserved by default with a project
+driver: gnatformat
+args: ["-P", "test/test.gpr", "--pipe"]

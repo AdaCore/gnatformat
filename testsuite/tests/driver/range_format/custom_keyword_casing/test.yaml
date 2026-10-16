@@ -1,0 +1,19 @@
+description: Test custom token casing with range formatting and no keyword casing option
+driver: gnatformat
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "--range-format",
+    "-SL",
+    "1",
+    "-SC",
+    "1",
+    "-EL",
+    "4",
+    "-EC",
+    "9",
+    "--unparsing-configuration",
+    "upper.json",
+    "test.adb"
+  ]

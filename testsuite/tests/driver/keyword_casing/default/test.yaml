@@ -1,0 +1,3 @@
+description: Test that keyword casing is preserved by default without a project
+driver: gnatformat
+args: ["--no-project", "test.adb", "--pipe"]

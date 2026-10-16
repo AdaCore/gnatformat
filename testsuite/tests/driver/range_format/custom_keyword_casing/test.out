@@ -1,0 +1,5 @@
+test.adb(<SubpBody ["Test"] test.adb:1:1-4:10>) - 1:1-4:10
+^
+PROCEDURE Test IS BEGIN NULL;END Test;
+$
+

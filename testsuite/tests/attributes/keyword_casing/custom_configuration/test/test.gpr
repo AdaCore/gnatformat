@@ -1,0 +1,8 @@
+project Test is
+   for Source_Dirs use (".");
+   for Main use ("default.adb", "keep.adb", "lower.adb");
+   package Format is
+      for Keyword_Casing ("keep.adb") use "keep";
+      for Keyword_Casing ("lower.adb") use "lower";
+   end Format;
+end Test;

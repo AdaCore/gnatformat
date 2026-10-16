@@ -1,0 +1,10 @@
+{
+  "node_configs": {
+    "SubpBody": {
+      "node": [
+        "recurse",
+        "hardline"
+      ]
+    }
+  }
+}
