@@ -88,6 +88,7 @@ class GNATcov:
                 "--dump-channel=bin-file",
                 "--no-subprojects",
                 "--projects=gnatformat",
+                "--externally-built-projects",
             ],
             analyze_output=False,
         )
