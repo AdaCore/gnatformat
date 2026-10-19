@@ -22,6 +22,7 @@ package Gnatformat.Formatting is
 
    Internal_Error_Off_On_Invalid_Marker : exception;
    Off_On_Invalid_Marker                : exception;
+   Formatting_Error                     : exception;
 
    function Format
      (Unit           : Langkit_Support.Generic_API.Analysis.Lk_Unit;
@@ -30,7 +31,8 @@ package Gnatformat.Formatting is
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Formats the given Unit using the provided Format_Options and
-   --  Configuation.
+   --  Configuation. Raises Formatting_Error with the unit's diagnostics if
+   --  the unit has parsing errors, including inactive preprocessor directives.
 
    function Format
      (Unit           : Libadalang.Analysis.Analysis_Unit;
@@ -39,7 +41,8 @@ package Gnatformat.Formatting is
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Ada.Strings.Unbounded.Unbounded_String;
    --  Formats the given Unit using the provided Format_Options and
-   --  Configuration.
+   --  Configuration. Raises Formatting_Error with the unit's diagnostics if
+   --  the unit has parsing errors, including inactive preprocessor directives.
 
    function Range_Format
      (Unit                    : Libadalang.Analysis.Analysis_Unit;
@@ -52,6 +55,8 @@ package Gnatformat.Formatting is
    --  Range formats a section of Unit using the provided Format_Options and
    --  Configuration. The section is computed based on the bottommost node that
    --  includes Selection_Range.
+   --  If Unit has parsing errors, returns its diagnostics with No_Text_Edit
+   --  and No_Ada_Node, without attempting to format it.
 
    function Restore_Off_On_Sections
      (Original_Source  : Ada.Strings.Unbounded.Unbounded_String;

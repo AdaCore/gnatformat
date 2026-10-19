@@ -1,0 +1,12 @@
+project Test is
+
+   for Main use ("test.adb");
+
+   type SPARK_Body_Mode_T is ("Off", "On");
+   SPARK_Body_Mode : SPARK_Body_Mode_T := External ("SPARKLIB_BODY_MODE", "Off");
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-O2", "-gnateDSPARK_BODY_MODE=Off", "-gnat2022", "-gnata");
+   end Compiler;
+
+end Test;

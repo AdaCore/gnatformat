@@ -11,9 +11,11 @@ GNATFORMAT_LIBRARY_PROJECT = gnat/gnatformat.gpr
 GNATFORMAT_DRIVER_PROJECT = gnat/gnatformat_driver.gpr
 
 COVERAGE ?=
-COVERAGE_BUILD_FLAGS = \
+COVERAGE_PROJECT_FLAGS = \
 	--implicit-with=gnatcov_rts \
-	--src-subdirs=gnatcov-instr \
+	--src-subdirs=gnatcov-instr
+COVERAGE_BUILD_FLAGS = \
+	$(COVERAGE_PROJECT_FLAGS) \
 	-gnatyN
 BASE_BUILD_FLAGS = \
 	-XGNATFORMAT_BUILD_MODE=$(BUILD_MODE) \
@@ -24,10 +26,15 @@ BASE_BUILD_FLAGS = \
 ifeq ($(COVERAGE),)
 	COMMON_BUILD_FLAGS = \
 		$(BASE_BUILD_FLAGS)
+	COMMON_INSTALL_FLAGS =
 else
+	# Only the selected library variant has coverage-instrumented sources.
+	ALL_LIBRARY_TYPES = $(LIBRARY_TYPE)
 	COMMON_BUILD_FLAGS = \
 		$(BASE_BUILD_FLAGS) \
 		$(COVERAGE_BUILD_FLAGS)
+	# Install the generated buffer units needed by instrumented library clients.
+	COMMON_INSTALL_FLAGS = $(COVERAGE_PROJECT_FLAGS)
 endif
 COMMON_INSTRUMENT_FLAGS = \
 	--level=stmt+decision \
@@ -78,6 +85,7 @@ install-lib:
 			--build-name=$$library_type \
 			--build-var=LIBRARY_TYPE \
 			-P $(GNATFORMAT_LIBRARY_PROJECT) \
+			$(COMMON_INSTALL_FLAGS) \
 			-p \
 			-f ; \
 	done ;
@@ -89,6 +97,7 @@ install-bin:
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
 		--install-name=gnatformat \
+		$(COMMON_INSTALL_FLAGS) \
 		--prefix="$(PREFIX)" \
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \
@@ -106,6 +115,7 @@ install-bin-stripped:
 		-XLIBRARY_TYPE=$(LIBRARY_TYPE) \
 		-XBUILD_MODE=$(BUILD_MODE) \
 		--install-name=gnatformat \
+		$(COMMON_INSTALL_FLAGS) \
 		--prefix="$(PREFIX)" \
 		-P $(GNATFORMAT_DRIVER_PROJECT) \
 		-p \

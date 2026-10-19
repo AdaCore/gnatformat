@@ -151,5 +151,13 @@ where:
 
 This entry point can be used in order to integrate with other tools.
 
+If the analysis unit has parsing diagnostics, including preprocessor directives
+without an active preprocessor, ``Format`` raises
+``Gnatformat.Formatting.Formatting_Error``. The exception message contains the
+same diagnostics reported by the command line tool, with their source locations.
+``Gnatformat.Formatting.Range_Format`` instead returns these diagnostics in the
+result's ``Diagnostics`` field, with ``No_Text_Edit`` and ``No_Ada_Node``. This also
+applies when no selection range is supplied to format the whole unit.
+
 On our side, the ``gnatformat`` library is included in the |ALS| and can therefore be used through
 IDEs like |GNATStudio| and |VSCode|.

@@ -1,0 +1,4 @@
+description: |
+  Library formatting reports parsing diagnostics, including inactive
+  preprocessor directives, without attempting to unparse invalid units.
+driver: gnatformat_library

@@ -1,0 +1,8 @@
+description: Range formatting with a project reports inactive preprocessor diagnostics.
+driver: gnatformat
+args:
+  [
+    "-P", "test.gpr",
+    "--pipe",
+   ]
+status_code: 1
