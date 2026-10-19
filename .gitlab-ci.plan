@@ -18,6 +18,10 @@ def build_als_(qualifier={}):
         anod_build("als")
 
 
+def build_doc_(qualifier={}):
+    anod_build("gnatformat-doc", qualifier=qualifier)
+
+
 # Edge
 
 edge_qualifier = {"edge": True}
@@ -37,3 +41,7 @@ def test_cov_edge():
 
 def build_als_edge():
     build_als_(edge_qualifier)
+
+
+def build_doc_edge():
+    build_doc_(edge_qualifier)
