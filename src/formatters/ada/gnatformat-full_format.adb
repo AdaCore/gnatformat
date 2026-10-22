@@ -12,6 +12,7 @@ with Ada.Strings.Unbounded;
 with GNAT.Traceback.Symbolic;
 
 with Gnatformat.Bail;
+with Gnatformat.Command_Line.Configuration;
 with Gnatformat.Encodings;
 with Gnatformat.Formatting;
 with Gnatformat.Gitdiff;
@@ -38,6 +39,7 @@ package body Gnatformat.Full_Format is
      Langkit_Support.Generic_API.Unparsing;
 
    use type Langkit_Support_Unparsing.Unparsing_Configuration;
+   use type GNATCOLL.VFS.Virtual_File;
 
    package Unbounded_String_Vectors is new
      Ada.Containers.Vectors
@@ -153,9 +155,13 @@ package body Gnatformat.Full_Format is
         Gnatformat.Configuration.Project_Format_Options_Cache_Type :=
           Gnatformat.Configuration.Create_Project_Format_Options_Cache;
 
+      --  Only an omitted base configuration selects the default. Pass an
+      --  explicit path to the loader even if it does not exist, so the user
+      --  receives a diagnostic instead of an unexpected default layout.
+
       Unparsing_Configuration_Cache :
         Gnatformat.Configuration.Unparsing_Configuration_Cache_Type :=
-          (if Unparsing_Configuration_File.Is_Regular_File
+          (if Unparsing_Configuration_File /= GNATCOLL.VFS.No_File
            then
              Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
                (Unparsing_Configuration_File)
@@ -363,32 +369,22 @@ package body Gnatformat.Full_Format is
             end if;
 
             declare
-               Unparsing_Diagnostics :
-                 Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-               Unparsing_Config      :
+               Unparsing_Config :
                  constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                   Unparsing_Configuration_Cache.Get
-                     (Source_Simple_Name,
+                   Command_Line.Configuration.Get_Unparsing_Configuration
+                     (Unparsing_Configuration_Cache,
+                      Source_Simple_Name,
                       View_Format_Options,
-                      Unparsing_Diagnostics);
+                      Writer);
 
             begin
+               --  The loader has reported the configuration errors and
+               --  marked the command as failed. Leave this source alone;
+               --  the outer loop decides whether --keep-going allows more.
+
                if Unparsing_Config
                  = Langkit_Support_Unparsing.No_Unparsing_Configuration
-                 or else not Unparsing_Diagnostics.Is_Empty
                then
-                  Gnatformat.Project.Set_General_Failed;
-                  Writer.Print_Error
-                    ("--  "
-                     & Source_Simple_Name
-                     & " failed: could not load unparsing configuration");
-
-                  for Diagnostic of Unparsing_Diagnostics loop
-                     Gnatformat_Trace.Trace
-                       (Langkit_Support.Diagnostics.To_Pretty_String
-                          (Diagnostic));
-                  end loop;
-
                   return False;
                end if;
 
@@ -549,20 +545,26 @@ package body Gnatformat.Full_Format is
                end if;
 
                declare
-                  Unparsing_Diagnostics :
-                    Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-                  Unparsing_Config      :
+                  Unparsing_Config :
                     constant Langkit_Support_Unparsing
                                .Unparsing_Configuration :=
-                      Gnatformat.Configuration.Get
+                      Command_Line.Configuration.Get_Unparsing_Configuration
                         (Unparsing_Configuration_Cache,
                          Source.Display_Base_Name,
                          Format_Options,
-                         Unparsing_Diagnostics);
-                  Formatted_Source      :
-                    Ada.Strings.Unbounded.Unbounded_String;
+                         Writer);
+                  Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
 
                begin
+                  --  Reject the failed load before unparsing or writing the
+                  --  source, rather than reporting a null-config exception.
+
+                  if Unparsing_Config
+                    = Langkit_Support_Unparsing.No_Unparsing_Configuration
+                  then
+                     return False;
+                  end if;
+
                   --  Gnatformat.Formatting.Format returns a UTF-8 encoded
                   --  source. Encode it back into the same encoding used to
                   --  decode Source so that the formatted source keeps the
@@ -726,24 +728,25 @@ package body Gnatformat.Full_Format is
 
       elsif Base_Commit_ID.Is_Set then
          declare
-            Gitdiff_Diagnostics      :
-              Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
             Gitdiff_Unparsing_Config :
               constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                Gnatformat.Configuration.Get
-                  (Unparsing_Configuration_Cache,
-                   "",
-                   Format_Options,
-                   Gitdiff_Diagnostics);
+                Command_Line.Configuration.Get_Unparsing_Configuration
+                  (Unparsing_Configuration_Cache, "", Format_Options, Writer);
 
          begin
-            Gnatformat.Gitdiff.Format_New_Lines
-              (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
-               Gnatformat.Gitdiff.Context'
-                 (Lal_Ctx          => Resolution_Context,
-                  Options          => Format_Options,
-                  Unparsing_Config => Gitdiff_Unparsing_Config),
-               Writer);
+            --  Configuration errors were already reported by the loader.
+            --  Only start processing the diff with a usable configuration.
+            if Gitdiff_Unparsing_Config
+              /= Langkit_Support_Unparsing.No_Unparsing_Configuration
+            then
+               Gnatformat.Gitdiff.Format_New_Lines
+                 (Ada.Strings.Unbounded.To_String (Base_Commit_ID.Value),
+                  Gnatformat.Gitdiff.Context'
+                    (Lal_Ctx          => Resolution_Context,
+                     Options          => Format_Options,
+                     Unparsing_Config => Gitdiff_Unparsing_Config),
+                  Writer);
+            end if;
          exception
             when Gnatformat.Gitdiff.Git_Command_Failed =>
                Writer.Print_Error

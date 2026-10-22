@@ -8,6 +8,8 @@ with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with Gnatformat.Bail;
+with Gnatformat.Command_Line.Configuration;
+with Gnatformat.Console_Writers;
 with Gnatformat.Encodings;
 with Gnatformat.Formatting;
 with Gnatformat.Edits;
@@ -25,6 +27,8 @@ with Libadalang.Analysis;
 with Libadalang.Generic_API.Unparsing;
 
 package body Gnatformat.Range_Format is
+
+   use type GNATCOLL.VFS.Virtual_File;
 
    package Encodings renames Gnatformat.Encodings;
 
@@ -82,9 +86,11 @@ package body Gnatformat.Range_Format is
       Format_Options               :
         Gnatformat.Configuration.Format_Options_Type)
    is
+      --  An explicit base path must reach the loader even if it is missing.
+      --  Falling back here would silently ignore the requested configuration.
       Unparsing_Configuration_Cache :
         Gnatformat.Configuration.Unparsing_Configuration_Cache_Type :=
-          (if Unparsing_Configuration_File.Is_Regular_File
+          (if Unparsing_Configuration_File /= GNATCOLL.VFS.No_File
            then
              Gnatformat.Configuration.Create_Unparsing_Configuration_Cache
                (Unparsing_Configuration_File)
@@ -95,6 +101,40 @@ package body Gnatformat.Range_Format is
                      .Generic_API
                      .Unparsing
                      .Default_Configuration_Filename)));
+
+      function Get_Unparsing_Configuration
+        (Options : Gnatformat.Configuration.Format_Options_Type)
+         return Langkit_Support_Unparsing.Unparsing_Configuration;
+      --  Report loading errors and stop before computing any edits.
+
+      ---------------------------------
+      -- Get_Unparsing_Configuration --
+      ---------------------------------
+
+      function Get_Unparsing_Configuration
+        (Options : Gnatformat.Configuration.Format_Options_Type)
+         return Langkit_Support_Unparsing.Unparsing_Configuration
+      is
+         use type Langkit_Support_Unparsing.Unparsing_Configuration;
+
+         Writer : Console_Writers.Console_Writer :=
+           Console_Writers.Writer (Single_File => True);
+         Config : constant Langkit_Support_Unparsing.Unparsing_Configuration :=
+           Command_Line.Configuration.Get_Unparsing_Configuration
+             (Unparsing_Configuration_Cache,
+              Source.Display_Base_Name,
+              Options,
+              Writer);
+
+      begin
+         --  This function is called while initializing the declarations below.
+         --  Stop here so neither range-format branch computes an edit with
+         --  an invalid configuration or prints a misleading empty result.
+         if Config = Langkit_Support_Unparsing.No_Unparsing_Configuration then
+            Gnatformat.Bail.Bail (1);
+         end if;
+         return Config;
+      end Get_Unparsing_Configuration;
 
       procedure Check_Diagnostics
         (Edit : Gnatformat.Edits.Formatting_Edit_Type);
@@ -193,15 +233,9 @@ package body Gnatformat.Range_Format is
                          Charset            => Parsing_Charset,
                          Casing             => Identifier_Casing));
 
-               Unparsing_Diagnostics :
-                 Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-               Unparsing_Config      :
+               Unparsing_Config :
                  constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                   Gnatformat.Configuration.Get
-                     (Unparsing_Configuration_Cache,
-                      Project_Source.File.Display_Base_Name,
-                      View_Format_Options,
-                      Unparsing_Diagnostics);
+                   Get_Unparsing_Configuration (View_Format_Options);
 
                Edits : Gnatformat.Edits.Formatting_Edit_Type :=
                  Gnatformat.Formatting.Range_Format
@@ -270,15 +304,9 @@ package body Gnatformat.Range_Format is
                       Charset            => Parsing_Charset,
                       Casing             => Identifier_Casing));
 
-            Unparsing_Diagnostics :
-              Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
-            Unparsing_Config      :
+            Unparsing_Config :
               constant Langkit_Support_Unparsing.Unparsing_Configuration :=
-                Gnatformat.Configuration.Get
-                  (Unparsing_Configuration_Cache,
-                   Source.Display_Base_Name,
-                   Format_Options,
-                   Unparsing_Diagnostics);
+                Get_Unparsing_Configuration (Format_Options);
 
             Edits : Gnatformat.Edits.Formatting_Edit_Type :=
               Gnatformat.Formatting.Range_Format

@@ -759,8 +759,8 @@ package body Gnatformat.Formatting is
 
          Unpaired_Markers : Unpaired_Diagnostic_Vector := [];
 
-         --  Restoring the off/on sections needs the original source converted to
-         --  UTF-8, which is expensive for large sources. Skip both the
+         --  Restoring the off/on sections needs the original source converted
+         --  to UTF-8, which is expensive for large sources. Skip both the
          --  conversion and the restoration for the common case of sources
          --  without any marker.
 

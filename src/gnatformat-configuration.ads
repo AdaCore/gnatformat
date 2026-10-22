@@ -446,6 +446,10 @@ package Gnatformat.Configuration is
    --  Returns the unparsing configuration for the given source. The
    --  configuration is computed on demand and cached, keyed by the format
    --  options that apply to Source_Filename.
+   --  Loading diagnostics are cached as well and appended to Diagnostics on
+   --  every call, including cache hits. Diagnostics retain the engine's
+   --  Sloc_Range and Message (see Load_Unparsing_Configuration for reporting
+   --  and failure handling).
 
    function Load_Unparsing_Configuration
      (Unparsing_Configuration_File : GNATCOLL.VFS.Virtual_File;
@@ -453,7 +457,18 @@ package Gnatformat.Configuration is
       Diagnostics                  :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
-   --  Loads the formatting rules
+   --  Load the base configuration and apply Overriddings in order. Append
+   --  loading errors to Diagnostics and return No_Unparsing_Configuration
+   --  on failure. Existing diagnostics are preserved.
+   --  Diagnostics contains the engine's Message and Sloc_Range. JSON syntax
+   --  errors have a location in the configuration file. For the errors which
+   --  the engine provides no location the No_Source_Location_Range is used.
+   --  To_Pretty_String renders the available line and column with the message.
+   --  Configuration filenames are not part of the engine's Diagnostic record;
+   --  callers can display their base and override paths as separate context.
+   --  For a libray usage, loading errors are returned to the caller without
+   --  printing them. The result and diagnostics should be checked before
+   --  passing the configuration to Format or Range_Format.
 
    function Compute_Unparsing_Configuration
      (Source                          : String;
@@ -462,6 +477,9 @@ package Gnatformat.Configuration is
       Diagnostics                     :
         in out Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector)
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+   --  Load Default_Unparsing_Configuration with the layout, keyword casing
+   --  and overrides from Format_Options that apply to Source. Diagnostics
+   --  and failure handling follow Load_Unparsing_Configuration.
 
    Default_Unparsing_Configuration :
      constant Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
@@ -643,11 +661,19 @@ private
         Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration)
       return Boolean;
 
+   type Unparsing_Configuration_Result is record
+      Config      :
+        Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration;
+      Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+   end record;
+   --  Cache the complete loading outcome, including failed loads. Keeping
+   --  diagnostics beside the configuration lets every affected source report
+   --  the original errors when --keep-going reuses the same cache entry.
+
    package Basic_Format_Options_To_Unparsing_Config_Hashed_Maps is new
      Ada.Containers.Hashed_Maps
        (Key_Type        => Basic_Format_Options_Type,
-        Element_Type    =>
-          Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration,
+        Element_Type    => Unparsing_Configuration_Result,
         Hash            => Hash,
         Equivalent_Keys => "=");
 
