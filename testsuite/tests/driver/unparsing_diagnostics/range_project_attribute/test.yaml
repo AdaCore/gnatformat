@@ -1,0 +1,14 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (range project attribute).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "-P",
+    "project.gpr",
+    "--pipe",
+    "test.adb",
+    "--range-format"
+  ]
+windows_baseline_file: test_windows.out

@@ -1,0 +1,10 @@
+Direct base: 3:1: json valud expected
+Direct override: 3:1: json valud expected
+Computed layout override: 3:1: json valud expected
+Cache miss: 3:1: json valud expected
+Cache hit: 3:1: json valud expected
+Caller diagnostics preserved: OK
+Semantic diagnostic without location: OK
+Missing configuration diagnostic: OK
+Invalid JSON structure diagnostic: OK
+Valid configuration: OK

@@ -1,0 +1,12 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (standalone override).
+driver: gnatformat_on_disk
+status_code: 1
+args:
+  [
+    "--no-project",
+    "test.adb",
+    "--override-layout",
+    "invalid.json"
+  ]

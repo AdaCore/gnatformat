@@ -1,0 +1,13 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (standalone base).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "test.adb",
+    "--unparsing-configuration",
+    "invalid.json"
+  ]

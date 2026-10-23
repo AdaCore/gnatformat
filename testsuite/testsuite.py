@@ -111,6 +111,11 @@ class GNATformatDriver(DiffTestDriver):
         return super().output_refiners + [
             ReplacePath(self.working_dir() + sep),
             ReplaceBuildVersionAndDate(),
+            # JSON unparsing exceptions include a dependency source location
+            # that can change between builds. Keep the diagnostic itself.
+            PatternSubstitute(
+                r"(?m)^[^\r\n]+\.ad[bs]:\d+(?::\d+)? (?=discriminant check failed$)"
+            ),
         ]
 
     @property
