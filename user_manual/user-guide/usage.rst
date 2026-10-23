@@ -159,5 +159,55 @@ same diagnostics reported by the command line tool, with their source locations.
 result's ``Diagnostics`` field, with ``No_Text_Edit`` and ``No_Ada_Node``. This also
 applies when no selection range is supplied to format the whole unit.
 
+Custom unparsing configurations can be loaded through
+``Gnatformat.Configuration.Load_Unparsing_Configuration``. To apply the layout
+and overrides from formatting options, use ``Compute_Unparsing_Configuration``
+or ``Unparsing_Configuration_Cache_Type.Get``. Each returns loading errors in
+its ``Diagnostics`` parameter. Cached lookups preserve the same diagnostics.
+
+These diagnostics contain the engine's message and structured ``Sloc_Range``.
+For example, malformed JSON can produce a diagnostic at line 3, column 1.
+``Langkit_Support.Diagnostics.To_Pretty_String`` includes that location in the
+rendered message. Errors without an engine-provided location, such as an
+unknown node name, have ``No_Source_Location_Range``. Configuration filenames
+are supplied separately by the application, because the diagnostic record
+does not contain a filename.
+
+The following example loads a custom base configuration and reports errors
+without attempting to format with an invalid configuration:
+
+.. code-block:: ada
+
+   declare
+      use Langkit_Support.Generic_API.Unparsing;
+
+      Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+      Config      : constant Unparsing_Configuration :=
+        Gnatformat.Configuration.Load_Unparsing_Configuration
+          (Unparsing_Configuration_File =>
+             GNATCOLL.VFS.Create_From_UTF8 ("layout.json"),
+           Overriddings                 => GNATCOLL.VFS.Empty_File_Array,
+           Diagnostics                  => Diagnostics);
+   begin
+      if Config = No_Unparsing_Configuration
+        or else not Diagnostics.Is_Empty
+      then
+         Ada.Text_IO.Put_Line
+           (Ada.Text_IO.Standard_Error, "Unparsing configuration: layout.json");
+         for Diagnostic of Diagnostics loop
+            Ada.Text_IO.Put_Line
+              (Ada.Text_IO.Standard_Error,
+               Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic));
+         end loop;
+      else
+         --  Config can now be passed to Format or Range_Format.
+         null;
+      end if;
+   end;
+
+The library returns configuration loading diagnostics without printing them
+or setting a process exit status, so applications control how to present and
+handle these errors.
+
 On our side, the ``gnatformat`` library is included in the |ALS| and can therefore be used through
 IDEs like |GNATStudio| and |VSCode|.
