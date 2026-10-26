@@ -1,0 +1,13 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (project file attribute).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "-P",
+    "project.gpr",
+    "--pipe",
+    "test.adb"
+  ]
+windows_baseline_file: test_windows.out

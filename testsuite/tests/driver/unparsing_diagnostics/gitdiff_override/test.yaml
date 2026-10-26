@@ -1,0 +1,13 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting (gitdiff override).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "--gitdiff",
+    "HEAD",
+    "--override-layout",
+    "invalid.json"
+  ]

@@ -856,6 +856,14 @@ package body Gnatformat.Configuration is
            Unparsing_Configuration_File.Display_Full_Name,
            Diagnostics,
            Overridings => Overriddings);
+
+   exception
+      when E : Constraint_Error =>
+         --  Some invalid JSON layout snippets cause the unparsing engine to
+         --  raise instead of returning diagnostics. Report these through the
+         --  same way as other configuration loading failures.
+         Langkit_Support.Diagnostics.Append (Diagnostics, Exc => E);
+         return Unparsing.No_Unparsing_Configuration;
    end Load_Unparsing_Configuration;
 
    --------------
@@ -1892,7 +1900,14 @@ package body Gnatformat.Configuration is
       --  options.
 
       if Self.Cache.Contains (Basic_Format_Options) then
-         return Self.Cache.Element (Basic_Format_Options);
+         declare
+            Result : constant Unparsing_Configuration_Result :=
+              Self.Cache.Element (Basic_Format_Options);
+         begin
+            --  Store the caller diagnostics and return the configuration
+            Diagnostics.Append_Vector (Result.Diagnostics);
+            return Result.Config;
+         end;
       end if;
 
       --  No cache for these format options. Unparsing configurations are
@@ -1900,18 +1915,17 @@ package body Gnatformat.Configuration is
       --  used.
 
       declare
-         Unparsing_Configuration :
-           constant Langkit_Support
-                      .Generic_API
-                      .Unparsing
-                      .Unparsing_Configuration :=
-             Compute_Unparsing_Configuration
-               (Basic_Format_Options, Self.Default, Diagnostics);
-
+         Result : Unparsing_Configuration_Result;
       begin
-         Self.Cache.Insert (Basic_Format_Options, Unparsing_Configuration);
+         --  Collect the load's diagnostics separately, store them and return
+         --  the configuration
+         Result.Config :=
+           Compute_Unparsing_Configuration
+             (Basic_Format_Options, Self.Default, Result.Diagnostics);
+         Self.Cache.Insert (Basic_Format_Options, Result);
+         Diagnostics.Append_Vector (Result.Diagnostics);
 
-         return Unparsing_Configuration;
+         return Result.Config;
       end;
    end Get;
 

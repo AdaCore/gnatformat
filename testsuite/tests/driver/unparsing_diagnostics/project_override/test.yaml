@@ -1,0 +1,14 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (project override).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "-P",
+    "project.gpr",
+    "--pipe",
+    "test.adb",
+    "--override-layout",
+    "invalid.json"
+  ]

@@ -3,7 +3,84 @@
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
+with Gnatformat.Project;
+
+with Langkit_Support.Diagnostics;
+
 package body Gnatformat.Command_Line.Configuration is
+
+   ---------------------------------
+   -- Get_Unparsing_Configuration --
+   ---------------------------------
+
+   function Get_Unparsing_Configuration
+     (Cache           :
+        in out Gnatformat.Configuration.Unparsing_Configuration_Cache_Type;
+      Source_Filename : String;
+      Format_Options  : Gnatformat.Configuration.Format_Options_Type;
+      Writer          : in out Abstract_Writers.Abstract_Writer'Class)
+      return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
+   is
+      use Langkit_Support.Generic_API.Unparsing;
+      use type GNATCOLL.VFS.Virtual_File;
+
+      Diagnostics : Langkit_Support.Diagnostics.Diagnostics_Vectors.Vector;
+      Base_File   : constant GNATCOLL.VFS.Virtual_File :=
+        Unparsing_Configuration.Get;
+      Config      :
+        constant Langkit_Support
+                   .Generic_API
+                   .Unparsing
+                   .Unparsing_Configuration :=
+          Cache.Get (Source_Filename, Format_Options, Diagnostics);
+
+   begin
+      --  Keep the same failure policy for all CLI formatting modes: loading
+      --  diagnostics make the configuration unusable, even if the engine
+      --  returned a configuration alongside them.
+
+      if Config = No_Unparsing_Configuration or else not Diagnostics.Is_Empty
+      then
+         Gnatformat.Project.Set_General_Failed;
+         Writer.Print_Error
+           ((if Source_Filename = ""
+             then "Could not load unparsing configuration"
+             else
+               "--  "
+               & Source_Filename
+               & " failed: could not load unparsing configuration"));
+
+         --  Engine diagnostics do not always name the configuration file.
+         --  Show the custom base and the effective overrides, including
+         --  overrides resolved from project attributes for this source.
+
+         if Base_File /= GNATCOLL.VFS.No_File then
+            Writer.Print_Error
+              ("Unparsing configuration: " & Base_File.Display_Full_Name,
+               False);
+         end if;
+         for File of
+           Gnatformat.Configuration.Get_Override_Layout
+             (Format_Options, Source_Filename)
+         loop
+            Writer.Print_Error
+              ("Layout override: " & File.Display_Full_Name, False);
+         end loop;
+
+         --  Preserve every unparsing engine message and its available source
+         --  location. Use the error writer so diagnostics stays apart of
+         --  formatted stdout.
+
+         for Diagnostic of Diagnostics loop
+            Writer.Print_Error
+              (Langkit_Support.Diagnostics.To_Pretty_String (Diagnostic),
+               False);
+         end loop;
+         return No_Unparsing_Configuration;
+      end if;
+
+      return Config;
+   end Get_Unparsing_Configuration;
 
    ---------
    -- Get --

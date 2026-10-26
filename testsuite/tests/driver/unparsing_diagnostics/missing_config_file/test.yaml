@@ -1,0 +1,13 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (missing config file).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "test.adb",
+    "--unparsing-configuration",
+    "missing.json"
+  ]

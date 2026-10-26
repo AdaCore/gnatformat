@@ -1,0 +1,19 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (range override).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "--no-project",
+    "--pipe",
+    "test.adb",
+    "--range-format",
+    "-SL", "1",
+    "-SC", "1",
+    "-EL", "1",
+    "-EC", "39",
+    "--layout", "tall",
+    "--override-layout",
+    "invalid.json"
+  ]

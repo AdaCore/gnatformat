@@ -1,0 +1,16 @@
+description: |
+  Invalid unparsing configuration reports engine diagnostics before formatting
+  (project cache hit).
+driver: gnatformat
+status_code: 1
+args:
+  [
+    "-P",
+    "project.gpr",
+    "--keep-going",
+    "--pipe",
+    "test.adb",
+    "test.adb",
+    "--override-layout",
+    "invalid.json"
+  ]

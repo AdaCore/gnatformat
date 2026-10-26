@@ -1,0 +1,6 @@
+project Project is
+   for Source_Dirs use (".");
+   package Format is
+      for Override_Layout ("test.adb") use ("invalid.json");
+   end Format;
+end Project;

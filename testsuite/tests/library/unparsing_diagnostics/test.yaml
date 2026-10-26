@@ -1,0 +1,4 @@
+description: |
+  Library configuration loading preserves unparser messages and structured
+  source locations for base configurations, layout overrides and cache hits.
+driver: gnatformat_library
