@@ -1,3 +1,3 @@
 --  test.adb failed: could not load unparsing configuration
 Layout override: invalid.json
-discriminant check failed
+unparsing configuration must be a JSON object

@@ -133,14 +133,36 @@ begin
      Assert (Diagnostics.First_Element.Sloc_Range = No_Source_Location_Range);
    Put_Line ("Missing configuration diagnostic: OK");
 
-   --  JSON accessor errors must also be returned as diagnostics, rather
-   --  than escaping to the embedding application as Constraint_Error.
+   --  Reject non-object JSON roots before entering the engine: its JSON
+   --  accessor exception path leaks buffers and partial configurations.
    Diagnostics.Clear;
+   Append (Diagnostics, Message => "Existing caller diagnostic");
    Config :=
      Load_Unparsing_Configuration
        (Create_From_UTF8 ("shape.json"), Empty_File_Array, Diagnostics);
    pragma Assert (Config = No_Unparsing_Configuration);
+   pragma Assert (Diagnostics.Length = 2);
+   pragma
+     Assert
+       (To_Pretty_String (Diagnostics.First_Element)
+        = "Existing caller diagnostic");
+   pragma
+     Assert (Diagnostics.Last_Element.Sloc_Range = No_Source_Location_Range);
+   pragma
+     Assert
+       (To_Pretty_String (Diagnostics.Last_Element)
+        = "unparsing configuration must be a JSON object");
+
+   Diagnostics.Clear;
+   Config :=
+     Load_Unparsing_Configuration
+       (Base, [Create_From_UTF8 ("shape.json")], Diagnostics);
+   pragma Assert (Config = No_Unparsing_Configuration);
    pragma Assert (Diagnostics.Length = 1);
+   pragma
+     Assert
+       (To_Pretty_String (Diagnostics.First_Element)
+        = "unparsing configuration must be a JSON object");
    Put_Line ("Invalid JSON structure diagnostic: OK");
 
    Diagnostics.Clear;

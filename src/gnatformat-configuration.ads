@@ -469,6 +469,8 @@ package Gnatformat.Configuration is
    --  For a libray usage, loading errors are returned to the caller without
    --  printing them. The result and diagnostics should be checked before
    --  passing the configuration to Format or Range_Format.
+   --  Non-object JSON roots are rejected before calling the engine, with a
+   --  diagnostic that has no source location.
 
    function Compute_Unparsing_Configuration
      (Source                          : String;
