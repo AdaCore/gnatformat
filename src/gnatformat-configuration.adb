@@ -4,12 +4,14 @@
 --
 
 with Ada.Exceptions;
+with Ada.Strings.Fixed;
 with Ada.Strings.Unbounded.Hash;
 with Ada.Text_IO.Unbounded_IO;
 
 with GNAT.Traceback.Symbolic;
 
 with GNATCOLL;
+with GNATCOLL.JSON;
 
 with GPR2;
 with GPR2.Containers;
@@ -831,6 +833,11 @@ package body Gnatformat.Configuration is
       return Langkit_Support.Generic_API.Unparsing.Unparsing_Configuration
    is
       use Langkit_Support.Generic_API;
+      use type GNATCOLL.JSON.JSON_Value_Type;
+      use type GNATCOLL.VFS.File_Array;
+
+      Files : constant GNATCOLL.VFS.File_Array :=
+        [Unparsing_Configuration_File] & Overriddings;
    begin
       Gnatformat.Gnatformat_Trace.Trace
         ("Loading unparsing configuration from """
@@ -849,6 +856,34 @@ package body Gnatformat.Configuration is
               .Original_Keywords
               .Display_Full_Name);
       end if;
+
+      --  Langkit assumes JSON roots are objects. A different root can raise
+      --  Constraint_Error after allocating file buffers and a configuration,
+      --  which its exception path does not free. Reject such roots before
+      --  entering the engine, for both the base and the overrides. Leave file
+      --  and syntax errors to the engine to preserve its detailed diagnostics.
+      for File of Files loop
+         --  Builtin configurations are embedded in Libadalang, rather than
+         --  available on disk, and already have the expected structure.
+         if Ada.Strings.Fixed.Index
+              (String (File.Unix_Style_Full_Name), "builtin://")
+           /= 1
+         then
+            declare
+               Result : constant GNATCOLL.JSON.Read_Result :=
+                 GNATCOLL.JSON.Read_File (File.Display_Full_Name);
+            begin
+               exit when not Result.Success;
+               if Result.Value.Kind /= GNATCOLL.JSON.JSON_Object_Type then
+                  Langkit_Support.Diagnostics.Append
+                    (Diagnostics,
+                     Message =>
+                       "unparsing configuration must be a JSON object");
+                  return Unparsing.No_Unparsing_Configuration;
+               end if;
+            end;
+         end if;
+      end loop;
 
       return
         Unparsing.Load_Unparsing_Config

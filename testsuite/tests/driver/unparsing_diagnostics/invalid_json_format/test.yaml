@@ -1,6 +1,5 @@
 description: |
-  Invalid unparsing configuration reports engine diagnostics before formatting
-  (invalid JSON format).    
+  Reject a non-object JSON configuration before entering the engine.
 driver: gnatformat
 status_code: 1
 args:
