@@ -48,13 +48,7 @@ def valgrind_wrap(env: e3.env.Env, argv: list[str]) -> list[str]:
     command line in Valgrind.
     """
     if env.options.valgrind:
-        supp = os.path.join(os.path.dirname(__file__), "valgrind.supp")
-        argv = [
-            "valgrind",
-            "-q",
-            "--leak-check=full",
-            f"--suppressions={supp}",
-        ] + argv
+        argv = ["valgrind", "-q", "--leak-check=full"] + argv
     return argv
 
 

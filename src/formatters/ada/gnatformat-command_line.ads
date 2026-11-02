@@ -340,6 +340,12 @@ package Gnatformat.Command_Line is
         Arg_Type   => GNATCOLL.VFS.Virtual_File,
         Convert    => To_Virtual_File);
 
+   package Print_GPR_Registry is new
+     Parse_Flag
+       (Parser => Parser,
+        Long   => GPR2.Options.Print_GPR_Registry_Option,
+        Hidden => True);
+
    package GPR_Args is new GPR2.Options.Opt_Parse.Args (Parser);
 
 end Gnatformat.Command_Line;
