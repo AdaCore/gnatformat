@@ -25,6 +25,7 @@ with Gnatformat.Range_Format;
 
 with GPR2;
 with GPR2.Options;
+with GPR2.Project.Registry.Exchange;
 with GPR2.Project.Tree;
 
 with Langkit_Support.Slocs;
@@ -63,7 +64,10 @@ begin
    Gnatformat.Project.GPR_Options :=
      Gnatformat.Command_Line.GPR_Args.Parsed_GPR2_Options;
 
-   Gnatformat.Project.GPR_Options.Print_GPR_Registry;
+   if Gnatformat.Command_Line.Print_GPR_Registry.Get then
+      GPR2.Project.Registry.Exchange.Export;
+      return;
+   end if;
 
    declare
       No_Project   : constant Boolean :=
