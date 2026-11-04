@@ -7,27 +7,27 @@ procedure test is
 begin
 
    case Something is
-      when A      =>
+      when A =>
          --  comment A
 
          Val := A;
 
-      when B      =>
+      when B =>
          --  comment B
          Val := B;
 
-      when C      =>
+      when C =>
 
          --  comment C
 
          Val := C;
 
-      when D      =>
+      when D =>
 
          --  comment D
          Val := D;
 
-      when E      =>
+      when E =>
 
          --  comment E
          Val := E;
