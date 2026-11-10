@@ -186,6 +186,15 @@ package body Gnatformat.Edits is
 
                   begin
                      while Current_Line_Character_It.Backward loop
+                        if Current_Line_Character_It.Element
+                          = VSS.Characters.Latin.Character_Tabulation
+                        then
+                           --  Compare edits with the tab's starting column.
+                           Current_Column_Number :=
+                             @ - Current_Line_Tabs_Size.Last_Element + 1;
+                           Current_Line_Tabs_Size.Delete_Last;
+                        end if;
+
                         if not Inside_Text_Edit then
                            Output_Buffer.Prepend
                              (Current_Line_Character_It.Element);
@@ -229,15 +238,7 @@ package body Gnatformat.Edits is
                            end if;
                         end if;
 
-                        if Current_Line_Character_It.Element
-                          = VSS.Characters.Latin.Character_Tabulation
-                        then
-                           Current_Column_Number :=
-                             @ - Current_Line_Tabs_Size.Last_Element;
-                           Current_Line_Tabs_Size.Delete_Last;
-                        else
-                           Current_Column_Number := @ - 1;
-                        end if;
+                        Current_Column_Number := @ - 1;
                      end loop;
                   end;
 
@@ -320,6 +321,15 @@ package body Gnatformat.Edits is
 
          begin
             while Current_Line_Character_It.Backward loop
+               if Current_Line_Character_It.Element
+                 = VSS.Characters.Latin.Character_Tabulation
+               then
+                  --  Compare edits with the tab's starting column.
+                  Current_Column_Number :=
+                    @ - Current_Line_Tabs_Size.Last_Element + 1;
+                  Current_Line_Tabs_Size.Delete_Last;
+               end if;
+
                if not Inside_Text_Edit then
                   Output_Buffer.Prepend (Current_Line_Character_It.Element);
                end if;
@@ -357,15 +367,7 @@ package body Gnatformat.Edits is
                   end if;
                end if;
 
-               if Current_Line_Character_It.Element
-                 = VSS.Characters.Latin.Character_Tabulation
-               then
-                  Current_Column_Number :=
-                    @ - Current_Line_Tabs_Size.Last_Element;
-                  Current_Line_Tabs_Size.Delete_Last;
-               else
-                  Current_Column_Number := @ - 1;
-               end if;
+               Current_Column_Number := @ - 1;
             end loop;
          end;
 
