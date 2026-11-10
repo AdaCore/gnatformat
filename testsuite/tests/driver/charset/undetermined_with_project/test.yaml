@@ -1,3 +1,4 @@
-description: An undetermined project source must be skipped with a warning
+description: An undetermined project source must fail to format
 driver: gnatformat
 args: ["-P", "test.gpr", "--pipe"]
+status_code: 1

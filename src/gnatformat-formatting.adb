@@ -963,7 +963,7 @@ package body Gnatformat.Formatting is
            and then Crt_Token_Kind in Ada_Comment | Ada_Whitespace
          loop
             case Look is
-               when Forward  =>
+               when Forward =>
                   Crt_Token := Next (Crt_Token);
 
                when Backward =>
@@ -1344,7 +1344,7 @@ package body Gnatformat.Formatting is
                | Ada_Case_Stmt_Alternative_Range =>
                Offset := Offset + Indentation;
 
-            when others                          =>
+            when others =>
                null;
          end case;
 
@@ -1491,10 +1491,10 @@ package body Gnatformat.Formatting is
                   | Ada_Record_Type_Def_Range
                   | Ada_Generic_Formal_Part_Range
                   | Ada_Begin_Block_Range
-                  | Ada_Decl_Block_Range                            =>
+                  | Ada_Decl_Block_Range =>
                   Current_Indentation := @ + Indentation;
 
-               when Ada_Declarative_Part_Range                      =>
+               when Ada_Declarative_Part_Range =>
                   --  When we type declare, a DeclBlock is created but not a
                   --  DeclarativePart one. Only when you close the block with
                   --  an end the node is created.
@@ -1506,7 +1506,7 @@ package body Gnatformat.Formatting is
                      Current_Indentation := @ + Indentation;
                   end if;
 
-               when Ada_Handled_Stmts_Range                         =>
+               when Ada_Handled_Stmts_Range =>
                   --  HandledStmts can be children of DeclBlock and BeginBlock.
                   --  These two add indentation, so HandledStmts should not
                   --  double add if its their child.
@@ -1516,17 +1516,17 @@ package body Gnatformat.Formatting is
                      Current_Indentation := @ + Indentation;
                   end if;
 
-               when Ada_Subp_Spec_Range | Ada_Assign_Stmt_Range     =>
+               when Ada_Subp_Spec_Range | Ada_Assign_Stmt_Range =>
                   Current_Indentation := @ + Inline_Indentation;
 
-               when Ada_Dotted_Name_Range                           =>
+               when Ada_Dotted_Name_Range =>
                   Current_Indentation :=
                     Natural (Parent.Sloc_Range.Start_Column)
                     - 1
                     + Inline_Indentation;
                   exit;
 
-               when Ada_Params_Range                                =>
+               when Ada_Params_Range =>
                   Current_Indentation :=
                     Natural (Parent.Sloc_Range.Start_Column) - 1 + 1;
                   exit;
@@ -1536,7 +1536,7 @@ package body Gnatformat.Formatting is
                     Natural (Parent.Sloc_Range.Start_Column) - 1;
                   exit;
 
-               when others                                          =>
+               when others =>
                   null;
             end case;
          end loop;

@@ -31,8 +31,8 @@ package Gnatformat.Gitdiff is
         in out Gnatformat.Abstract_Writers.Abstract_Writer'Class);
    --  Formats the lines added on top of Base_Commit_ID.
    --  Files that cannot be formatted are skipped and reported through
-   --  Writer: as warnings when their encoding could not be determined or
-   --  they start with a byte order mark, as errors (which also set the
-   --  general failure flag) when they have parse errors or start with a byte
-   --  order mark incompatible with their configured charset.
+   --  Writer: as warnings when they start with a byte order mark, as errors
+   --  (which also set the general failure flag) when their encoding could not
+   --  be determined, they have parse errors or their byte order mark is
+   --  incompatible with their configured charset.
 end Gnatformat.Gitdiff;

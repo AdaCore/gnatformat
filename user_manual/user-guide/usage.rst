@@ -91,8 +91,9 @@ The specific options allowing to customize the formatting of your sources are:
   preserved. In absence of this option (and of the project's ``Charset`` attribute),
   the encoding of each source is detected (byte order mark, then UTF-8 validation),
   falling back to ``iso-8859-1`` when plausible. Sources whose encoding cannot be
-  determined are skipped with a warning, or reported as an error in range formatting
-  mode. A byte order mark compatible with the configured charset is preserved; sources with an
+  determined fail to format, with a diagnostic on stderr and a nonzero exit status,
+  including with ``--pipe`` and ``--check``. A byte order mark compatible with the
+  configured charset is preserved; sources with an
   incompatible one fail to format with an error.
 * ``--ignore``: allows you to to specify a file with the source file names that must not be
   formatted.
