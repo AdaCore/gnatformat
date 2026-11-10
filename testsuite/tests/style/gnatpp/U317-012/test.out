@@ -12,4 +12,3 @@ package indent is
    procedure Q (V : Float);
 
 end indent;
-

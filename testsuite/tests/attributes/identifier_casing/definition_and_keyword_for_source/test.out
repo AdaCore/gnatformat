@@ -4,4 +4,3 @@ PROCEDURE Test IS
 BEGIN
    My_Var := My_Var + 1;
 END Test;
-

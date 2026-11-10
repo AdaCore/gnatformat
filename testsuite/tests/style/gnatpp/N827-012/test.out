@@ -15,4 +15,3 @@ package P is
    End_Of_Transmission_Substitution   : constant Character := 'E';
 
 end P;
-

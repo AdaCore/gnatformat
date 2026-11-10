@@ -7,4 +7,3 @@ package a is
 
      Z : Float;
 end a;
-

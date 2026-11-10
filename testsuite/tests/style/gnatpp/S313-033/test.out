@@ -44,4 +44,3 @@ procedure Mixed_Keywords is
 begin
    delay until Whenever;
 end Mixed_Keywords;
-

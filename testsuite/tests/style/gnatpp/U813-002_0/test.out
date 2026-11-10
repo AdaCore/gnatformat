@@ -8,4 +8,3 @@ procedure Main is
 begin
    Put_Line (bAr_FoO'Image);
 end Main;
-

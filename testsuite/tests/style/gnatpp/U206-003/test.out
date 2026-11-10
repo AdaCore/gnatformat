@@ -45,4 +45,3 @@ package RAMSim is
       Length  : Bus_Address;
       Value   : Bus_Data);
 end RAMSim;
-

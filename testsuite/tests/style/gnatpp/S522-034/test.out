@@ -14,4 +14,3 @@ package Vert is
    function Example return Boolean;
 
 end Vert;
-

@@ -9,4 +9,3 @@ package Directions is
       Right); -- opposite of Left
 
 end Directions;
-

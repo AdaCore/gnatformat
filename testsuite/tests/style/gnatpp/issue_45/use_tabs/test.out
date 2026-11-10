@@ -48,4 +48,3 @@ package body Test is
 		return Result;
 	end Get_My_Result_Bis;
 end Test;
-

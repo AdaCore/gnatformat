@@ -29,4 +29,3 @@ procedure Gnatpp_Playground is
 begin
    null;
 end Gnatpp_Playground;
-

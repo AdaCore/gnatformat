@@ -7,4 +7,3 @@ begin
    val := val + 1;
 
 end test_OK;
-

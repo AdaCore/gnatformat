@@ -21,4 +21,3 @@ package body Foo is
    end Create;
 
 end Foo;
-

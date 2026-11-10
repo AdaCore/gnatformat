@@ -27,4 +27,3 @@ package Mixed is
    procedure Q;
 
 end Mixed;
-

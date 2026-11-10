@@ -36,4 +36,3 @@ procedure Compact_Array_Type_Declaration is
 begin
    null;
 end Compact_Array_Type_Declaration;
-

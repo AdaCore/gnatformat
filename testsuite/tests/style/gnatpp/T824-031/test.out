@@ -16,4 +16,3 @@ package wrong_indent is
    Z : Integer;
 
 end wrong_indent;
-

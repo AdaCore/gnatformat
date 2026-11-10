@@ -11,4 +11,3 @@ end Main;
 package PKG is
    DEFAULT_VALUE : constant INTEGER := 0;
 end PKG;
-

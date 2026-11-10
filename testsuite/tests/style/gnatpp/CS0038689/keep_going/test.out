@@ -7,4 +7,3 @@ end Test_X;
 package Test_2 is
    type Foo;
 end Test_X;
-

@@ -160,9 +160,7 @@ class GNATformatOnDiskDriver(GNATformatDriver):
     Driver to run gnatformat on sources formatted in place, comparing the
     resulting files byte for byte with baselines.
 
-    The "gnatformat" driver goes through --pipe, which is unsuitable for tests
-    about line endings. On Windows, standard output turns every LF into CRLF, so a
-    CRLF formatted source comes out as CR CR LF.
+    Compare source bytes separately from diagnostics and source headers.
 
     Usage Instructions:
 

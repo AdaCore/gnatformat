@@ -14,4 +14,3 @@ begin
      or RCC_Bits.Ahb1enr.Gpiohen
      or RCC_Bits.Ahb1enr.Gpioien;
 end Ors;
-

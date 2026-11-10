@@ -3,4 +3,3 @@ procedure TEST is
 begin
    MY_VAR := MY_VAR + 1;
 end TEST;
-

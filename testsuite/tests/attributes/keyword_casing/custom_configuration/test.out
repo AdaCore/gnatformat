@@ -6,4 +6,3 @@ PROCEDURE Keep Is Begin NULL;END Keep;
 
 --  lower.adb
 procedure Lower is begin null;end Lower;
-

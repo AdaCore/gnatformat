@@ -50,4 +50,3 @@ is
 begin
    null;
 end Named_Aggregate_Affectation;
-
