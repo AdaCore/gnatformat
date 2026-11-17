@@ -1,0 +1,2 @@
+description: Apply edits ending before tabs without changing surrounding UTF-8 or EOLs
+driver: gnatformat_library

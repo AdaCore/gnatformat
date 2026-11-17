@@ -3,6 +3,6 @@ procedure Test is
    C : Color := green;
    N : Integer := 0;
 begin
-   n := n + 1;
-   c := blue;
+   n	:= n	+ 1;
+   c	:= blue	;
 end test;
