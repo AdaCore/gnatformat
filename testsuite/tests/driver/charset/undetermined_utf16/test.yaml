@@ -1,5 +1,5 @@
 description: |
-  A source with NUL bytes (UTF-16 without BOM) must be skipped with a
-  warning in --check mode, which counts as success
+  A source with NUL bytes (UTF-16 without BOM) must fail in --check mode
 driver: gnatformat
 args: ["--check", "test.ads"]
+status_code: 1

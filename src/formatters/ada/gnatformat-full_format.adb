@@ -173,17 +173,12 @@ package body Gnatformat.Full_Format is
                      .Unparsing
                      .Default_Configuration_Filename)));
 
-      type Format_Source_Status is (Formatted, Skipped, Failed);
-      --  Outcome of Format_Source: the source was formatted, was skipped
-      --  because its encoding could not be determined, or failed to format.
+      type Format_Source_Status is (Formatted, Failed);
 
       type Format_Source_Result (Status : Format_Source_Status) is record
          case Status is
             when Formatted =>
                Formatted_Source : Ada.Strings.Unbounded.Unbounded_String;
-
-            when Skipped =>
-               Skip_Reason : Ada.Strings.Unbounded.Unbounded_String;
 
             when Failed =>
                Diagnostics : Unbounded_String_Vector;
@@ -200,8 +195,8 @@ package body Gnatformat.Full_Format is
       --  Resolves the right format options for Path and formats it
       --  with Project_Formatting_Config.
       --  The formatted source is encoded in the same charset used to decode
-      --  Source. Skipped is returned when the source has no explicitly
-      --  configured charset and its encoding could not be detected.
+      --  Source. Failed is returned when its encoding cannot be resolved or
+      --  it has parse errors.
 
       function Process_Project_Source
         (Source         : Gnatformat.Project.Project_Source_Record;
@@ -300,10 +295,12 @@ package body Gnatformat.Full_Format is
          when E : Encodings.Undetermined_Encoding_Error =>
             return
               Format_Source_Result'
-                (Status      => Skipped,
-                 Skip_Reason =>
-                   Ada.Strings.Unbounded.To_Unbounded_String
-                     (Ada.Exceptions.Exception_Message (E)));
+                (Status      => Failed,
+                 Diagnostics =>
+                   [Ada.Strings.Unbounded.To_Unbounded_String
+                      (Ada.Exceptions.Exception_Message (E)
+                       & ". Use --charset or the project's Charset "
+                       & "attribute to format it.")]);
 
          when E : Encodings.Incompatible_BOM_Error =>
             return
@@ -435,19 +432,7 @@ package body Gnatformat.Full_Format is
 
                         return True;
 
-                     when Skipped   =>
-                        Writer.Print_Warning
-                          ("--  "
-                           & Source_Simple_Name
-                           & " was skipped because "
-                           & Ada.Strings.Unbounded.To_String
-                               (Result.Skip_Reason)
-                           & ". Use --charset or the project's Charset "
-                           & "attribute to format it.");
-
-                        return True;
-
-                     when Failed    =>
+                     when Failed =>
                         Gnatformat.Project.Set_General_Failed;
 
                         Writer.Print_Error
@@ -621,14 +606,16 @@ package body Gnatformat.Full_Format is
 
       exception
          when E : Encodings.Undetermined_Encoding_Error =>
-            Writer.Print_Warning
-              ("--  "
-               & Source.Display_Base_Name
-               & " was skipped because "
-               & Ada.Exceptions.Exception_Message (E)
-               & ". Use --charset to format it.");
+            Gnatformat.Project.Set_General_Failed;
 
-            return True;
+            Writer.Print_Error
+              ("--  " & Source.Display_Base_Name & " failed to format");
+            Writer.Print_Error
+              (Ada.Exceptions.Exception_Message (E)
+               & ". Use --charset to format it.",
+               False);
+
+            return False;
 
          when E : Encodings.Incompatible_BOM_Error =>
             Gnatformat.Project.Set_General_Failed;

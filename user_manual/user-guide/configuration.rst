@@ -52,10 +52,12 @@ The formatting of your sources can be customized by the following options:
   encoding of each source is detected: a byte order mark decides it, otherwise sources
   with non-ASCII contents that are valid UTF-8 are treated as ``utf-8``, and anything
   else falls back to ``iso-8859-1`` when plausible. Sources whose encoding cannot be
-  determined are skipped with a warning: files containing NUL bytes (which suggests
+  determined fail to format: files containing NUL bytes (which suggests
   UTF-16 or UTF-32 without a byte order mark) or bytes that never appear in ISO 8859
-  text (C1 control characters, typically Windows-1252 punctuation). In range formatting
-  mode such a source is reported as an error instead. When a charset is configured and the
+  text (C1 control characters, typically Windows-1252 punctuation). The diagnostic goes
+  to stderr and the command returns a nonzero exit status, including with ``--pipe``
+  and ``--check``. Set ``--charset`` or the project's ``Charset`` attribute to format
+  such a source. When a charset is configured and the
   source starts with a byte order mark compatible with it (``utf-8`` for a UTF-8 byte order
   mark, ``utf-16`` or ``utf-16le`` for a UTF-16 little endian one, and so on), the byte order
   mark is honoured and preserved. A source starting with any other byte order mark (e.g. a

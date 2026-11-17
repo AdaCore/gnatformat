@@ -333,12 +333,13 @@ package body Gnatformat.Gitdiff is
 
       exception
          when E : Encodings.Undetermined_Encoding_Error =>
-            Writer.Print_Warning
-              ("--  "
-               & Source_Name
-               & " was skipped because "
-               & Ada.Exceptions.Exception_Message (E)
-               & ". Use --charset to format it.");
+            Gnatformat.Project.Set_General_Failed;
+
+            Writer.Print_Error ("--  " & Source_Name & " failed to format");
+            Writer.Print_Error
+              (Ada.Exceptions.Exception_Message (E)
+               & ". Use --charset to format it.",
+               False);
 
             return Skip_Hunks;
 

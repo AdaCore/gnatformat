@@ -263,7 +263,7 @@ package body Gnatformat.Encodings is
                      when Character'Val (16#C2#) .. Character'Val (16#DF#) =>
                         Remaining_Continuations := 1;
 
-                     when Character'Val (16#E0#)                           =>
+                     when Character'Val (16#E0#) =>
                         Remaining_Continuations := 2;
                         Next_Low := Character'Val (16#A0#);
 
@@ -271,22 +271,22 @@ package body Gnatformat.Encodings is
                         | Character'Val (16#EE#) .. Character'Val (16#EF#) =>
                         Remaining_Continuations := 2;
 
-                     when Character'Val (16#ED#)                           =>
+                     when Character'Val (16#ED#) =>
                         Remaining_Continuations := 2;
                         Next_High := Character'Val (16#9F#);
 
-                     when Character'Val (16#F0#)                           =>
+                     when Character'Val (16#F0#) =>
                         Remaining_Continuations := 3;
                         Next_Low := Character'Val (16#90#);
 
                      when Character'Val (16#F1#) .. Character'Val (16#F3#) =>
                         Remaining_Continuations := 3;
 
-                     when Character'Val (16#F4#)                           =>
+                     when Character'Val (16#F4#) =>
                         Remaining_Continuations := 3;
                         Next_High := Character'Val (16#8F#);
 
-                     when others                                           =>
+                     when others =>
                         --  16#80# .. 16#C1# and 16#F5# .. 16#FF# cannot lead
                         --  a UTF-8 sequence.
 
@@ -491,7 +491,7 @@ package body Gnatformat.Encodings is
             | GNAT.Byte_Order_Mark.UCS4_LE
             | GNAT.Byte_Order_Mark.UCS4_2143
             | GNAT.Byte_Order_Mark.UCS4_3412
-            | GNAT.Byte_Order_Mark.Unknown  =>
+            | GNAT.Byte_Order_Mark.Unknown =>
             --  The UCS-4 cases are only reported with XML_Support
 
             return Optional_BOM_Kinds.None;

@@ -33,8 +33,7 @@ package Gnatformat.Full_Format is
    --  Each source is decoded, and its formatted output encoded, with the
    --  charset explicitly configured for it if any, otherwise with the one
    --  detected from its contents (see Gnatformat.Encodings). Sources whose
-   --  encoding cannot be determined are skipped with a warning, and sources
-   --  starting with a byte order mark incompatible with their configured
-   --  charset fail to format.
+   --  encoding cannot be determined, or whose byte order mark is incompatible
+   --  with their configured charset, fail to format.
 
 end Gnatformat.Full_Format;

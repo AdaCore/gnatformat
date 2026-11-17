@@ -113,13 +113,13 @@ package body Gnatformat.Identifier_Casing is
                end if;
 
                case Canonical_Name.Kind is
-                  when Ada_Identifier  =>
+                  when Ada_Identifier =>
                      return Canonical_Name.Text;
 
                   when Ada_Dotted_Name =>
                      return Canonical_Name.As_Dotted_Name.F_Suffix.Text;
 
-                  when others          =>
+                  when others =>
                      --  Operators, character literals, synthetic names: leave
                      --  the occurrence unchanged.
                      return No_Canonical_Spelling;
