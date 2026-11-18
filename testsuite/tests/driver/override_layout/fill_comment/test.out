@@ -17,4 +17,3 @@ begin
      --  c
      and C.D;
 end Formatted;
-

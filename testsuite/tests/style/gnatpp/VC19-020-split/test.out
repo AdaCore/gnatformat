@@ -43,4 +43,3 @@ begin
    G := A and B or C and then D;
 
 end Main;
-

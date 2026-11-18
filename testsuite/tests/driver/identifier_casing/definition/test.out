@@ -6,4 +6,3 @@ begin
    N := N + 1;
    C := Blue;
 end Test;
-

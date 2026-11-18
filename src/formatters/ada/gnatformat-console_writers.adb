@@ -1,10 +1,11 @@
 --
---  Copyright (C) 2025, AdaCore
+--  Copyright (C) 2025-2026, AdaCore
 --  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 --
 
 with Ada.Text_IO;
-with Ada.Strings.Unbounded.Text_IO;
+with Ada.Text_IO.Text_Streams;
+with Ada.Strings.Unbounded;
 
 package body Gnatformat.Console_Writers is
 
@@ -47,7 +48,12 @@ package body Gnatformat.Console_Writers is
    is
       pragma Unreferenced (Self);
    begin
-      Ada.Strings.Unbounded.Text_IO.Put (Text);
+      --  Stream output preserves source bytes, including CRLF on Windows,
+      --  without Text_IO adding a final newline during finalization.
+
+      String'Write
+        (Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Output),
+         Ada.Strings.Unbounded.To_String (Text));
    end Print_Source;
 
    -----------------------

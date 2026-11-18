@@ -32,4 +32,3 @@ package body par_threshold_is is
    end F4;
 
 end par_threshold_is;
-

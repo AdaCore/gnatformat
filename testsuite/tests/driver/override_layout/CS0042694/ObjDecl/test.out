@@ -9,4 +9,3 @@ package Test_Align is
    Suspension : constant Flight_Suspension.T := CASA_Result.Suspension;
 
 end Test_Align;
-

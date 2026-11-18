@@ -29,4 +29,3 @@ package DD is
 
   A : array (1 .. 10) of Integer;
 end DD;
-

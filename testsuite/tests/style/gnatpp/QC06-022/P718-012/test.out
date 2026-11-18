@@ -21,4 +21,3 @@ begin
          null;
    end case;
 end Split_Lines_Before_Vertical_Bars;
-

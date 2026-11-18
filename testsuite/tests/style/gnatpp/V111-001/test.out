@@ -68,4 +68,3 @@ begin
     Z => True);
 
 end test_comment;
-

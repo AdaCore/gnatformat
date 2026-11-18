@@ -29,4 +29,3 @@ package body Wrong_Indent is
    end P2;
 
 end Wrong_Indent;
-

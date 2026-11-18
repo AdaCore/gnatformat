@@ -42,4 +42,3 @@ package Test is
    END RECORD;
 
 end Test;
-

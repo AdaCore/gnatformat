@@ -16,4 +16,3 @@ begin
    PROCEDURE_NAME (PARAM1 => 1, PARAM2 => 2, PARAM3 => 3);
    VARIABLE := (FIELD1 => 1, FIELD2 => 2, FIELD3 => 3);
 end TEST;
-

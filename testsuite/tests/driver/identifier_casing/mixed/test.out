@@ -3,4 +3,3 @@ procedure Test is
 begin
    My_Var := Integer'First + My_Var;
 end Test;
-

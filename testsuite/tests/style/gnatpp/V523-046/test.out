@@ -46,4 +46,3 @@ package body Foo is
    is (1);
 
 end Foo;
-

@@ -6,4 +6,3 @@ function Foo (Profondeur : in Natural; b : natural) return Float is
 begin
    null;
 end Foo;
-

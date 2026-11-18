@@ -21,4 +21,3 @@ package body Test is
       return Result;
    end Get_My_Result;
 end Test;
-

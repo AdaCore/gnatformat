@@ -13,4 +13,3 @@ package Parent is
       procedure Do_Something (Var : Integer);
    end Child;
 end Parent;
-

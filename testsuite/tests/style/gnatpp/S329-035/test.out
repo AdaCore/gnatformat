@@ -5,4 +5,3 @@ package p is
       entry set (core_affinity : in natural; success : out boolean);
    end;
 end;
-

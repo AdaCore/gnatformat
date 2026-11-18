@@ -6,4 +6,3 @@ begin
    --!format on
    My_Var := My_Var + 2;
 end Test;
-

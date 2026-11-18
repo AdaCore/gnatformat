@@ -7,4 +7,3 @@ package My_Package is
        range Some_Value_A .. Some_Value_B;
 
 end My_Package;
-

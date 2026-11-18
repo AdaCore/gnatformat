@@ -23,4 +23,3 @@ package Q is
    procedure Q (A : in Integer; B : out Positive);
 
 end Q;
-

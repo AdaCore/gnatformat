@@ -61,4 +61,3 @@ procedure test_main is
 begin
    null;
 end test_main;
-

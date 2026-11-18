@@ -7,4 +7,3 @@ package body Test is
    is null;
 
 end Test;
-

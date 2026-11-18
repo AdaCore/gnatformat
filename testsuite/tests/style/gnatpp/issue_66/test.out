@@ -10,4 +10,3 @@ package Test is
    Map : Source_Expected_Map.Map := ["d.", 1];
 
 end Test;
-

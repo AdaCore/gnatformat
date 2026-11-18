@@ -5,4 +5,3 @@ package Align_Test is
    Bad_File     : exception;
    Bad_Argument : exception;
 end Align_Test;
-
