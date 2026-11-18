@@ -1,5 +1,5 @@
 package Spark_Mode
-  with spark_mode
+with spark_mode
 is
    pragma spark_mode;
    procedure pre
