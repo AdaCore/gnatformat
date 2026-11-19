@@ -1,6 +1,6 @@
 --  p.ads
 package P
-  with Pure
+with Pure
 is
 
    type T is new Integer with Atomic;
